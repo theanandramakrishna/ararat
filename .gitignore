@@ -10,6 +10,7 @@
 *.class
 Thumbs.db
 .DS_Store
+.vscode
 /captures
-/demo/build
+/xwordapp/build
 /library/build
