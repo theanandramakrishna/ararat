@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package org.akop.crosswordtest
+package org.anandram.xwordapp
 
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable

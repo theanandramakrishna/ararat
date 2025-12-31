@@ -5,7 +5,7 @@ android {
     compileSdkVersion 31
 
     defaultConfig {
-        applicationId "org.akop.crosswordtest"
+        applicationId "org.anandram.xwordapp"
         minSdkVersion 19
         targetSdkVersion 31
         versionCode 1
