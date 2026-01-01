@@ -38,4 +38,16 @@
         android:id="@+id/menu_restart"
         android:title="@string/restart"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_sign_in_drive"
+        android:title="Sign In to Drive"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_save_drive"
+        android:title="Save to Drive"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_load_drive"
+        android:title="Load from Drive"
+        app:showAsAction="never" />
 </menu>
