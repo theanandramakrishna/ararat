@@ -8,9 +8,14 @@ android {
         applicationId "org.anandram.xwordapp"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "0.1"
         multiDexEnabled true
+    }
+    configurations {
+        all {
+            exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        }
     }
     buildTypes {
         release {
@@ -36,7 +41,7 @@ dependencies {
 
     // Google Sign-In and Drive API
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
-    implementation 'com.google.api-client:google-api-client-android:2.2.0'
+    implementation 'com.google.api-client:google-api-client-android:2.2.0' 
     implementation 'com.google.http-client:google-http-client-android:1.43.3'
     implementation 'com.google.apis:google-api-services-drive:v3-rev20220815-2.0.0'
 

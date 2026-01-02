@@ -30,6 +30,7 @@ import android.widget.TextView
 import android.widget.Toast
 
 import org.akop.ararat.core.Crossword
+import org.akop.ararat.core.CrosswordState
 import org.akop.ararat.core.buildCrossword
 import org.akop.ararat.io.PuzFormatter
 import org.akop.ararat.view.CrosswordView
@@ -109,7 +110,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
-        crosswordView.restoreState(savedInstanceState.getParcelable("state")!!)
+        crosswordView.restoreState(savedInstanceState.getParcelable("state", CrosswordState::class.java)!!)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
