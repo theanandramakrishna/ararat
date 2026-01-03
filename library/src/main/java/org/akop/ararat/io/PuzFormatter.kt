@@ -190,7 +190,7 @@ class PuzFormatter : CrosswordFormatter {
                     var d = 0
                     for (i in 0 until height) {
                         for (j in 0 until width) {
-                            attrMap[i][j] = (attrMap[i][j].toInt() or data[d++].toInt()).toByte()
+                            attrMap[i][j] = (attrMap[i][j].toInt() or data[d++].code).toByte()
                         }
                     }
                 }
@@ -292,7 +292,7 @@ class PuzFormatter : CrosswordFormatter {
                         var k = j
                         while (k <= jend && charMap[i][k] != EMPTY) {
                             var attrs = 0
-                            if (attrMap[i][k].toInt() and GEXT_CIRCLED.toInt() != 0)
+                            if (attrMap[i][k].toInt() and GEXT_CIRCLED.code != 0)
                                 attrs = attrs or Crossword.Cell.ATTR_CIRCLED
                             if (!hasSolution)
                                 attrs = attrs or Crossword.Cell.ATTR_NO_SOLUTION
@@ -322,7 +322,7 @@ class PuzFormatter : CrosswordFormatter {
                         var k = i
                         while (k <= iend && charMap[k][j] != EMPTY) {
                             var attrs = 0
-                            if (attrMap[k][j].toInt() and GEXT_CIRCLED.toInt() != 0)
+                            if (attrMap[k][j].toInt() and GEXT_CIRCLED.code != 0)
                                 attrs = attrs or Crossword.Cell.ATTR_CIRCLED
                             if (!hasSolution)
                                 attrs = attrs or Crossword.Cell.ATTR_NO_SOLUTION
@@ -350,7 +350,7 @@ class PuzFormatter : CrosswordFormatter {
             } else {
                 checksumInt ushr 1
             }
-            checksumInt = checksumInt + content[i].toInt() and 0xffff
+            checksumInt = checksumInt + content[i].code and 0xffff
         }
         return checksumInt.toShort()
     }
@@ -422,7 +422,7 @@ class PuzFormatter : CrosswordFormatter {
 
             val sb = StringBuilder()
             for (i in 0..lastIndex) {
-                var code = unscrambled[i].toInt() - keyDigits[i % keyDigits.size]
+                var code = unscrambled[i].code - keyDigits[i % keyDigits.size]
                 if (code < 65) code += 26
                 sb.append(code.toChar())
             }

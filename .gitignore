@@ -1,5 +1,6 @@
 *.iml
 /build
+/release
 .idea/*
 /local.properties
 .gradle
@@ -13,4 +14,5 @@ Thumbs.db
 .vscode
 /captures
 /xwordapp/build
+/xwordapp/release
 /library/build

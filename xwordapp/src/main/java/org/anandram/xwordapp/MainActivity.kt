@@ -1,4 +1,4 @@
-// Copyright (c) Akop Karapetyan
+// Copyright (c) Anand Ramakrishna
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,7 @@
 
 package org.anandram.xwordapp
 
-import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
+import android.content.Intent
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -29,12 +28,30 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 
 import org.akop.ararat.core.Crossword
+import org.akop.ararat.core.CrosswordState
 import org.akop.ararat.core.buildCrossword
 import org.akop.ararat.io.PuzFormatter
 import org.akop.ararat.view.CrosswordView
+
+// Google Drive imports
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
+import com.google.api.services.drive.model.File as DriveFile
+import org.akop.ararat.core.CrosswordStateWriter
+import org.akop.ararat.core.CrosswordStateReader
+import java.io.ByteArrayOutputStream
+import com.google.api.client.http.ByteArrayContent
 
 
 // Crossword: Double-A's by Ben Tausig
@@ -44,10 +61,29 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     private lateinit var crosswordView: CrosswordView
     private var hint: TextView? = null
 
+    // Google Drive
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private var driveService: Drive? = null
+    private val RC_SIGN_IN = 9001
+    private val STATE_FILE_NAME = "crossword_state.dat"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+
+        // Initialize Google Sign-In
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestScopes(com.google.android.gms.common.api.Scope(DriveScopes.DRIVE_APPDATA))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        // Check if already signed in
+        val account = GoogleSignIn.getLastSignedInAccount(this)
+        if (account != null) {
+            setupDriveService(account)
+        }
 
         crosswordView = findViewById(R.id.crossword)
         hint = findViewById(R.id.hint)
@@ -74,7 +110,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
-        crosswordView.restoreState(savedInstanceState.getParcelable("state")!!)
+        crosswordView.restoreState(savedInstanceState.getParcelable("state", CrosswordState::class.java)!!)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -97,6 +133,9 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             R.id.menu_solve_word -> crosswordView.solveWord(
                     crosswordView.selectedWord!!)
             R.id.menu_solve_puzzle -> crosswordView.solveCrossword()
+            R.id.menu_sign_in_drive -> signInToDrive()
+            R.id.menu_save_drive -> saveStateToDrive()
+            R.id.menu_load_drive -> loadStateFromDrive()
             else -> return super.onOptionsItemSelected(item)
         }
 
@@ -129,6 +168,132 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             Crossword.Word.DIR_ACROSS -> getString(R.string.across, word.number, word.hint)
             Crossword.Word.DIR_DOWN -> getString(R.string.down, word.number, word.hint)
             else -> ""
+        }
+    }
+
+    // Google Drive methods
+    private fun signInToDrive() {
+        val signInIntent = googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
+
+    private fun setupDriveService(account: GoogleSignInAccount) {
+        val credential = GoogleAccountCredential.usingOAuth2(
+            this, listOf(DriveScopes.DRIVE_FILE, DriveScopes.DRIVE_APPDATA)
+        )
+        credential.selectedAccount = account.account
+        driveService = Drive.Builder(
+            NetHttpTransport(),
+            GsonFactory(),
+            credential
+        ).setApplicationName("Crossword App").build()
+    }
+
+    private fun saveStateToDrive() {
+        if (driveService == null) {
+            Toast.makeText(this, "Please sign in to Google Drive first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Serialize state
+        val state = crosswordView.state
+        if (state == null) {
+            Toast.makeText(this, "No state to save", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val baos = ByteArrayOutputStream()
+        val writer = CrosswordStateWriter(baos)
+        writer.write(state)
+        writer.close()
+        val data = baos.toByteArray()
+
+        // Find existing file or create new
+        Thread {
+            try {
+                val fileList = driveService!!.files().list()
+                    .setSpaces("appDataFolder")
+                    .setQ("name='$STATE_FILE_NAME' and trashed=false")
+                    .execute()
+                val fileId = if (fileList.files.isNotEmpty()) {
+                    fileList.files[0].id
+                } else {
+                    // Create new file
+                    val fileMetadata = DriveFile().setName(STATE_FILE_NAME).setParents(listOf("appDataFolder"))
+                    driveService!!.files().create(fileMetadata).execute().id
+                }
+
+                // Update file content
+                val content = ByteArrayContent(null, data)
+                driveService!!.files().update(fileId, DriveFile(), content).execute()
+                runOnUiThread {
+                    Toast.makeText(this, "State saved to Drive", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun loadStateFromDrive() {
+        if (driveService == null) {
+            Toast.makeText(this, "Please sign in to Google Drive first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Thread {
+            try {
+                val fileList = driveService!!.files().list()
+                    .setSpaces("appDataFolder")
+                    .setQ("name='$STATE_FILE_NAME' and trashed=false")
+                    .execute()
+                if (fileList.files.isEmpty()) {
+                    runOnUiThread {
+                        Toast.makeText(this, "No saved state found", Toast.LENGTH_SHORT).show()
+                    }
+                    return@Thread
+                }
+
+                val fileId = fileList.files[0].id
+                val inputStream = driveService!!.files().get(fileId).executeMediaAsInputStream()
+                if (inputStream == null) {
+                    runOnUiThread {
+                        Toast.makeText(this, "Failed to get input stream", Toast.LENGTH_SHORT).show()
+                    }
+                    return@Thread
+                }
+                val reader = CrosswordStateReader(inputStream)
+                val state = reader.read()
+                reader.close()
+
+                runOnUiThread {
+                    crosswordView.restoreState(state)
+                    Toast.makeText(this, "State loaded from Drive", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this, "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            handleSignInResult(task)
+        }
+    }
+
+    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
+        try {
+            val account = completedTask.getResult(ApiException::class.java)
+            setupDriveService(account)
+            Toast.makeText(this, "Signed in as ${account.email}", Toast.LENGTH_SHORT).show()
+        } catch (e: ApiException) {
+            Toast.makeText(this, "Sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }
