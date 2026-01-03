@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     private fun setupDriveService(account: GoogleSignInAccount) {
         val credential = GoogleAccountCredential.usingOAuth2(
-            this, listOf(DriveScopes.DRIVE_FILE)
+            this, listOf(DriveScopes.DRIVE_FILE, DriveScopes.DRIVE_APPDATA)
         )
         credential.selectedAccount = account.account
         driveService = Drive.Builder(
@@ -211,13 +211,14 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         Thread {
             try {
                 val fileList = driveService!!.files().list()
+                    .setSpaces("appDataFolder")
                     .setQ("name='$STATE_FILE_NAME' and trashed=false")
                     .execute()
                 val fileId = if (fileList.files.isNotEmpty()) {
                     fileList.files[0].id
                 } else {
                     // Create new file
-                    val fileMetadata = DriveFile().setName(STATE_FILE_NAME)
+                    val fileMetadata = DriveFile().setName(STATE_FILE_NAME).setParents(listOf("appDataFolder"))
                     driveService!!.files().create(fileMetadata).execute().id
                 }
 
@@ -244,6 +245,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         Thread {
             try {
                 val fileList = driveService!!.files().list()
+                    .setSpaces("appDataFolder")
                     .setQ("name='$STATE_FILE_NAME' and trashed=false")
                     .execute()
                 if (fileList.files.isEmpty()) {
