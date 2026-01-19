@@ -231,6 +231,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             } catch (e: Exception) {
                 runOnUiThread {
                     Toast.makeText(this, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
+                    throw RuntimeException(e)
                 }
             }
         }.start()
@@ -274,6 +275,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             } catch (e: Exception) {
                 runOnUiThread {
                     Toast.makeText(this, "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
+                    throw RuntimeException(e)
                 }
             }
         }.start()
@@ -294,6 +296,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             Toast.makeText(this, "Signed in as ${account.email}", Toast.LENGTH_SHORT).show()
         } catch (e: ApiException) {
             Toast.makeText(this, "Sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            throw RuntimeException(e)
         }
     }
 }
