@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     private lateinit var crosswordView: CrosswordView
     private var hint: TextView? = null
+    private lateinit var keyboard: CrosswordKeyboardView
     private lateinit var puzzleId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
         crosswordView = findViewById(R.id.crossword)
         hint = findViewById(R.id.hint)
+        keyboard = findViewById(R.id.keyboard)
 
         val puzzle = entry?.let { PuzzleManager.parse(PuzzleManager.puzFile(it.id)) }
                 ?: PuzzleManager.parse(PuzzleManager.puzFile(PuzzleManager.getBundledId()))
@@ -73,6 +75,21 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             inputValidator = { ch -> !ch.first().isISOControl() }
             undoMode = CrosswordView.UNDO_NONE
             markerDisplayMode = CrosswordView.MARKER_CHEAT
+            inputMode = CrosswordView.INPUT_MODE_NONE
+        }
+
+        keyboard.listener = object : CrosswordKeyboardView.Listener {
+            override fun onKeyPress(ch: Char) {
+                crosswordView.inputChar(ch)
+            }
+
+            override fun onBackspace() {
+                crosswordView.backspace()
+            }
+
+            override fun onDirectionToggle() {
+                crosswordView.switchWordDirection()
+            }
         }
 
         PuzzleManager.loadState(puzzleId)?.let { saved ->
