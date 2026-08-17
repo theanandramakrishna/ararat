@@ -15,4 +15,5 @@ Thumbs.db
 /captures
 /xwordapp/build
 /xwordapp/release
+/xwordapp/google-services.json
 /library/build

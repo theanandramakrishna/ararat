@@ -64,6 +64,13 @@ For the activity to respond to soft keyboard changes, set
           android:windowSoftInputMode="adjustResize" />
 ```
 
+### Firebase Setup (for Cloud Features)
+If using Google Drive or Crashlytics in your app:
+1. Go to [Firebase Console](https://console.firebase.google.com/) and select/create a project.
+2. Add an Android app with package name (e.g., `org.anandram.xwordapp`).
+3. Download `google-services.json` and place it in the `xwordapp/` directory.
+4. Ensure `google-services` and `firebase-crashlytics` plugins are applied in `build.gradle`.
+
 ## Keyboard Support
 
 `CrosswordView` was designed to work with the Android soft keyboard.

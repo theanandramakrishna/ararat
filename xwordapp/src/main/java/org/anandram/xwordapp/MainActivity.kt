@@ -24,6 +24,7 @@ import android.content.Intent
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
@@ -53,10 +54,14 @@ import org.akop.ararat.core.CrosswordStateReader
 import java.io.ByteArrayOutputStream
 import com.google.api.client.http.ByteArrayContent
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 // Crossword: Double-A's by Ben Tausig
 // http://www.inkwellxwords.com/iwxpuzzles.html
 class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, CrosswordView.OnStateChangeListener, CrosswordView.OnSelectionChangeListener {
+    companion object {
+        private const val TAG = "XwordApp"
+    }
 
     private lateinit var crosswordView: CrosswordView
     private var hint: TextView? = null
@@ -75,6 +80,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         // Initialize Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestScopes(com.google.android.gms.common.api.Scope(DriveScopes.DRIVE_APPDATA))
+            .requestScopes(com.google.android.gms.common.api.Scope(DriveScopes.DRIVE_FILE))
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -229,8 +235,10 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                     Toast.makeText(this, "State saved to Drive", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Save to Drive failed", e)
                 runOnUiThread {
                     Toast.makeText(this, "Failed to save: ${e.message}", Toast.LENGTH_SHORT).show()
+                    FirebaseCrashlytics.getInstance().recordException(e)
                 }
             }
         }.start()
@@ -274,6 +282,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             } catch (e: Exception) {
                 runOnUiThread {
                     Toast.makeText(this, "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
+                    FirebaseCrashlytics.getInstance().recordException(e)
                 }
             }
         }.start()
@@ -294,6 +303,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             Toast.makeText(this, "Signed in as ${account.email}", Toast.LENGTH_SHORT).show()
         } catch (e: ApiException) {
             Toast.makeText(this, "Sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            FirebaseCrashlytics.getInstance().recordException(e)
         }
     }
 }
