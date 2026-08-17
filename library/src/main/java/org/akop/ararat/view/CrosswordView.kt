@@ -590,6 +590,14 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
         return handled
     }
 
+    fun inputChar(ch: Char) {
+        handleInput(ch)
+    }
+
+    fun backspace() {
+        handleBackspace()
+    }
+
     fun solveWord(word: Crossword.Word) {
         val matrix: Array<Array<String?>>
         val wordLen = word.length

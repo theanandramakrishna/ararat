@@ -8,4 +8,18 @@
     <string name="down">%1$d. Down • %2$s</string>
     <string name="title_by_author">%1$s by %2$s</string>
     <string name="youve_solved_the_puzzle">You\'ve solved the puzzle!</string>
+    <string name="bundled_puzzle_title">Bundled puzzle</string>
+    <string name="add_puzzle">Add puzzle</string>
+    <string name="sign_in_drive">Sign in to Drive</string>
+    <string name="save_drive">Save to Drive</string>
+    <string name="load_drive">Load from Drive</string>
+    <string name="please_sign_in">Please sign in to Google Drive first</string>
+    <string name="saved_to_drive">Puzzles saved to Drive</string>
+    <string name="loaded_from_drive">Puzzles loaded from Drive</string>
+    <string name="no_list_on_drive">No puzzles list found on Drive</string>
+    <string name="add_failed">Could not add puzzle</string>
+    <string name="signed_in_as">Signed in as %1$s</string>
+    <string name="sign_in_failed">Sign-in failed</string>
+    <string name="drive_save_failed">Failed to save to Drive</string>
+    <string name="drive_load_failed">Failed to load from Drive</string>
 </resources>
