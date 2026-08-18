@@ -2,6 +2,7 @@ package org.anandram.xwordapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +14,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         title = getString(R.string.settings)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val listView = findViewById<ListView>(R.id.settings_list)
         listView.adapter = ArrayAdapter(
@@ -28,5 +30,13 @@ class SettingsActivity : AppCompatActivity() {
                 1 -> startActivity(Intent(this, DriveSettingsActivity::class.java))
             }
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

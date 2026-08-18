@@ -2,6 +2,7 @@ package org.anandram.xwordapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
@@ -16,6 +17,7 @@ class DriveSettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_drive_settings)
 
         title = getString(R.string.drive_settings)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         driveManager = DriveManager(this)
         driveManager.setupSignIn()
@@ -47,5 +49,13 @@ class DriveSettingsActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         driveManager.handleSignInResult(requestCode, data)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
