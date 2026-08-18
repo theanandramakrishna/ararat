@@ -12,6 +12,8 @@ object SubscriptionManager {
     private const val DEFAULT_URL = "https://kegler.gitlab.io/Block_style/"
     private const val PRIVATE_EYE_NAME = "Private Eye Cryptics"
     private const val PRIVATE_EYE_URL = "https://www.private-eye.co.uk/pictures/crossword/download/"
+    private const val CRU_NAME = "Cru Cryptic Archive"
+    private const val CRU_URL = "https://archive.nytimes.com/www.nytimes.com/premium/xword/cryptic-archive.html"
 
     private lateinit var appContext: Context
     private lateinit var file: File
@@ -30,7 +32,8 @@ object SubscriptionManager {
 
         saveSubscriptions(listOf(
                 Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
-                Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true)))
+                Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
+                Subscription(name = CRU_NAME, url = CRU_URL, enabled = true)))
     }
 
     @Synchronized
