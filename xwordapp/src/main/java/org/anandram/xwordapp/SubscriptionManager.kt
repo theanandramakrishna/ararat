@@ -10,6 +10,8 @@ object SubscriptionManager {
     private const val FILE_NAME = "subscriptions.json"
     private const val DEFAULT_NAME = "Kegler's Block Style"
     private const val DEFAULT_URL = "https://kegler.gitlab.io/Block_style/"
+    private const val PRIVATE_EYE_NAME = "Private Eye Cryptics"
+    private const val PRIVATE_EYE_URL = "https://www.private-eye.co.uk/pictures/crossword/download/"
 
     private lateinit var appContext: Context
     private lateinit var file: File
@@ -27,7 +29,8 @@ object SubscriptionManager {
         if (file.exists()) return
 
         saveSubscriptions(listOf(
-                Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true)))
+                Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
+                Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true)))
     }
 
     @Synchronized
