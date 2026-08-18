@@ -19,6 +19,11 @@ import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File as DriveFile
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 class DriveManager(private val activity: AppCompatActivity) {
 
@@ -26,6 +31,7 @@ class DriveManager(private val activity: AppCompatActivity) {
         private const val TAG = "DriveManager"
         const val RC_SIGN_IN = 9001
         private const val LIST_FILE_NAME = "puzzles.json"
+        private const val BACKUP_FILE_NAME = "xwordapp-backup.zip"
     }
 
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -75,23 +81,8 @@ class DriveManager(private val activity: AppCompatActivity) {
             Thread {
                 try {
                     val service = driveService!!
-                    val entries = PuzzleManager.getPuzzles()
-
-                    // Upload the list metadata
-                    uploadFile(service, LIST_FILE_NAME,
-                            ByteArrayContent("application/json", PuzzleManager.listJson().toByteArray()))
-
-                    // Upload each puzzle's .puz and, if present, its progress state
-                    for (entry in entries) {
-                        uploadFile(service, entry.fileName,
-                                ByteArrayContent("application/octet-stream",
-                                        PuzzleManager.puzFile(entry.id).readBytes()))
-                        val stateFile = PuzzleManager.stateFile(entry.id)
-                        if (stateFile.exists()) {
-                            uploadFile(service, stateFile.name,
-                                    ByteArrayContent("application/octet-stream", stateFile.readBytes()))
-                        }
-                    }
+                    uploadFile(service, BACKUP_FILE_NAME,
+                            ByteArrayContent("application/zip", buildBackupZip()))
 
                     activity.runOnUiThread { onComplete(R.string.saved_to_drive) }
                 } catch (e: Exception) {
@@ -110,9 +101,17 @@ class DriveManager(private val activity: AppCompatActivity) {
             Thread {
                 try {
                     val service = driveService!!
-                    val listContent = downloadFile(service, LIST_FILE_NAME)
+                    val zipBytes = downloadFile(service, BACKUP_FILE_NAME)
                             ?: run {
-                                activity.runOnUiThread { onComplete(R.string.no_list_on_drive) }
+                                activity.runOnUiThread { onComplete(R.string.no_backup_on_drive) }
+                                return@Thread
+                            }
+
+                    val contents = unzip(zipBytes)
+
+                    val listContent = contents[LIST_FILE_NAME]
+                            ?: run {
+                                activity.runOnUiThread { onComplete(R.string.no_backup_on_drive) }
                                 return@Thread
                             }
 
@@ -122,13 +121,8 @@ class DriveManager(private val activity: AppCompatActivity) {
                             ?: emptyList()
 
                     for (entry in entries) {
-                        val puz = downloadFile(service, entry.fileName) ?: continue
-                        PuzzleManager.writePuz(entry.id, puz)
-
-                        val state = downloadFile(service, "${entry.id}.state")
-                        if (state != null) {
-                            PuzzleManager.writeState(entry.id, state)
-                        }
+                        contents[entry.fileName]?.let { PuzzleManager.writePuz(entry.id, it) }
+                        contents["${entry.id}.state"]?.let { PuzzleManager.writeState(entry.id, it) }
                     }
 
                     PuzzleManager.saveList(entries)
@@ -152,7 +146,7 @@ class DriveManager(private val activity: AppCompatActivity) {
                     val service = driveService!!
                     val fileList = service.files().list()
                             .setSpaces("appDataFolder")
-                            .setQ("trashed=false")
+                            .setQ("name='$BACKUP_FILE_NAME' and trashed=false")
                             .execute()
                     for (file in fileList.files) {
                         service.files().delete(file.id).execute()
@@ -168,6 +162,46 @@ class DriveManager(private val activity: AppCompatActivity) {
                 }
             }.start()
         }
+    }
+
+    private fun buildBackupZip(): ByteArray {
+        val entries = PuzzleManager.getPuzzles().filter {
+            PuzzleManager.puzFile(it.id).exists()
+        }
+
+        val bytesOut = ByteArrayOutputStream()
+        ZipOutputStream(bytesOut).use { zip ->
+            zip.putNextEntry(ZipEntry(LIST_FILE_NAME))
+            zip.write(Gson().toJson(entries).toByteArray())
+            zip.closeEntry()
+
+            for (entry in entries) {
+                zip.putNextEntry(ZipEntry(entry.fileName))
+                zip.write(PuzzleManager.puzFile(entry.id).readBytes())
+                zip.closeEntry()
+
+                val stateFile = PuzzleManager.stateFile(entry.id)
+                if (stateFile.exists()) {
+                    zip.putNextEntry(ZipEntry("${entry.id}.state"))
+                    zip.write(stateFile.readBytes())
+                    zip.closeEntry()
+                }
+            }
+        }
+        return bytesOut.toByteArray()
+    }
+
+    private fun unzip(bytes: ByteArray): Map<String, ByteArray> {
+        val entries = mutableMapOf<String, ByteArray>()
+        ZipInputStream(ByteArrayInputStream(bytes)).use { zip ->
+            var entry = zip.nextEntry
+            while (entry != null) {
+                entries[entry.name] = zip.readBytes()
+                zip.closeEntry()
+                entry = zip.nextEntry
+            }
+        }
+        return entries
     }
 
     private fun ensureSignedIn(action: () -> Unit) {

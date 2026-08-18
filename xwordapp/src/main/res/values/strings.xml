@@ -16,7 +16,7 @@
     <string name="please_sign_in">Please sign in to Google Drive first</string>
     <string name="saved_to_drive">Puzzles saved to Drive</string>
     <string name="loaded_from_drive">Puzzles loaded from Drive</string>
-    <string name="no_list_on_drive">No puzzles list found on Drive</string>
+    <string name="no_backup_on_drive">No backup found on Drive</string>
     <string name="add_failed">Could not add puzzle</string>
     <string name="signed_in_as">Signed in as %1$s</string>
     <string name="sign_in_failed">Sign-in failed</string>

@@ -104,6 +104,10 @@ object PuzzleManager {
     fun addPuzzleIfNew(source: InputStream, fallbackTitle: String? = null): PuzzleEntry? {
         val bytes = source.readBytes()
         val crossword = parse(ByteArrayInputStream(bytes))
+        if (crossword == null && fallbackTitle == null) {
+            return null
+        }
+
         val title = crossword?.title ?: fallbackTitle
         if (title != null &&
                 getPuzzlesInternal().any { it.title.equals(title, ignoreCase = true) }) {
