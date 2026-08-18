@@ -20,4 +20,18 @@
         android:textColor="#666666"
         android:textSize="14sp" />
 
+    <TextView
+        android:id="@+id/puzzle_modified"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#999999"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/puzzle_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#999999"
+        android:textSize="12sp" />
+
 </LinearLayout>

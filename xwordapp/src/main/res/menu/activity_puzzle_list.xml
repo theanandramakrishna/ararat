@@ -10,11 +10,7 @@
         android:title="@string/sign_in_drive"
         app:showAsAction="never" />
     <item
-        android:id="@+id/menu_save_drive"
-        android:title="@string/save_drive"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/menu_load_drive"
-        android:title="@string/load_drive"
+        android:id="@+id/menu_settings"
+        android:title="@string/settings"
         app:showAsAction="never" />
 </menu>

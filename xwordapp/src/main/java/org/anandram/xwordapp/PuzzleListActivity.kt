@@ -3,8 +3,9 @@ package org.anandram.xwordapp
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.OpenableColumns
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -15,57 +16,76 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.tabs.TabLayout
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
-import com.google.api.client.http.ByteArrayContent
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.services.drive.Drive
-import com.google.api.services.drive.DriveScopes
-import com.google.api.services.drive.model.File as DriveFile
-import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.Gson
+import java.text.DateFormat
+import java.util.Date
 
 class PuzzleListActivity : AppCompatActivity() {
 
     companion object {
-        private const val TAG = "PuzzleList"
-        private const val RC_SIGN_IN = 9001
         private const val RC_PICK_PUZZLE = 9002
-        private const val LIST_FILE_NAME = "puzzles.json"
+
+        private const val TAB_ALL = 0
+        private const val TAB_UNSOLVED = 1
+        private const val TAB_SOLVED = 2
+        private const val TAB_BY_SOURCE = 3
     }
 
     private lateinit var listView: ListView
-    private lateinit var adapter: PuzzleListAdapter
+    private lateinit var tabLayout: TabLayout
+    private lateinit var puzzleAdapter: PuzzleListAdapter
+    private lateinit var subscriptionAdapter: ArrayAdapter<Subscription>
+    private lateinit var driveManager: DriveManager
 
-    // Google Drive
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private var driveService: Drive? = null
+    private var currentSource: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_puzzle_list)
 
         PuzzleManager.init(this)
+        SubscriptionManager.init(this)
         title = getString(R.string.app_name)
 
-        setupSignIn()
+        driveManager = DriveManager(this)
+        driveManager.setupSignIn()
 
         listView = findViewById(R.id.puzzle_list)
-        adapter = PuzzleListAdapter(this, PuzzleManager.getPuzzles())
-        listView.adapter = adapter
+        tabLayout = findViewById(R.id.tabs)
+
+        puzzleAdapter = PuzzleListAdapter(this, mutableListOf())
+        subscriptionAdapter = SubscriptionAdapter(this, mutableListOf())
+
         listView.setOnItemClickListener { _, _, position, _ ->
-            val entry = adapter.getItem(position) ?: return@setOnItemClickListener
-            val intent = Intent(this, MainActivity::class.java)
-                    .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id)
-            startActivity(intent)
+            if (listView.adapter === subscriptionAdapter) {
+                val subscription = subscriptionAdapter.getItem(position)
+                        ?: return@setOnItemClickListener
+                currentSource = subscription.name
+                renderBySource()
+            } else {
+                val entry = puzzleAdapter.getItem(position) ?: return@setOnItemClickListener
+                val intent = Intent(this, MainActivity::class.java)
+                        .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id)
+                startActivity(intent)
+            }
         }
+
+        listOf(R.string.tab_all, R.string.tab_unsolved, R.string.tab_solved,
+                R.string.tab_by_source).forEach {
+            tabLayout.addTab(tabLayout.newTab().setText(it))
+        }
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) = renderTab(tab.position)
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                if (tab.position == TAB_BY_SOURCE) {
+                    currentSource = null
+                    renderTab(tab.position)
+                }
+            }
+        })
+        renderTab(TAB_ALL)
     }
 
     override fun onResume() {
@@ -74,10 +94,36 @@ class PuzzleListActivity : AppCompatActivity() {
     }
 
     private fun refreshList() {
-        val puzzles = PuzzleManager.getPuzzles()
-        adapter.clear()
-        adapter.addAll(puzzles)
-        adapter.notifyDataSetChanged()
+        val position = tabLayout.selectedTabPosition
+        renderTab(if (position >= 0) position else TAB_ALL)
+    }
+
+    private fun renderTab(position: Int) {
+        when (position) {
+            TAB_ALL -> showPuzzles(PuzzleManager.getPuzzles())
+            TAB_UNSOLVED -> showPuzzles(
+                    PuzzleManager.getPuzzles().filter { PuzzleManager.solvedPercent(it.id) < 100 })
+            TAB_SOLVED -> showPuzzles(
+                    PuzzleManager.getPuzzles().filter { PuzzleManager.solvedPercent(it.id) >= 100 })
+            else -> renderBySource()
+        }
+    }
+
+    private fun renderBySource() {
+        val source = currentSource
+        if (source == null) {
+            subscriptionAdapter.clear()
+            subscriptionAdapter.addAll(SubscriptionManager.getSubscriptions())
+            listView.adapter = subscriptionAdapter
+        } else {
+            showPuzzles(PuzzleManager.getPuzzles().filter { it.source == source })
+        }
+    }
+
+    private fun showPuzzles(puzzles: List<PuzzleEntry>) {
+        puzzleAdapter.clear()
+        puzzleAdapter.addAll(puzzles)
+        listView.adapter = puzzleAdapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -88,9 +134,8 @@ class PuzzleListActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_add_puzzle -> pickPuzzleFile()
-            R.id.menu_sign_in_drive -> signInToDrive()
-            R.id.menu_save_drive -> saveToDrive()
-            R.id.menu_load_drive -> loadFromDrive()
+            R.id.menu_sign_in_drive -> driveManager.signIn()
+            R.id.menu_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             else -> return super.onOptionsItemSelected(item)
         }
 
@@ -112,8 +157,9 @@ class PuzzleListActivity : AppCompatActivity() {
             RC_PICK_PUZZLE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.data?.let { uri ->
+                        val fileName = displayName(uri)
                         val added = contentResolver.openInputStream(uri)?.let { input ->
-                            PuzzleManager.addPuzzle(input)
+                            PuzzleManager.addPuzzle(input, downloadUrl = "file:$fileName")
                         }
                         if (added == null) {
                             Toast.makeText(this, R.string.add_failed, Toast.LENGTH_SHORT).show()
@@ -122,181 +168,43 @@ class PuzzleListActivity : AppCompatActivity() {
                     refreshList()
                 }
             }
-            RC_SIGN_IN -> {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                handleSignInResult(task)
-            }
+            DriveManager.RC_SIGN_IN -> driveManager.handleSignInResult(requestCode, data)
         }
     }
 
-    // Google Drive sign-in
-    private fun setupSignIn() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(com.google.android.gms.common.api.Scope(DriveScopes.DRIVE_APPDATA))
-                .requestScopes(com.google.android.gms.common.api.Scope(DriveScopes.DRIVE_FILE))
-                .requestEmail()
-                .build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account != null) {
-            setupDriveService(account)
+    private fun displayName(uri: Uri): String {
+        return try {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index >= 0) cursor.getString(index) else ""
+                } else {
+                    ""
+                }
+            } ?: ""
+        } catch (e: Exception) {
+            ""
         }
     }
 
-    private fun signInToDrive() {
-        val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
-    }
+    private class SubscriptionAdapter(
+            context: Context,
+            objects: List<Subscription>) : ArrayAdapter<Subscription>(context, 0, objects) {
 
-    private fun setupDriveService(account: GoogleSignInAccount) {
-        val credential = GoogleAccountCredential.usingOAuth2(
-                this, listOf(DriveScopes.DRIVE_FILE, DriveScopes.DRIVE_APPDATA))
-        credential.selectedAccount = account.account
-        driveService = Drive.Builder(
-                NetHttpTransport(),
-                GsonFactory(),
-                credential)
-                .setApplicationName("Crossword App")
-                .build()
-    }
-
-    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
-        try {
-            val account = completedTask.getResult(ApiException::class.java)
-            setupDriveService(account)
-            Toast.makeText(this,
-                    getString(R.string.signed_in_as, account.email),
-                    Toast.LENGTH_SHORT).show()
-        } catch (e: ApiException) {
-            Toast.makeText(this, R.string.sign_in_failed, Toast.LENGTH_SHORT).show()
-            FirebaseCrashlytics.getInstance().recordException(e)
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = convertView ?: LayoutInflater.from(context)
+                    .inflate(android.R.layout.simple_list_item_1, parent, false)
+            val textView = view.findViewById<TextView>(android.R.id.text1)
+            textView.text = getItem(position)?.name
+            return view
         }
-    }
-
-    // Google Drive sync of the puzzle list, .puz contents and progress states
-    private fun saveToDrive() {
-        if (driveService == null) {
-            Toast.makeText(this, R.string.please_sign_in, Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val service = driveService!!
-
-        Thread {
-            try {
-                val entries = PuzzleManager.getPuzzles()
-
-                // Upload the list metadata
-                uploadFile(service, LIST_FILE_NAME,
-                        ByteArrayContent("application/json", PuzzleManager.listJson().toByteArray()))
-
-                // Upload each puzzle's .puz and, if present, its progress state
-                for (entry in entries) {
-                    uploadFile(service, entry.fileName,
-                            ByteArrayContent("application/octet-stream",
-                                    PuzzleManager.puzFile(entry.id).readBytes()))
-                    val stateFile = PuzzleManager.stateFile(entry.id)
-                    if (stateFile.exists()) {
-                        uploadFile(service, stateFile.name,
-                                ByteArrayContent("application/octet-stream", stateFile.readBytes()))
-                    }
-                }
-
-                runOnUiThread {
-                    Toast.makeText(this, R.string.saved_to_drive, Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Save to Drive failed", e)
-                runOnUiThread {
-                    Toast.makeText(this, R.string.drive_save_failed, Toast.LENGTH_SHORT).show()
-                    FirebaseCrashlytics.getInstance().recordException(e)
-                }
-            }
-        }.start()
-    }
-
-    private fun loadFromDrive() {
-        if (driveService == null) {
-            Toast.makeText(this, R.string.please_sign_in, Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val service = driveService!!
-
-        Thread {
-            try {
-                val listContent = downloadFile(service, LIST_FILE_NAME)
-                        ?: run {
-                            runOnUiThread {
-                                Toast.makeText(this, R.string.no_list_on_drive,
-                                        Toast.LENGTH_SHORT).show()
-                            }
-                            return@Thread
-                        }
-
-                val entries = Gson().fromJson(
-                        String(listContent), Array<PuzzleEntry>::class.java)
-                        ?.toList()
-                        ?: emptyList()
-
-                for (entry in entries) {
-                    val puz = downloadFile(service, entry.fileName) ?: continue
-                    PuzzleManager.writePuz(entry.id, puz)
-
-                    val state = downloadFile(service, "${entry.id}.state")
-                    if (state != null) {
-                        PuzzleManager.writeState(entry.id, state)
-                    }
-                }
-
-                PuzzleManager.saveList(entries)
-
-                runOnUiThread {
-                    refreshList()
-                    Toast.makeText(this, R.string.loaded_from_drive, Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Load from Drive failed", e)
-                runOnUiThread {
-                    Toast.makeText(this, R.string.drive_load_failed, Toast.LENGTH_SHORT).show()
-                    FirebaseCrashlytics.getInstance().recordException(e)
-                }
-            }
-        }.start()
-    }
-
-    private fun uploadFile(service: Drive, name: String, content: ByteArrayContent) {
-        val query = "name='$name' and trashed=false"
-        val fileList = service.files().list()
-                .setSpaces("appDataFolder")
-                .setQ(query)
-                .execute()
-
-        val fileId = if (fileList.files.isNotEmpty()) {
-            fileList.files[0].id
-        } else {
-            val metadata = DriveFile().setName(name).setParents(listOf("appDataFolder"))
-            service.files().create(metadata).execute().id
-        }
-
-        service.files().update(fileId, DriveFile(), content).execute()
-    }
-
-    private fun downloadFile(service: Drive, name: String): ByteArray? {
-        val fileList = service.files().list()
-                .setSpaces("appDataFolder")
-                .setQ("name='$name' and trashed=false")
-                .execute()
-        if (fileList.files.isEmpty()) return null
-
-        val fileId = fileList.files[0].id
-        return service.files().get(fileId).executeMediaAsInputStream().use { it.readBytes() }
     }
 
     private class PuzzleListAdapter(
             context: Context,
             objects: List<PuzzleEntry>) : ArrayAdapter<PuzzleEntry>(context, 0, objects) {
+
+        private val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val view = convertView ?: LayoutInflater.from(context)
@@ -305,6 +213,23 @@ class PuzzleListActivity : AppCompatActivity() {
             val entry = getItem(position) ?: return view
             view.findViewById<TextView>(R.id.puzzle_title).text = entry.title
             view.findViewById<TextView>(R.id.puzzle_author).text = entry.author
+
+            val modified = entry.modified.takeIf { it > 0 }
+                    ?: PuzzleManager.puzFile(entry.id).lastModified()
+            val modifiedText = view.findViewById<TextView>(R.id.puzzle_modified)
+            modifiedText.text = if (modified > 0) {
+                dateFormat.format(Date(modified))
+            } else {
+                ""
+            }
+
+            val progressText = view.findViewById<TextView>(R.id.puzzle_progress)
+            val percent = PuzzleManager.solvedPercent(entry.id)
+            progressText.text = if (percent > 0) {
+                context.getString(R.string.solved_percent, percent)
+            } else {
+                ""
+            }
 
             return view
         }
