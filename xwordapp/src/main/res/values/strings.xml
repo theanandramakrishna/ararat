@@ -36,4 +36,9 @@
     <string name="no_puzzles_found">No puzzles found</string>
     <string name="downloading">Downloading…</string>
     <string name="no_subscriptions_enabled">No enabled subscriptions</string>
+    <string name="tab_all">All</string>
+    <string name="tab_unsolved">Unsolved</string>
+    <string name="tab_solved">Solved</string>
+    <string name="tab_by_source">By Source</string>
+    <string name="solved_percent">%1$d%% solved</string>
 </resources>

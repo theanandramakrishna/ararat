@@ -14,6 +14,7 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.tabs.TabLayout
 
 import java.text.DateFormat
 import java.util.Date
@@ -22,31 +23,67 @@ class PuzzleListActivity : AppCompatActivity() {
 
     companion object {
         private const val RC_PICK_PUZZLE = 9002
+
+        private const val TAB_ALL = 0
+        private const val TAB_UNSOLVED = 1
+        private const val TAB_SOLVED = 2
+        private const val TAB_BY_SOURCE = 3
     }
 
     private lateinit var listView: ListView
-    private lateinit var adapter: PuzzleListAdapter
+    private lateinit var tabLayout: TabLayout
+    private lateinit var puzzleAdapter: PuzzleListAdapter
+    private lateinit var subscriptionAdapter: ArrayAdapter<Subscription>
     private lateinit var driveManager: DriveManager
+
+    private var currentSource: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_puzzle_list)
 
         PuzzleManager.init(this)
+        SubscriptionManager.init(this)
         title = getString(R.string.app_name)
 
         driveManager = DriveManager(this)
         driveManager.setupSignIn()
 
         listView = findViewById(R.id.puzzle_list)
-        adapter = PuzzleListAdapter(this, PuzzleManager.getPuzzles())
-        listView.adapter = adapter
+        tabLayout = findViewById(R.id.tabs)
+
+        puzzleAdapter = PuzzleListAdapter(this, mutableListOf())
+        subscriptionAdapter = SubscriptionAdapter(this, mutableListOf())
+
         listView.setOnItemClickListener { _, _, position, _ ->
-            val entry = adapter.getItem(position) ?: return@setOnItemClickListener
-            val intent = Intent(this, MainActivity::class.java)
-                    .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id)
-            startActivity(intent)
+            if (listView.adapter === subscriptionAdapter) {
+                val subscription = subscriptionAdapter.getItem(position)
+                        ?: return@setOnItemClickListener
+                currentSource = subscription.name
+                renderBySource()
+            } else {
+                val entry = puzzleAdapter.getItem(position) ?: return@setOnItemClickListener
+                val intent = Intent(this, MainActivity::class.java)
+                        .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id)
+                startActivity(intent)
+            }
         }
+
+        listOf(R.string.tab_all, R.string.tab_unsolved, R.string.tab_solved,
+                R.string.tab_by_source).forEach {
+            tabLayout.addTab(tabLayout.newTab().setText(it))
+        }
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) = renderTab(tab.position)
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                if (tab.position == TAB_BY_SOURCE) {
+                    currentSource = null
+                    renderTab(tab.position)
+                }
+            }
+        })
+        renderTab(TAB_ALL)
     }
 
     override fun onResume() {
@@ -55,10 +92,36 @@ class PuzzleListActivity : AppCompatActivity() {
     }
 
     private fun refreshList() {
-        val puzzles = PuzzleManager.getPuzzles()
-        adapter.clear()
-        adapter.addAll(puzzles)
-        adapter.notifyDataSetChanged()
+        val position = tabLayout.selectedTabPosition
+        renderTab(if (position >= 0) position else TAB_ALL)
+    }
+
+    private fun renderTab(position: Int) {
+        when (position) {
+            TAB_ALL -> showPuzzles(PuzzleManager.getPuzzles())
+            TAB_UNSOLVED -> showPuzzles(
+                    PuzzleManager.getPuzzles().filter { PuzzleManager.solvedPercent(it.id) < 100 })
+            TAB_SOLVED -> showPuzzles(
+                    PuzzleManager.getPuzzles().filter { PuzzleManager.solvedPercent(it.id) >= 100 })
+            else -> renderBySource()
+        }
+    }
+
+    private fun renderBySource() {
+        val source = currentSource
+        if (source == null) {
+            subscriptionAdapter.clear()
+            subscriptionAdapter.addAll(SubscriptionManager.getSubscriptions())
+            listView.adapter = subscriptionAdapter
+        } else {
+            showPuzzles(PuzzleManager.getPuzzles().filter { it.source == source })
+        }
+    }
+
+    private fun showPuzzles(puzzles: List<PuzzleEntry>) {
+        puzzleAdapter.clear()
+        puzzleAdapter.addAll(puzzles)
+        listView.adapter = puzzleAdapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -106,6 +169,19 @@ class PuzzleListActivity : AppCompatActivity() {
         }
     }
 
+    private class SubscriptionAdapter(
+            context: Context,
+            objects: List<Subscription>) : ArrayAdapter<Subscription>(context, 0, objects) {
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = convertView ?: LayoutInflater.from(context)
+                    .inflate(android.R.layout.simple_list_item_1, parent, false)
+            val textView = view.findViewById<TextView>(android.R.id.text1)
+            textView.text = getItem(position)?.name
+            return view
+        }
+    }
+
     private class PuzzleListAdapter(
             context: Context,
             objects: List<PuzzleEntry>) : ArrayAdapter<PuzzleEntry>(context, 0, objects) {
@@ -125,6 +201,14 @@ class PuzzleListActivity : AppCompatActivity() {
             val modifiedText = view.findViewById<TextView>(R.id.puzzle_modified)
             modifiedText.text = if (modified > 0) {
                 dateFormat.format(Date(modified))
+            } else {
+                ""
+            }
+
+            val progressText = view.findViewById<TextView>(R.id.puzzle_progress)
+            val percent = PuzzleManager.solvedPercent(entry.id)
+            progressText.text = if (percent > 0) {
+                context.getString(R.string.solved_percent, percent)
             } else {
                 ""
             }

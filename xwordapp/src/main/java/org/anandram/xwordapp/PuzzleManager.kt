@@ -78,7 +78,8 @@ object PuzzleManager {
     }
 
     @Synchronized
-    fun addPuzzle(source: InputStream, fallbackTitle: String? = null): PuzzleEntry? {
+    fun addPuzzle(source: InputStream, fallbackTitle: String? = null,
+                  sourceName: String? = null): PuzzleEntry? {
         val id = UUID.randomUUID().toString()
         val puzFile = File(dir, "$id.puz")
         source.use { input ->
@@ -91,7 +92,8 @@ object PuzzleManager {
                 title = crossword?.title ?: fallbackTitle ?: id,
                 author = crossword?.author,
                 fileName = puzFile.name,
-                modified = puzFile.lastModified())
+                modified = puzFile.lastModified(),
+                source = sourceName)
 
         val list = getPuzzlesInternal().toMutableList()
         list += entry
@@ -101,7 +103,8 @@ object PuzzleManager {
     }
 
     @Synchronized
-    fun addPuzzleIfNew(source: InputStream, fallbackTitle: String? = null): PuzzleEntry? {
+    fun addPuzzleIfNew(source: InputStream, fallbackTitle: String? = null,
+                       sourceName: String? = null): PuzzleEntry? {
         val bytes = source.readBytes()
         val crossword = parse(ByteArrayInputStream(bytes))
         if (crossword == null && fallbackTitle == null) {
@@ -114,7 +117,15 @@ object PuzzleManager {
             return null
         }
 
-        return addPuzzle(ByteArrayInputStream(bytes), fallbackTitle)
+        return addPuzzle(ByteArrayInputStream(bytes), fallbackTitle, sourceName)
+    }
+
+    fun solvedPercent(id: String): Int {
+        val state = loadState(id) ?: return 0
+        if (state.squareCount <= 0) return 0
+
+        val solved = state.squaresSolved + state.squaresCheated
+        return (solved.toFloat() / state.squareCount * 100).toInt()
     }
 
     fun parse(file: File): Crossword? = try {

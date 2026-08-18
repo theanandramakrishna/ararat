@@ -5,4 +5,5 @@ data class PuzzleEntry(
         val title: String = "",
         val author: String? = null,
         val fileName: String = "",
-        val modified: Long = 0)
+        val modified: Long = 0,
+        val source: String? = null)

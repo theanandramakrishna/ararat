@@ -85,7 +85,7 @@ class SubscriptionsActivity : AppCompatActivity() {
                 val href = link.attr("href")
                 if (href.endsWith(".puz", ignoreCase = true)) {
                     val absUrl = link.absUrl("href")
-                    if (absUrl.isNotEmpty() && addPuzzleIfNew(absUrl)) {
+                    if (absUrl.isNotEmpty() && addPuzzleIfNew(absUrl, subscription.name)) {
                         count++
                     }
                 }
@@ -97,14 +97,15 @@ class SubscriptionsActivity : AppCompatActivity() {
         }
     }
 
-    private fun addPuzzleIfNew(url: String): Boolean {
+    private fun addPuzzleIfNew(url: String, sourceName: String): Boolean {
         return try {
             val bytes = Jsoup.connect(url)
                     .ignoreContentType(true)
                     .timeout(30_000)
                     .execute()
                     .bodyAsBytes()
-            PuzzleManager.addPuzzleIfNew(ByteArrayInputStream(bytes)) != null
+            PuzzleManager.addPuzzleIfNew(ByteArrayInputStream(bytes),
+                    sourceName = sourceName) != null
         } catch (e: Exception) {
             Log.e(TAG, "Failed to download $url", e)
             false
