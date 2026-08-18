@@ -15,6 +15,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import org.jsoup.Jsoup
 import java.io.ByteArrayInputStream
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class SubscriptionsActivity : AppCompatActivity() {
 
@@ -48,6 +52,28 @@ class SubscriptionsActivity : AppCompatActivity() {
         SubscriptionManager.saveSubscriptions(subscriptions)
     }
 
+    private fun shouldSkip(subscription: Subscription, today: String): Boolean {
+        val lastDate = subscription.lastDownloadDate
+        if (lastDate.isEmpty()) return false
+
+        return when (subscription.fetchFrequency) {
+            "Weekly" -> lastDate >= startOfWeek(today)
+            "Daily" -> lastDate == today
+            else -> true
+        }
+    }
+
+    private fun startOfWeek(today: String): String {
+        val parts = today.split("-")
+        val cal = Calendar.getInstance()
+        cal.clear()
+        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+        cal.firstDayOfWeek = Calendar.SUNDAY
+        cal.minimalDaysInFirstWeek = 1
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+        return SimpleDateFormat("yyyy-MM-dd", Locale.US).format(cal.time)
+    }
+
     private fun download() {
         val enabled = subscriptions.filter { it.enabled }
         if (enabled.isEmpty()) {
@@ -60,7 +86,14 @@ class SubscriptionsActivity : AppCompatActivity() {
 
         Thread {
             var count = 0
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
             for (subscription in enabled) {
+                if (shouldSkip(subscription, today)) continue
+                SubscriptionManager.markDownloadStarted(subscription.name, today)
+                val index = subscriptions.indexOfFirst { it.name == subscription.name }
+                if (index >= 0) {
+                    subscriptions[index] = subscriptions[index].copy(lastDownloadDate = today)
+                }
                 count += downloadFromSubscription(subscription)
             }
 
@@ -115,26 +148,65 @@ class SubscriptionsActivity : AppCompatActivity() {
 
     private class SubscriptionAdapter(
             context: Context,
-            private val items: MutableList<Subscription>) : BaseAdapter() {
+            private val subscriptions: MutableList<Subscription>) : BaseAdapter() {
 
         private val inflater = LayoutInflater.from(context)
+        private val rows = mutableListOf<Row>()
 
-        override fun getCount(): Int = items.size
+        private sealed class Row
+        private class HeaderRow(val title: String) : Row()
+        private class SubscriptionRow(val subscription: Subscription) : Row()
 
-        override fun getItem(position: Int): Any = items[position]
+        init {
+            rebuild()
+        }
+
+        private fun rebuild() {
+            rows.clear()
+            val groups = subscriptions.groupBy { it.fetchFrequency }
+            val orderedKeys = listOf("One-Time", "Weekly", "Daily")
+                    .filter { groups.containsKey(it) }
+            val keys = orderedKeys + (groups.keys - orderedKeys.toSet())
+            for (key in keys) {
+                rows.add(HeaderRow(key))
+                rows.addAll(groups.getValue(key).map { SubscriptionRow(it) })
+            }
+        }
+
+        override fun getCount(): Int = rows.size
+
+        override fun getItem(position: Int): Any = rows[position]
 
         override fun getItemId(position: Int): Long = position.toLong()
 
+        override fun getViewTypeCount(): Int = 2
+
+        override fun getItemViewType(position: Int): Int =
+                if (rows[position] is HeaderRow) 0 else 1
+
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val row = rows[position]
+            if (row is HeaderRow) {
+                val view = convertView ?: inflater
+                        .inflate(R.layout.item_section_header, parent, false)
+                view.findViewById<TextView>(R.id.section_title).text = row.title
+                return view
+            }
+
+            val subscription = (row as SubscriptionRow).subscription
             val view = convertView ?: inflater
                     .inflate(R.layout.item_subscription, parent, false)
 
-            val subscription = items[position]
             val checkbox = view.findViewById<CheckBox>(R.id.subscription_enabled)
             checkbox.setOnCheckedChangeListener(null)
             checkbox.isChecked = subscription.enabled
             checkbox.setOnCheckedChangeListener { _, isChecked ->
-                items[position] = subscription.copy(enabled = isChecked)
+                val index = subscriptions.indexOfFirst { it.name == subscription.name }
+                if (index >= 0) {
+                    subscriptions[index] = subscription.copy(enabled = isChecked)
+                    rebuild()
+                    notifyDataSetChanged()
+                }
             }
 
             view.findViewById<TextView>(R.id.subscription_name).text = subscription.name

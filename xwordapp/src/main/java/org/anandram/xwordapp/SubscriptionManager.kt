@@ -42,11 +42,26 @@ object SubscriptionManager {
 
         return try {
             Gson().fromJson(file.readText(), Array<Subscription>::class.java)
-                    ?.toList()
+                    ?.map { it.normalized() }
                     ?: emptyList()
         } catch (e: Exception) {
             Log.e(TAG, "Failed to read subscriptions", e)
             emptyList()
+        }
+    }
+
+    private fun Subscription.normalized(): Subscription {
+        val frequency = fetchFrequency.ifEmpty { "One-Time" }
+        return copy(fetchFrequency = frequency, lastDownloadDate = lastDownloadDate ?: "")
+    }
+
+    @Synchronized
+    fun markDownloadStarted(name: String, date: String) {
+        val list = getSubscriptions().toMutableList()
+        val index = list.indexOfFirst { it.name == name }
+        if (index >= 0) {
+            list[index] = list[index].copy(lastDownloadDate = date)
+            saveSubscriptions(list)
         }
     }
 
