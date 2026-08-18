@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
         puzzleId = intent.getStringExtra(EXTRA_PUZZLE_ID) ?: PuzzleManager.getBundledId()
         val entry = PuzzleManager.getEntry(puzzleId)
+        PuzzleManager.touch(puzzleId)
 
         crosswordView = findViewById(R.id.crossword)
         hint = findViewById(R.id.hint)

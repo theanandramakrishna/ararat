@@ -9,6 +9,7 @@ import org.akop.ararat.core.CrosswordStateReader
 import org.akop.ararat.core.CrosswordStateWriter
 import org.akop.ararat.core.buildCrossword
 import org.akop.ararat.io.PuzFormatter
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 import java.util.UUID
@@ -47,17 +48,34 @@ object PuzzleManager {
                 id = BUNDLED_ID,
                 title = crossword?.title ?: appContext.getString(R.string.bundled_puzzle_title),
                 author = crossword?.author,
-                fileName = puzFile.name)
+                fileName = puzFile.name,
+                modified = puzFile.lastModified())
         saveList(list)
     }
 
     fun getBundledId(): String = BUNDLED_ID
 
     fun getPuzzles(): List<PuzzleEntry> =
-            getPuzzlesInternal().sortedBy { it.title.lowercase() }.toMutableList()
+            getPuzzlesInternal().sortedByDescending { effectiveModified(it) }.toMutableList()
+
+    private fun effectiveModified(entry: PuzzleEntry): Long {
+        val stored = entry.modified
+        if (stored > 0) return stored
+        return puzFile(entry.id).lastModified()
+    }
 
     fun getEntry(id: String): PuzzleEntry? =
             getPuzzlesInternal().firstOrNull { it.id == id }
+
+    @Synchronized
+    fun touch(id: String) {
+        val list = getPuzzlesInternal().toMutableList()
+        val index = list.indexOfFirst { it.id == id }
+        if (index >= 0) {
+            list[index] = list[index].copy(modified = System.currentTimeMillis())
+            saveList(list)
+        }
+    }
 
     @Synchronized
     fun addPuzzle(source: InputStream, fallbackTitle: String? = null): PuzzleEntry? {
@@ -72,7 +90,8 @@ object PuzzleManager {
                 id = id,
                 title = crossword?.title ?: fallbackTitle ?: id,
                 author = crossword?.author,
-                fileName = puzFile.name)
+                fileName = puzFile.name,
+                modified = puzFile.lastModified())
 
         val list = getPuzzlesInternal().toMutableList()
         list += entry
@@ -81,12 +100,34 @@ object PuzzleManager {
         return entry
     }
 
+    @Synchronized
+    fun addPuzzleIfNew(source: InputStream, fallbackTitle: String? = null): PuzzleEntry? {
+        val bytes = source.readBytes()
+        val crossword = parse(ByteArrayInputStream(bytes))
+        val title = crossword?.title ?: fallbackTitle
+        if (title != null &&
+                getPuzzlesInternal().any { it.title.equals(title, ignoreCase = true) }) {
+            return null
+        }
+
+        return addPuzzle(ByteArrayInputStream(bytes), fallbackTitle)
+    }
+
     fun parse(file: File): Crossword? = try {
         file.inputStream().use { s ->
             buildCrossword { PuzFormatter().read(this, s) }
         }
     } catch (e: Exception) {
         Log.e(TAG, "Failed to parse ${file.name}", e)
+        null
+    }
+
+    fun parse(source: InputStream): Crossword? = try {
+        source.use { s ->
+            buildCrossword { PuzFormatter().read(this, s) }
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to parse stream", e)
         null
     }
 
@@ -127,6 +168,13 @@ object PuzzleManager {
 
     fun writePuz(id: String, bytes: ByteArray) {
         puzFile(id).writeBytes(bytes)
+
+        val list = getPuzzlesInternal().toMutableList()
+        val index = list.indexOfFirst { it.id == id }
+        if (index >= 0) {
+            list[index] = list[index].copy(modified = System.currentTimeMillis())
+            saveList(list)
+        }
     }
 
     fun writeState(id: String, bytes: ByteArray) {

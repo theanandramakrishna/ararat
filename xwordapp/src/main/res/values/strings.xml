@@ -22,4 +22,13 @@
     <string name="sign_in_failed">Sign-in failed</string>
     <string name="drive_save_failed">Failed to save to Drive</string>
     <string name="drive_load_failed">Failed to load from Drive</string>
+    <string name="settings">Settings</string>
+    <string name="subscriptions">Subscriptions</string>
+    <string name="download">Download</string>
+    <string name="subscription_name">Name</string>
+    <string name="subscription_url">URL</string>
+    <string name="downloaded_puzzles">Downloaded %1$d puzzles</string>
+    <string name="no_puzzles_found">No puzzles found</string>
+    <string name="downloading">Downloading…</string>
+    <string name="no_subscriptions_enabled">No enabled subscriptions</string>
 </resources>

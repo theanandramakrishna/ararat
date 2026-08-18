@@ -17,4 +17,8 @@
         android:id="@+id/menu_load_drive"
         android:title="@string/load_drive"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_settings"
+        android:title="@string/settings"
+        app:showAsAction="never" />
 </menu>

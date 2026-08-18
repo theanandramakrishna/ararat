@@ -16,6 +16,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
+import java.text.DateFormat
+import java.util.Date
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -91,6 +94,7 @@ class PuzzleListActivity : AppCompatActivity() {
             R.id.menu_sign_in_drive -> signInToDrive()
             R.id.menu_save_drive -> saveToDrive()
             R.id.menu_load_drive -> loadFromDrive()
+            R.id.menu_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             else -> return super.onOptionsItemSelected(item)
         }
 
@@ -298,6 +302,8 @@ class PuzzleListActivity : AppCompatActivity() {
             context: Context,
             objects: List<PuzzleEntry>) : ArrayAdapter<PuzzleEntry>(context, 0, objects) {
 
+        private val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val view = convertView ?: LayoutInflater.from(context)
                     .inflate(R.layout.item_puzzle, parent, false)
@@ -305,6 +311,15 @@ class PuzzleListActivity : AppCompatActivity() {
             val entry = getItem(position) ?: return view
             view.findViewById<TextView>(R.id.puzzle_title).text = entry.title
             view.findViewById<TextView>(R.id.puzzle_author).text = entry.author
+
+            val modified = entry.modified.takeIf { it > 0 }
+                    ?: PuzzleManager.puzFile(entry.id).lastModified()
+            val modifiedText = view.findViewById<TextView>(R.id.puzzle_modified)
+            modifiedText.text = if (modified > 0) {
+                dateFormat.format(Date(modified))
+            } else {
+                ""
+            }
 
             return view
         }
