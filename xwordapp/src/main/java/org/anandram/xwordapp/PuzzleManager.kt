@@ -67,6 +67,9 @@ object PuzzleManager {
     fun getEntry(id: String): PuzzleEntry? =
             getPuzzlesInternal().firstOrNull { it.id == id }
 
+    fun hasPuzzleByUrl(url: String): Boolean =
+            getPuzzlesInternal().any { it.downloadUrl == url }
+
     @Synchronized
     fun touch(id: String) {
         val list = getPuzzlesInternal().toMutableList()
@@ -79,7 +82,7 @@ object PuzzleManager {
 
     @Synchronized
     fun addPuzzle(source: InputStream, fallbackTitle: String? = null,
-                  sourceName: String? = null): PuzzleEntry? {
+                  sourceName: String? = null, downloadUrl: String? = null): PuzzleEntry? {
         val id = UUID.randomUUID().toString()
         val puzFile = File(dir, "$id.puz")
         source.use { input ->
@@ -93,7 +96,8 @@ object PuzzleManager {
                 author = crossword?.author,
                 fileName = puzFile.name,
                 modified = puzFile.lastModified(),
-                source = sourceName)
+                source = sourceName,
+                downloadUrl = downloadUrl)
 
         val list = getPuzzlesInternal().toMutableList()
         list += entry
@@ -104,7 +108,7 @@ object PuzzleManager {
 
     @Synchronized
     fun addPuzzleIfNew(source: InputStream, fallbackTitle: String? = null,
-                       sourceName: String? = null): PuzzleEntry? {
+                       sourceName: String? = null, downloadUrl: String? = null): PuzzleEntry? {
         val bytes = source.readBytes()
         val crossword = parse(ByteArrayInputStream(bytes))
         if (crossword == null && fallbackTitle == null) {
@@ -117,7 +121,7 @@ object PuzzleManager {
             return null
         }
 
-        return addPuzzle(ByteArrayInputStream(bytes), fallbackTitle, sourceName)
+        return addPuzzle(ByteArrayInputStream(bytes), fallbackTitle, sourceName, downloadUrl)
     }
 
     fun solvedPercent(id: String): Int {

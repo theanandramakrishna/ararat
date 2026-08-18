@@ -6,4 +6,5 @@ data class PuzzleEntry(
         val author: String? = null,
         val fileName: String = "",
         val modified: Long = 0,
-        val source: String? = null)
+        val source: String? = null,
+        val downloadUrl: String? = null)

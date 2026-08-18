@@ -3,6 +3,8 @@ package org.anandram.xwordapp
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.OpenableColumns
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -155,8 +157,9 @@ class PuzzleListActivity : AppCompatActivity() {
             RC_PICK_PUZZLE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.data?.let { uri ->
+                        val fileName = displayName(uri)
                         val added = contentResolver.openInputStream(uri)?.let { input ->
-                            PuzzleManager.addPuzzle(input)
+                            PuzzleManager.addPuzzle(input, downloadUrl = "file:$fileName")
                         }
                         if (added == null) {
                             Toast.makeText(this, R.string.add_failed, Toast.LENGTH_SHORT).show()
@@ -166,6 +169,21 @@ class PuzzleListActivity : AppCompatActivity() {
                 }
             }
             DriveManager.RC_SIGN_IN -> driveManager.handleSignInResult(requestCode, data)
+        }
+    }
+
+    private fun displayName(uri: Uri): String {
+        return try {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index >= 0) cursor.getString(index) else ""
+                } else {
+                    ""
+                }
+            } ?: ""
+        } catch (e: Exception) {
+            ""
         }
     }
 

@@ -85,7 +85,8 @@ class SubscriptionsActivity : AppCompatActivity() {
                 val href = link.attr("href")
                 if (href.endsWith(".puz", ignoreCase = true)) {
                     val absUrl = link.absUrl("href")
-                    if (absUrl.isNotEmpty() && addPuzzleIfNew(absUrl, subscription.name)) {
+                    if (absUrl.isNotEmpty() && !PuzzleManager.hasPuzzleByUrl(absUrl)
+                            && addPuzzleIfNew(absUrl, subscription.name)) {
                         count++
                     }
                 }
@@ -105,7 +106,7 @@ class SubscriptionsActivity : AppCompatActivity() {
                     .execute()
                     .bodyAsBytes()
             PuzzleManager.addPuzzleIfNew(ByteArrayInputStream(bytes),
-                    sourceName = sourceName) != null
+                    sourceName = sourceName, downloadUrl = url) != null
         } catch (e: Exception) {
             Log.e(TAG, "Failed to download $url", e)
             false
