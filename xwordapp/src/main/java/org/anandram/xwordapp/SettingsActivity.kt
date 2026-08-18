@@ -18,10 +18,15 @@ class SettingsActivity : AppCompatActivity() {
         listView.adapter = ArrayAdapter(
                 this,
                 android.R.layout.simple_list_item_1,
-                listOf(getString(R.string.subscriptions)))
+                listOf(
+                        getString(R.string.subscriptions),
+                        getString(R.string.google_drive)))
 
-        listView.setOnItemClickListener { _, _, _, _ ->
-            startActivity(Intent(this, SubscriptionsActivity::class.java))
+        listView.setOnItemClickListener { _, _, position, _ ->
+            when (position) {
+                0 -> startActivity(Intent(this, SubscriptionsActivity::class.java))
+                1 -> startActivity(Intent(this, DriveSettingsActivity::class.java))
+            }
         }
     }
 }
