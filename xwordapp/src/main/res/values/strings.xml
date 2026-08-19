@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CrosswordDemo</string>
+    <string name="app_name">Lexi-Kattam</string>
     <string name="solve_square">Solve square</string>
     <string name="solve_word">Solve word</string>
     <string name="solve_puzzle">Solve puzzle</string>

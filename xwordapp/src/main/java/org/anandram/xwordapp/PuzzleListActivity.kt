@@ -63,6 +63,7 @@ class PuzzleListActivity : AppCompatActivity() {
                         ?: return@setOnItemClickListener
                 currentSource = subscription.name
                 renderBySource()
+                updateActionBar()
             } else {
                 val entry = puzzleAdapter.getItem(position) ?: return@setOnItemClickListener
                 val intent = Intent(this, MainActivity::class.java)
@@ -82,10 +83,12 @@ class PuzzleListActivity : AppCompatActivity() {
                 if (tab.position == TAB_BY_SOURCE) {
                     currentSource = null
                     renderTab(tab.position)
+                    updateActionBar()
                 }
             }
         })
         renderTab(TAB_ALL)
+        updateActionBar()
     }
 
     override fun onResume() {
@@ -131,7 +134,24 @@ class PuzzleListActivity : AppCompatActivity() {
         return true
     }
 
+    private fun updateActionBar() {
+        val source = currentSource
+        supportActionBar?.setDisplayHomeAsUpEnabled(source != null)
+        title = source ?: getString(R.string.app_name)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            if (currentSource != null) {
+                currentSource = null
+                renderBySource()
+                updateActionBar()
+            } else {
+                finish()
+            }
+            return true
+        }
+
         when (item.itemId) {
             R.id.menu_add_puzzle -> pickPuzzleFile()
             R.id.menu_sign_in_drive -> driveManager.signIn()
