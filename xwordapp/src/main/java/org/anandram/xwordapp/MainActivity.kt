@@ -24,8 +24,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 import org.akop.ararat.core.Crossword
@@ -42,6 +47,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     private var hint: TextView? = null
     private lateinit var keyboard: CrosswordKeyboardView
     private lateinit var puzzleId: String
+    private var puzzleComment: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +67,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
         val puzzle = entry?.let { PuzzleManager.parse(PuzzleManager.puzFile(it.id)) }
                 ?: PuzzleManager.parse(PuzzleManager.puzFile(PuzzleManager.getBundledId()))
+        puzzleComment = puzzle?.comment
 
         title = when {
             entry != null && !entry.author.isNullOrEmpty() ->
@@ -129,6 +136,11 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.menu_view_notes).isVisible = !puzzleComment.isNullOrBlank()
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_restart -> crosswordView.reset()
@@ -138,16 +150,81 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             R.id.menu_solve_word -> crosswordView.solveWord(
                     crosswordView.selectedWord!!)
             R.id.menu_solve_puzzle -> crosswordView.solveCrossword()
+            R.id.menu_view_notes -> showNotesDialog()
             else -> return super.onOptionsItemSelected(item)
         }
 
         return true
     }
 
+    private fun showNotesDialog() {
+        AlertDialog.Builder(this)
+                .setTitle(R.string.view_notes)
+                .setMessage(puzzleComment)
+                .setPositiveButton(R.string.close, null)
+                .show()
+    }
+
     override fun onCellLongPressed(view: CrosswordView,
                                    word: Crossword.Word, cell: Int) {
-        Toast.makeText(this, "Show popup menu for " + word.hint!!,
-                Toast.LENGTH_SHORT).show()
+        val row = when (word.direction) {
+            Crossword.Word.DIR_ACROSS -> word.startRow
+            else -> word.startRow + cell
+        }
+        val column = when (word.direction) {
+            Crossword.Word.DIR_ACROSS -> word.startColumn + cell
+            else -> word.startColumn
+        }
+
+        val cellRect = view.getCellRect(word, cell) ?: return
+        val viewLoc = IntArray(2)
+        view.getLocationOnScreen(viewLoc)
+
+        val anchor = View(this)
+        anchor.layout(0, 0, 1, 1)
+        val decor = window.decorView as ViewGroup
+        val decorLoc = IntArray(2)
+        decor.getLocationOnScreen(decorLoc)
+        anchor.x = (viewLoc[0] + cellRect.centerX() - decorLoc[0]).toFloat()
+        anchor.y = (viewLoc[1] + cellRect.centerY() - decorLoc[1]).toFloat()
+        decor.addView(anchor, ViewGroup.LayoutParams(1, 1))
+
+        val popup = PopupMenu(this, anchor)
+        popup.menuInflater.inflate(R.menu.activity_cell_popup, popup.menu)
+        popup.setOnMenuItemClickListener { item ->
+            if (item.itemId == R.id.menu_rebus) {
+                showRebusDialog(row, column)
+                true
+            } else {
+                false
+            }
+        }
+        popup.setOnDismissListener {
+            decor.removeView(anchor)
+        }
+        try {
+            popup.show()
+        } catch (e: Exception) {
+            decor.removeView(anchor)
+        }
+    }
+
+    private fun showRebusDialog(row: Int, column: Int) {
+        val input = EditText(this)
+        val padding = (16 * resources.displayMetrics.density).toInt()
+        input.setPadding(padding, padding, padding, padding)
+
+        AlertDialog.Builder(this)
+                .setTitle(R.string.rebus)
+                .setView(input)
+                .setPositiveButton(R.string.ok) { _, _ ->
+                    val text = input.text?.toString()?.trim().orEmpty()
+                    if (text.isNotEmpty()) {
+                        crosswordView.setCellText(row, column, text)
+                    }
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
     }
 
     override fun onCrosswordChanged(view: CrosswordView) {}

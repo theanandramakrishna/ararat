@@ -41,4 +41,9 @@
     <string name="tab_solved">Solved</string>
     <string name="tab_by_source">By Source</string>
     <string name="solved_percent">%1$d%% solved</string>
+    <string name="view_notes">View notes</string>
+    <string name="close">Close</string>
+    <string name="rebus">Rebus</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>

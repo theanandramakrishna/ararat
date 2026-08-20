@@ -598,6 +598,10 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
         handleBackspace()
     }
 
+    fun setCellText(row: Int, column: Int, text: String) {
+        setChars(row, column, arrayOf(arrayOf<String?>(text)), false)
+    }
+
     fun solveWord(word: Crossword.Word) {
         val matrix: Array<Array<String?>>
         val wordLen = word.length
