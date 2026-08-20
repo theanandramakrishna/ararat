@@ -43,6 +43,7 @@ class PuzzleListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_puzzle_list)
+        applySystemBarInsets()
 
         PuzzleManager.init(this)
         SubscriptionManager.init(this)

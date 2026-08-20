@@ -15,6 +15,7 @@ class DriveSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drive_settings)
+        applySystemBarInsets()
 
         title = getString(R.string.drive_settings)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

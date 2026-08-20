@@ -4,12 +4,12 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdkVersion 35
+    compileSdkVersion 36
 
     defaultConfig {
         applicationId "org.anandram.xwordapp"
         minSdkVersion 21
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 6
         versionName "0.9"
         multiDexEnabled true
@@ -20,6 +20,9 @@ android {
         }
     }
     buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
