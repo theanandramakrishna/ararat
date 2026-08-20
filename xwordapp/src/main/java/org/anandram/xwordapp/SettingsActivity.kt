@@ -12,6 +12,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        applySystemBarInsets()
 
         title = getString(R.string.settings)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

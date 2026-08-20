@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+        applySystemBarInsets()
 
         PuzzleManager.init(this)
 

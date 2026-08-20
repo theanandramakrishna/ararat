@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <meta-data
+            android:name="com.google.android.gms.auth.api.signin.CLIENT_ID"
+            android:value="417818586128-qkt6qrhrsfdtvo0bc8v2bube0qbma3tb.apps.googleusercontent.com"
+            tools:node="replace" />
+    </application>
+
+</manifest>
