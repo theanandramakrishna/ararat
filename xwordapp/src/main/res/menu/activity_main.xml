@@ -38,4 +38,8 @@
         android:id="@+id/menu_restart"
         android:title="@string/restart"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_view_notes"
+        android:title="@string/view_notes"
+        app:showAsAction="never" />
 </menu>

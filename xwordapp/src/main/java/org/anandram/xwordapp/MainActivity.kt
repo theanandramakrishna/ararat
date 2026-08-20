@@ -26,6 +26,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 import org.akop.ararat.core.Crossword
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     private var hint: TextView? = null
     private lateinit var keyboard: CrosswordKeyboardView
     private lateinit var puzzleId: String
+    private var puzzleComment: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +63,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
         val puzzle = entry?.let { PuzzleManager.parse(PuzzleManager.puzFile(it.id)) }
                 ?: PuzzleManager.parse(PuzzleManager.puzFile(PuzzleManager.getBundledId()))
+        puzzleComment = puzzle?.comment
 
         title = when {
             entry != null && !entry.author.isNullOrEmpty() ->
@@ -129,6 +132,11 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.menu_view_notes).isVisible = !puzzleComment.isNullOrBlank()
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_restart -> crosswordView.reset()
@@ -138,10 +146,19 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             R.id.menu_solve_word -> crosswordView.solveWord(
                     crosswordView.selectedWord!!)
             R.id.menu_solve_puzzle -> crosswordView.solveCrossword()
+            R.id.menu_view_notes -> showNotesDialog()
             else -> return super.onOptionsItemSelected(item)
         }
 
         return true
+    }
+
+    private fun showNotesDialog() {
+        AlertDialog.Builder(this)
+                .setTitle(R.string.view_notes)
+                .setMessage(puzzleComment)
+                .setPositiveButton(R.string.close, null)
+                .show()
     }
 
     override fun onCellLongPressed(view: CrosswordView,
