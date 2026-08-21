@@ -8,6 +8,7 @@ import org.akop.ararat.core.CrosswordState
 import org.akop.ararat.core.CrosswordStateReader
 import org.akop.ararat.core.CrosswordStateWriter
 import org.akop.ararat.core.buildCrossword
+import org.akop.ararat.io.GuardianJsonFormatter
 import org.akop.ararat.io.PuzFormatter
 import org.akop.ararat.io.XdFormatter
 import java.io.ByteArrayInputStream
@@ -170,6 +171,7 @@ fun parse(file: File, format: String = "puz"): Crossword? = try {
 fun parse(source: InputStream, format: String = "puz"): Crossword? = try {
     when (format) {
         "xd" -> source.use { s -> buildCrossword { XdFormatter().read(this, s) } }
+        "guardian-json" -> source.use { s -> buildCrossword { GuardianJsonFormatter().read(this, s) } }
         else -> source.use { s -> buildCrossword { PuzFormatter().read(this, s) } }
     }
 } catch (e: Exception) {

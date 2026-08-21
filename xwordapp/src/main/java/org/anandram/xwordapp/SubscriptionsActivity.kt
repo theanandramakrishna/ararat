@@ -127,6 +127,9 @@ class SubscriptionsActivity : AppCompatActivity() {
             if (subscription.puzzleFormat.equals("XD", ignoreCase = true)) {
                 return NewYorkerSubscription.download(subscription)
             }
+            if (subscription.puzzleFormat.equals("guardian-json", ignoreCase = true)) {
+                return GuardianSubscription.download(subscription)
+            }
 
             val document = Jsoup.connect(subscription.url).get()
             var count = 0

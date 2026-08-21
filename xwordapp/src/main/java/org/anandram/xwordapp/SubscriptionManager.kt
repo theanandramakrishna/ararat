@@ -29,15 +29,27 @@ object SubscriptionManager {
         ensureDefaults()
     }
 
-    private fun ensureDefaults() {
-        if (file.exists()) return
+    private val DEFAULT_SUBSCRIPTIONS = listOf(
+            Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
+            Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
+            Subscription(name = CRU_NAME, url = CRU_URL, enabled = true),
+            Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
+            NewYorkerSubscription.default(),
+            GuardianSubscription.default())
 
-        saveSubscriptions(listOf(
-                Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
-                Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
-                Subscription(name = CRU_NAME, url = CRU_URL, enabled = true),
-                Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
-                NewYorkerSubscription.default()))
+    private fun ensureDefaults() {
+        if (!file.exists()) {
+            saveSubscriptions(DEFAULT_SUBSCRIPTIONS)
+            return
+        }
+
+        val existing = getSubscriptions()
+        val missing = DEFAULT_SUBSCRIPTIONS.filter { def ->
+            existing.none { it.name == def.name }
+        }
+        if (missing.isNotEmpty()) {
+            saveSubscriptions(existing + missing)
+        }
     }
 
     @Synchronized
