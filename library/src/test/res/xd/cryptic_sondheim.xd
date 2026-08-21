@@ -1,0 +1,133 @@
+## Metadata
+
+title: The Cryptic Crossword: Sondheim Edition
+subtitle: An enigmatic tribute to the Broadway legend.
+author: Paolo Pasco
+width: 8
+height: 10
+editor: 
+date: 
+copyright: 
+form: barred
+checkerboard: true
+
+## Grid
+
+CAPSSWIG
+AHARMADA
+LOSFELIZ
+LYSOLVOE
+UOILLAMP
+SNOCONER
+PINRIDGE
+ANTONYMS
+REMARKOE
+TREKNEST
+
+## Clues
+
+A1. Tops “Third Letter” with a postscript (4) ~ CAPS
+A1 ^revealer: C + A + P.S.
+
+A4. Knock back wigs in “Agony” (4) ~ SWIG
+A4 ^revealer: SWIG (anag.)
+
+A7. Fleet, twisted drama: “The Last of Sheila” (6) ~ ARMADA
+A7 ^revealer: ARMAD + A ({/drama/} anag.)
+
+A8. Restaged “Follies,” with final character in neighborhood bordering Hollywood (3,5) ~ LOSFELIZ
+A8 ^revealer: LOS FELI + Z ({/Follies/} anag.)
+
+A9. Cleaner snippet of “Merrily” solo (5) ~ LYSOL
+A9 ^revealer: LYSOL (hidden)
+
+A11. Twirling a mop, covering “Cool” (nineties style) in old-timey lighting (3,4) ~ OILLAMP
+A11 ^revealer: O(IL L)AMP ({/a mop/} anag.)
+
+A13. Soprano: “Nothing eclipses ‘Company’ . . . it’s a treat” (3-4) ~ SNOCONE
+A13 ^revealer: S + NO-(CO)NE
+
+A17. Crest cryptic grid (Sondheim’s sixth) (5) ~ RIDGE
+A17 ^revealer: RIDG + E ({/grid/} anag.)
+
+A19. Answer involves Tony and Maria—at first, they’re opposites (8) ~ ANTONYMS
+A19 ^revealer: AN(TONY + M)S
+
+A20. Note Seinfeld’s neighbor emulating the chronology of “Merrily We Roll Along” (6) ~ REMARK
+A20 ^revealer: REMARK (rev.)
+
+A21. Baker tries holding back journey into the woods, maybe (4) ~ TREK
+A21 ^revealer: TREK (hidden rev.)
+
+A22. Elaine Stritch has a home for “Someone in a Tree”? (4) ~ NEST
+A22 ^revealer: NEST (hidden)
+
+D1. Call “America” something rough, as a result of friction (6) ~ CALLUS
+D1 ^revealer: CALL + U.S.
+
+D2. Greeting Anita primarily in Spanish today (4) ~ AHOY
+D2 ^revealer: A + {/HOY/}
+
+D3. Pass it on: tango’s missing in Sondheim show (7) ~ PASSION
+D3 ^revealer: PASSI(t)ON
+
+D4. Aroma from suspicious meat entices lunching Londoners at first (5) ~ SMELL
+D4 ^revealer: SMELL (first letters of {/suspicious meat entices lunching Londoners/})
+
+D5. Saying, “I almost did regular excerpts from ‘Poems’ ” (5) ~ IDIOM
+D5 ^revealer: I + DI(d) + OM (even letters of {/Poems/})
+
+D6. In toga (Zero’s look) (4) ~ GAZE
+D6 ^revealer: GAZE (hidden)
+
+D10. Victor Kayden, misbehaving actor in “Dick Tracy” (3,4) ~ VANDYKE
+D10 ^revealer: V + AN DYKE ({/Kayden/} anag.)
+
+D12. Already arranged reinterpretation of Streep or Peters (6) ~ PRESET
+D12 ^revealer: PRESET (anag.)
+
+D14. After forty, person hunting gold slipper ultimately chasing nickel and neon (5) ~ NINER
+D14 ^revealer: NI + NE + R
+
+D15. Cargo tank oddly generating sound from “The Frogs”? (5) ~ CROAK
+D15 ^revealer: CROAK (odd letters of {/cargo tank/})
+
+D16. Quiet focus of “Sunday in the Park with George” role (4) ~ PART
+D16 ^revealer: P + ART
+
+D18. Most frequently seen character in “Assassins” (OMG!) brought up engineered crops (4) ~ GMOS
+D18 ^revealer: G.M.O. + S ({/OMG/} rev.)
+
+## Help
+
+<div>
+This cryptic crossword appears in the <a style="color: #4860A3;" rel="noopener noreferrer" href="https://www.newyorker.com/cartoons-and-puzzles-2025" target="_blank">2025 Cartoons & Puzzles Issue</a>.
+<br><br>For help solving cryptic crosswords, visit <a style="color: #4860A3;" rel="noopener noreferrer" href="https://www.newyorker.com/cryptic-guide" target="_blank">newyorker.com/cryptic-guide</a>.<br></div>
+
+## End Message
+
+<div class="related_text">Get the latest puzzles in your inbox.<br><a href="https://www.newyorker.com/newsletter/crossword?sourcecode=crosswordcomplete" target="_parent">Sign up for the Puzzles & Games newsletter »</a></div><div class="related_text">Play more crosswords, cryptics, and quizzes.<br><a href="https://www.newyorker.com/crossword-puzzles-and-games" target="_parent">Browse all of our games »</a></div>
+
+## Pause Message
+
+<img style="text-align:center;max-width:100%;" src="https://media.newyorker.com/photos/61eb15ed0996b216027f9e43/master/pass/2019-03-25-chitty.png
+"></img>
+
+## Design
+
+<style>
+A { bar-top: true }
+B { bar-left: true; bar-top: true }
+C { bar-left: true }
+</style>
+
+....C...
+.CCA.A..
+...A.A..
+...A.BCC
+.B.A...A
+.A.AA.AC
+ACCCA.A.
+..A.A...
+..A.A.CC
+..A.B...

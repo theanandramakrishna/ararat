@@ -21,6 +21,7 @@
 package org.akop.ararat.io
 
 import org.akop.ararat.core.Crossword
+import org.akop.ararat.core.WordBuilder
 import org.akop.ararat.core.buildWord
 import org.akop.ararat.util.SparseArray
 
@@ -276,8 +277,7 @@ class PuzFormatter : CrosswordFormatter {
                 alphabet.add(charMap[i][j])
 
                 var incremented = false
-                if ((j == 0 || j > 0 && charMap[i][j - 1] == EMPTY)
-                        && j + 1 <= jend && charMap[i][j + 1] != EMPTY) {
+                if (WordBuilder.startsAcross(charMap, attrMap, i, j)) {
                     // Start of a new Across word
                     number++
                     incremented = true
@@ -302,13 +302,13 @@ class PuzFormatter : CrosswordFormatter {
                             }
 
                             addCell(rebus ?: charMap[i][k].toString(), attrs)
+                            if (WordBuilder.endsAcross(attrMap, i, k, jend)) break
                             k++
                         }
                     }
                 }
 
-                if ((i == 0 || i > 0 && charMap[i - 1][j] == EMPTY)
-                        && i + 1 <= iend && charMap[i + 1][j] != EMPTY) {
+                if (WordBuilder.startsDown(charMap, attrMap, i, j)) {
                     // Start of a new Down word
                     if (!incremented) number++
 
@@ -332,6 +332,7 @@ class PuzFormatter : CrosswordFormatter {
                             }
 
                             addCell(rebus ?: charMap[k][j].toString(), attrs)
+                            if (WordBuilder.endsDown(attrMap, k, j, iend)) break
                             k++
                         }
                     }

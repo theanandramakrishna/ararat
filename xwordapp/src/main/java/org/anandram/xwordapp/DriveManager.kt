@@ -121,7 +121,7 @@ class DriveManager(private val activity: AppCompatActivity) {
                             ?: emptyList()
 
                     for (entry in entries) {
-                        contents[entry.fileName]?.let { PuzzleManager.writePuz(entry.id, it) }
+                        contents[entry.fileName]?.let { PuzzleManager.writePuzzle(entry.id, entry.format, it) }
                         contents["${entry.id}.state"]?.let { PuzzleManager.writeState(entry.id, it) }
                     }
 
@@ -166,7 +166,7 @@ class DriveManager(private val activity: AppCompatActivity) {
 
     private fun buildBackupZip(): ByteArray {
         val entries = PuzzleManager.getPuzzles().filter {
-            PuzzleManager.puzFile(it.id).exists()
+            PuzzleManager.puzzleFile(it.id, it.format).exists()
         }
 
         val bytesOut = ByteArrayOutputStream()
@@ -177,7 +177,7 @@ class DriveManager(private val activity: AppCompatActivity) {
 
             for (entry in entries) {
                 zip.putNextEntry(ZipEntry(entry.fileName))
-                zip.write(PuzzleManager.puzFile(entry.id).readBytes())
+                zip.write(PuzzleManager.puzzleFile(entry.id, entry.format).readBytes())
                 zip.closeEntry()
 
                 val stateFile = PuzzleManager.stateFile(entry.id)

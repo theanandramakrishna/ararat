@@ -65,7 +65,8 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         hint = findViewById(R.id.hint)
         keyboard = findViewById(R.id.keyboard)
 
-        val puzzle = entry?.let { PuzzleManager.parse(PuzzleManager.puzFile(it.id)) }
+        val puzzle = entry?.let { PuzzleManager.parse(
+                PuzzleManager.puzzleFile(it.id, it.format), it.format) }
                 ?: PuzzleManager.parse(PuzzleManager.puzFile(PuzzleManager.getBundledId()))
         puzzleComment = puzzle?.comment
 

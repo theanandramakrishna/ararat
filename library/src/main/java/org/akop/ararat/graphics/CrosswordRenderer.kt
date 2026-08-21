@@ -85,6 +85,24 @@ class CrosswordRenderer(context: Context) {
                     rp.radius, circleStrokePaint)
         }
 
+        // Draw bars inside the cell stroke so they sit flush against it
+        if (cell.isBarTop) {
+            rp.canvas.drawLine(cellRect.left, cellRect.top, cellRect.right, cellRect.top,
+                    rp.barStrokePaint)
+        }
+        if (cell.isBarBottom) {
+            rp.canvas.drawLine(cellRect.left, cellRect.bottom, cellRect.right, cellRect.bottom,
+                    rp.barStrokePaint)
+        }
+        if (cell.isBarLeft) {
+            rp.canvas.drawLine(cellRect.left, cellRect.top, cellRect.left, cellRect.bottom,
+                    rp.barStrokePaint)
+        }
+        if (cell.isBarRight) {
+            rp.canvas.drawLine(cellRect.right, cellRect.top, cellRect.right, cellRect.bottom,
+                    rp.barStrokePaint)
+        }
+
         when {
             rp.flags and FLAG_RENDER_ANSWER == FLAG_RENDER_ANSWER -> if (!cell.isEmpty) {
                 rp.canvas.drawText(cell.chars, cellRect.left + rp.cellDim / 2,
@@ -160,6 +178,7 @@ class CrosswordRenderer(context: Context) {
         val radius: Float
         val answerTextSize: Float
         val answerTextPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val barStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         val bitmapWidth: Int = canvas.width
         val bitmapHeight: Int = canvas.height
         val answerMetrics: Paint.FontMetrics
@@ -172,6 +191,9 @@ class CrosswordRenderer(context: Context) {
             radius = cellDim / 2 - circleStrokePaint.strokeWidth
             answerTextSize = cellDim * 0.75f
             answerTextPaint.color = TEXT_COLOR
+            barStrokePaint.color = CELL_STROKE_COLOR
+            barStrokePaint.style = Paint.Style.STROKE
+            barStrokePaint.strokeWidth = (cellDim * 0.12f).coerceAtLeast(cellStrokeWidthPx)
             answerMetrics = answerTextPaint.fontMetrics
         }
     }

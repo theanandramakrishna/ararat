@@ -36,7 +36,8 @@ object SubscriptionManager {
                 Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
                 Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
                 Subscription(name = CRU_NAME, url = CRU_URL, enabled = true),
-                Subscription(name = WJ_NAME, url = WJ_URL, enabled = true)))
+                Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
+                NewYorkerSubscription.default()))
     }
 
     @Synchronized
@@ -55,7 +56,9 @@ object SubscriptionManager {
 
     private fun Subscription.normalized(): Subscription {
         val frequency = fetchFrequency.ifEmpty { "One-Time" }
-        return copy(fetchFrequency = frequency, lastDownloadDate = lastDownloadDate ?: "")
+        val format = puzzleFormat.ifEmpty { "puz" }
+        return copy(fetchFrequency = frequency, lastDownloadDate = lastDownloadDate ?: "",
+                puzzleFormat = format)
     }
 
     @Synchronized

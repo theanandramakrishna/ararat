@@ -124,6 +124,10 @@ class SubscriptionsActivity : AppCompatActivity() {
 
     private fun downloadFromSubscription(subscription: Subscription): Int {
         return try {
+            if (subscription.puzzleFormat.equals("XD", ignoreCase = true)) {
+                return NewYorkerSubscription.download(subscription)
+            }
+
             val document = Jsoup.connect(subscription.url).get()
             var count = 0
             for (link in document.select("a[href]")) {

@@ -93,6 +93,7 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private val cellStrokePaint = Paint()
     private val circleStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val barStrokePaint = Paint()
     private val cellFillPaint = Paint()
     private val cheatedCellFillPaint = Paint()
     private val mistakeCellFillPaint = Paint()
@@ -105,6 +106,7 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var cellSize: Float = 0f
     private val markerSideLength: Float
     private val circleRadius: Float
+    private val barStrokeWidth: Float
     private var numberTextPadding: Float = 0f
     private val numberTextHeight: Float
     private val scaledDensity: Float
@@ -426,6 +428,11 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         // Init rest of the values
         circleRadius = cellSize / 2 - circleStrokePaint.strokeWidth
+
+        barStrokeWidth = (cellSize * BAR_STROKE_WIDTH_FRACTION).coerceAtLeast(1f)
+        barStrokePaint.color = cellStrokeColor
+        barStrokePaint.style = Paint.Style.STROKE
+        barStrokePaint.strokeWidth = barStrokeWidth
 
         scaleDetector = ScaleGestureDetector(context, ScaleListener())
         gestureDetector = GestureDetector(context, GestureListener())
@@ -1147,7 +1154,7 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
             while (p < n) {
                 val cell = Cell()
                 cell.acrossNumber = word.number
-                cell.setFlag(Cell.FLAG_CIRCLED, word.cellAt(p).isCircled)
+                setCellFlags(cell, word.cellAt(p))
                 puzzleCells[row][column] = cell
                 column++
                 p++
@@ -1173,9 +1180,7 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
                 var cell: Cell? = puzzleCells[row][column]
                 if (cell == null) {
                     cell = Cell()
-                    if (word.cellAt(p).isCircled) {
-                        cell.setFlag(Cell.FLAG_CIRCLED, true)
-                    }
+                    setCellFlags(cell, word.cellAt(p))
                     puzzleCells[row][column] = cell
                 }
 
@@ -1189,6 +1194,14 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
                 puzzleCells[startRow][column]!!.number = "${word.number}"
             }
         }
+    }
+
+    private fun setCellFlags(cell: Cell, crosswordCell: Crossword.Cell) {
+        cell.setFlag(Cell.FLAG_CIRCLED, crosswordCell.isCircled)
+        cell.setFlag(Cell.FLAG_BAR_TOP, crosswordCell.isBarTop)
+        cell.setFlag(Cell.FLAG_BAR_BOTTOM, crosswordCell.isBarBottom)
+        cell.setFlag(Cell.FLAG_BAR_LEFT, crosswordCell.isBarLeft)
+        cell.setFlag(Cell.FLAG_BAR_RIGHT, crosswordCell.isBarRight)
     }
 
     private fun resetConstraintsAndRedraw(forceBitmapRegen: Boolean) {
@@ -1714,6 +1727,10 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
             const val FLAG_CIRCLED = 2
             const val FLAG_ERROR   = 4
             const val FLAG_MARKED  = 8
+            const val FLAG_BAR_TOP = 16
+            const val FLAG_BAR_BOTTOM = 32
+            const val FLAG_BAR_LEFT = 64
+            const val FLAG_BAR_RIGHT = 128
         }
     }
 
@@ -1766,6 +1783,24 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
             if (cell.isFlagSet(Cell.FLAG_CIRCLED)) {
                 canvas.drawCircle(cellRect.centerX(), cellRect.centerY(),
                         v.circleRadius, v.circleStrokePaint)
+            }
+
+            // Draw bars inside the cell stroke so they sit flush against it
+            if (cell.isFlagSet(Cell.FLAG_BAR_TOP)) {
+                canvas.drawLine(cellRect.left, cellRect.top, cellRect.right, cellRect.top,
+                        v.barStrokePaint)
+            }
+            if (cell.isFlagSet(Cell.FLAG_BAR_BOTTOM)) {
+                canvas.drawLine(cellRect.left, cellRect.bottom, cellRect.right, cellRect.bottom,
+                        v.barStrokePaint)
+            }
+            if (cell.isFlagSet(Cell.FLAG_BAR_LEFT)) {
+                canvas.drawLine(cellRect.left, cellRect.top, cellRect.left, cellRect.bottom,
+                        v.barStrokePaint)
+            }
+            if (cell.isFlagSet(Cell.FLAG_BAR_RIGHT)) {
+                canvas.drawLine(cellRect.right, cellRect.top, cellRect.right, cellRect.bottom,
+                        v.barStrokePaint)
             }
 
             val numberY = cellRect.top + v.numberTextPadding + v.numberTextHeight
@@ -2084,6 +2119,7 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         private const val FLING_VELOCITY_DOWNSCALE = 2.0f
         private const val CELL_SIZE = 10f
+        private const val BAR_STROKE_WIDTH_FRACTION = 0.12f
         private const val NUMBER_TEXT_PADDING = 1f
         private const val NUMBER_TEXT_SIZE = 3f
         private const val ANSWER_TEXT_SIZE = 7f

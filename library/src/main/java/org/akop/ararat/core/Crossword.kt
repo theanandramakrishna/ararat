@@ -435,6 +435,18 @@ class Crossword internal constructor(val width: Int = 0,
         val isCircled: Boolean
             get() = attrFlags.toInt() and ATTR_CIRCLED == ATTR_CIRCLED
 
+        val isBarTop: Boolean
+            get() = attrFlags.toInt() and ATTR_BAR_TOP == ATTR_BAR_TOP
+
+        val isBarBottom: Boolean
+            get() = attrFlags.toInt() and ATTR_BAR_BOTTOM == ATTR_BAR_BOTTOM
+
+        val isBarLeft: Boolean
+            get() = attrFlags.toInt() and ATTR_BAR_LEFT == ATTR_BAR_LEFT
+
+        val isBarRight: Boolean
+            get() = attrFlags.toInt() and ATTR_BAR_RIGHT == ATTR_BAR_RIGHT
+
         private constructor(source: Parcel): this(
                 chars = source.readString()!!,
                 attrFlags = source.readByte())
@@ -459,6 +471,10 @@ class Crossword internal constructor(val width: Int = 0,
         companion object {
             const val ATTR_CIRCLED = 1
             const val ATTR_NO_SOLUTION = 2
+            const val ATTR_BAR_TOP = 4
+            const val ATTR_BAR_BOTTOM = 8
+            const val ATTR_BAR_LEFT = 16
+            const val ATTR_BAR_RIGHT = 32
 
             @Suppress("unused")
             @JvmField
