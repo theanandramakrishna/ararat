@@ -5,4 +5,5 @@ data class Subscription(
         val url: String = "",
         val enabled: Boolean = true,
         val fetchFrequency: String = "One-Time",
-        val lastDownloadDate: String = "")
+        val lastDownloadDate: String = "",
+        val puzzleFormat: String = "puz")

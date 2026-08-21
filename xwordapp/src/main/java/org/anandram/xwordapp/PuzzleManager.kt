@@ -9,6 +9,7 @@ import org.akop.ararat.core.CrosswordStateReader
 import org.akop.ararat.core.CrosswordStateWriter
 import org.akop.ararat.core.buildCrossword
 import org.akop.ararat.io.PuzFormatter
+import org.akop.ararat.io.XdFormatter
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
@@ -81,23 +82,24 @@ object PuzzleManager {
     }
 
     @Synchronized
-    fun addPuzzle(source: InputStream, fallbackTitle: String? = null,
+    fun addPuzzle(source: InputStream, format: String = "puz", fallbackTitle: String? = null,
                   sourceName: String? = null, downloadUrl: String? = null): PuzzleEntry? {
         val id = UUID.randomUUID().toString()
-        val puzFile = File(dir, "$id.puz")
+        val file = puzzleFile(id, format)
         source.use { input ->
-            puzFile.outputStream().use { input.copyTo(it) }
+            file.outputStream().use { input.copyTo(it) }
         }
 
-        val crossword = parse(puzFile)
+        val crossword = parse(file, format)
         val entry = PuzzleEntry(
                 id = id,
                 title = crossword?.title ?: fallbackTitle ?: id,
                 author = crossword?.author,
-                fileName = puzFile.name,
-                modified = puzFile.lastModified(),
+                fileName = file.name,
+                modified = file.lastModified(),
                 source = sourceName,
-                downloadUrl = downloadUrl)
+                downloadUrl = downloadUrl,
+                format = format)
 
         val list = getPuzzlesInternal().toMutableList()
         list += entry
@@ -107,10 +109,10 @@ object PuzzleManager {
     }
 
     @Synchronized
-    fun addPuzzleIfNew(source: InputStream, fallbackTitle: String? = null,
+    fun addPuzzleIfNew(source: InputStream, format: String = "puz", fallbackTitle: String? = null,
                        sourceName: String? = null, downloadUrl: String? = null): PuzzleEntry? {
         val bytes = source.readBytes()
-        val crossword = parse(ByteArrayInputStream(bytes))
+        val crossword = parse(ByteArrayInputStream(bytes), format)
         if (crossword == null && fallbackTitle == null) {
             return null
         }
@@ -121,7 +123,33 @@ object PuzzleManager {
             return null
         }
 
-        return addPuzzle(ByteArrayInputStream(bytes), fallbackTitle, sourceName, downloadUrl)
+        return addPuzzle(ByteArrayInputStream(bytes), format, fallbackTitle, sourceName, downloadUrl)
+    }
+
+    @Synchronized
+    fun addXdIfNew(xdText: String, sourceName: String? = null,
+                   downloadUrl: String? = null): PuzzleEntry? {
+        val formatter = XdFormatter()
+        val crossword = try {
+            buildCrossword {
+                formatter.read(this, ByteArrayInputStream(xdText.toByteArray(Charsets.UTF_8)))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to parse XD", e)
+            return null
+        }
+
+        val entry = addPuzzleIfNew(ByteArrayInputStream(xdText.toByteArray(Charsets.UTF_8)),
+                format = "xd", fallbackTitle = crossword.title,
+                sourceName = sourceName, downloadUrl = downloadUrl)
+        if (entry != null) {
+            formatter.startState?.let { start ->
+                if (!stateFile(entry.id).exists()) {
+                    saveState(entry.id, start)
+                }
+            }
+        }
+        return entry
     }
 
     fun solvedPercent(id: String): Int {
@@ -132,25 +160,26 @@ object PuzzleManager {
         return (solved.toFloat() / state.squareCount * 100).toInt()
     }
 
-    fun parse(file: File): Crossword? = try {
-        file.inputStream().use { s ->
-            buildCrossword { PuzFormatter().read(this, s) }
-        }
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to parse ${file.name}", e)
-        null
-    }
+fun parse(file: File, format: String = "puz"): Crossword? = try {
+    file.inputStream().use { s -> parse(s, format) }
+} catch (e: Exception) {
+    Log.e(TAG, "Failed to parse ${file.name}", e)
+    null
+}
 
-    fun parse(source: InputStream): Crossword? = try {
-        source.use { s ->
-            buildCrossword { PuzFormatter().read(this, s) }
-        }
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to parse stream", e)
-        null
+fun parse(source: InputStream, format: String = "puz"): Crossword? = try {
+    when (format) {
+        "xd" -> source.use { s -> buildCrossword { XdFormatter().read(this, s) } }
+        else -> source.use { s -> buildCrossword { PuzFormatter().read(this, s) } }
     }
+} catch (e: Exception) {
+    Log.e(TAG, "Failed to parse stream", e)
+    null
+}
 
-    fun puzFile(id: String): File = File(dir, "$id.puz")
+fun puzzleFile(id: String, format: String = "puz"): File = File(dir, "$id.$format")
+
+fun puzFile(id: String): File = File(dir, "$id.puz")
 
     fun stateFile(id: String): File = File(dir, "$id.state")
 
@@ -185,8 +214,8 @@ object PuzzleManager {
         File(dir, LIST_FILE).writeText(Gson().toJson(entries))
     }
 
-    fun writePuz(id: String, bytes: ByteArray) {
-        puzFile(id).writeBytes(bytes)
+    fun writePuzzle(id: String, format: String, bytes: ByteArray) {
+        puzzleFile(id, format).writeBytes(bytes)
 
         val list = getPuzzlesInternal().toMutableList()
         val index = list.indexOfFirst { it.id == id }

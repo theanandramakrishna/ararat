@@ -236,7 +236,7 @@ class PuzzleListActivity : AppCompatActivity() {
             view.findViewById<TextView>(R.id.puzzle_author).text = entry.author
 
             val modified = entry.modified.takeIf { it > 0 }
-                    ?: PuzzleManager.puzFile(entry.id).lastModified()
+                    ?: PuzzleManager.puzzleFile(entry.id, entry.format).lastModified()
             val modifiedText = view.findViewById<TextView>(R.id.puzzle_modified)
             modifiedText.text = if (modified > 0) {
                 dateFormat.format(Date(modified))
