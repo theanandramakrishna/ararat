@@ -36,7 +36,9 @@ object SubscriptionManager {
             Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
             NewYorkerSubscription.default(),
             GuardianSubscription.default(),
-            EverymanSubscription.default())
+            EverymanSubscription.default(),
+            IrishNewsSubscription.crypticDefault(),
+            IrishNewsSubscription.prizeCrypticDefault())
 
     private fun ensureDefaults() {
         if (!file.exists()) {

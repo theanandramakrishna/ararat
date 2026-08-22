@@ -71,8 +71,18 @@ class SubscriptionsActivity : AppCompatActivity() {
         return when (subscription.fetchFrequency) {
             "Weekly" -> lastDate >= startOfWeek(today)
             "Daily" -> lastDate == today
+            "Weekdays" -> !isWeekday(today) || lastDate == today
             else -> true
         }
+    }
+
+    private fun isWeekday(today: String): Boolean {
+        val parts = today.split("-")
+        val cal = Calendar.getInstance()
+        cal.clear()
+        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+        return dayOfWeek != Calendar.SATURDAY && dayOfWeek != Calendar.SUNDAY
     }
 
     private fun startOfWeek(today: String): String {
@@ -133,6 +143,9 @@ class SubscriptionsActivity : AppCompatActivity() {
             if (subscription.puzzleFormat.equals("wsj-json", ignoreCase = true)) {
                 return EverymanSubscription.download(subscription)
             }
+            if (subscription.puzzleFormat.equals("jsoup-html", ignoreCase = true)) {
+                return IrishNewsSubscription.download(subscription)
+            }
 
             val document = Jsoup.connect(subscription.url).get()
             var count = 0
@@ -186,7 +199,7 @@ class SubscriptionsActivity : AppCompatActivity() {
         private fun rebuild() {
             rows.clear()
             val groups = subscriptions.groupBy { it.fetchFrequency }
-            val orderedKeys = listOf("One-Time", "Weekly", "Daily")
+            val orderedKeys = listOf("One-Time", "Weekly", "Daily", "Weekdays")
                     .filter { groups.containsKey(it) }
             val keys = orderedKeys + (groups.keys - orderedKeys.toSet())
             for (key in keys) {

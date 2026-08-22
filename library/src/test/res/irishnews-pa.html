@@ -1,0 +1,1436 @@
+<!-- Start of code for iframe resize : 24-4-23-->
+<script type='text/javascript'>
+window.addEventListener('message', function (event) {
+if (event.data == "FrameHeight") {
+var height = 0;
+var clueheightacross = 0;
+var clueheightdown = 0;
+height = $('#base').height();
+//clueheightacross = $('#c1').height();
+//clueheightdown = $('#c2').height();
+if(puzzleCaptchaMode)
+{height = height + 50;}
+height = height + 270;
+console.log(height);
+   event.source.postMessage({ "FrameHeight": height }, "*");       
+}
+});
+</script>
+<!-- End of code for iframe resize-->
+<a href="https://www.pa-puzzles.com/puzzles/puzzlegroupreferrer.php?pid=126&cs=43" target="_blank" style="display: none;">Open in New Window</a>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset = UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE = edge, chrome = 1">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta id="viewport" name="viewport" content="initial-scale = 1.0, minimum-scale = 1.0, maximum-scale = 1.0, user-scalable = no">
+        <meta name="format-detection" content="telephone = no">
+        <title>PA Puzzles - Crossword</title>
+        <link rel="stylesheet" href="https://www.pa-puzzles.com//puzzles/_css/jquery-confirm.min.css">
+                 <!-- GS BUG# 2314 -->
+        <link rel="stylesheet" type="text/css" href="https://www.pa-puzzles.com//puzzles/crossword/css/main.css">
+                 <!-- GS BUG# 2314 -->
+                <!-- 26/05/2021 Client keyboard suggestion  -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://www.pa-puzzles.com//puzzles/crossword/css/keyboard.css">
+                <!-- 26/05/2021 Client keyboard suggestion  -->
+
+        
+                <style>
+                    .puzzle {
+                        font-family: Verdana, Geneva, sans-serif;
+                    }
+                    
+                    .puzzle-wrapper, .pencil-overlay .enabled {
+                        color: #000000;
+                    }
+                    
+                    .puzzle-grid, .legend {
+                        border-color: #000000 !important;
+                    }
+                    .puzzle-grid .cell {
+                        background-color: #ffffff;
+                        border-color: #000000;
+                    }
+                    
+                    .puzzle-grid .cell.blank {
+                        background-color: #000000;
+                    }
+                    
+                    .puzzle-grid .cell.activegroup {
+                        background-color: #6feeee;
+                    }
+                    
+                    .puzzle-grid .cell.active {
+                        background-color: #008080 !important;
+                    }
+                    
+                    .puzzle-wrapper .clues li.activegroup {
+                        color: #000000;
+                        background-color: #6feeee;
+                    }
+                    
+                    .puzzle-wrapper .clues li.active {
+                        background-color: #6feeee;
+                        border-color: #000000;
+                    }
+                    
+                    #gamePrint2 {
+                        border-bottom:1px solid #000000 !important;
+                        border-right:1px solid #000000 !important;
+                    }
+                    .puzzle-grid .cellND {
+                        background-color: #ffffff;
+                        border-color: #000000;
+                    }
+					header{
+                        background-color: #ffffff !important;
+                    }
+                    #streak-popup{
+                        font-family: Verdana, Geneva, sans-serif;
+                    }		
+					
+                </style>
+                    <style>
+                        .puzzle .btn {
+                            background-color: #000000;
+                            border: 1px solid #000000;
+                            text-shadow: 1px 1px 1px #000000;
+                            background-image: none;
+                        }
+                        
+                        .puzzle .btn:hover {
+                            background: #808080;
+                        }
+                        
+                        .puzzle #quiz-toolbar .btn {
+                            background-color: #000000;
+                            border: 1px solid #000000;
+                            text-shadow: 1px 1px 1px #000000;
+                            background-image: none;
+                        }
+                        
+                        .puzzle #quiz-toolbar .btn:hover {
+                            background: #808080;
+                        }
+                    </style>
+                    <style>
+                        .puzzle .puzzle-grid h1 {
+                            font-size: 14px;
+                        }
+
+                        .puzzle-wrapper {
+                            font-size: 14px;
+                        }
+                        
+                        .puzzle #quiz-toolbar .btn {
+                            font-size: 14px;
+                        }
+
+                        @media only screen and (max-width: 529px)
+                        {
+                            .g-recaptcha {
+                                transform:scale(0.77);
+                                transform-origin:0 0;
+                            }
+                        }
+                    </style>
+                    <style>
+                        .puzzle-grid .cell.invalid {
+                            background: #de0b0b !important;
+                        }
+                    </style>
+                <style>
+                    body {
+                        background-color: #ffffff;
+                    }
+                </style>
+         <!-- Google Analytics -->
+                        <script>
+                            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+                            ga('create', 'UA-53178301-2', 'auto');
+                            ga('send', 'pageview');
+                        </script>
+                    <!-- End Google Analytics -->
+   
+    </head>
+    <body>
+	
+         <input type='text' id='textInput' style='height: 2px; width:9px; border: 1px soild white; position:relative;top:-10000px;z-index:-9999' >
+        <div class="puzzle cells13">
+            <img class="banner-image" src="https://www.pa-puzzles.com/upload/images/c03a2ab462fa2f5b205f9426f927577b.jpg" alt="Banner Image">
+              
+            <div class="puzzle-toolbar">
+               
+                
+                <!-- GS wip_new_modified -->
+                <!-- Starts :- New hamburger responsive menu -->
+                <header>
+                    <section>
+                        <a id="logo">
+						<div><img style="float: left; margin-right: 10px; cursor: auto;" src="https://www.pa-puzzles.com/puzzles/_images/timer-icon-black.png"><div id='timer' style='width:30px; color:black;'>00:00</div>  </div>    
+						<div style="margin-left:135px;"> <span style='margin-left:35px !important;font-size:15px;' id='game-state'></span></div> </a>
+						
+                       <label for="toggle-1" class="toggle-menu" id="chkid" style="color:black;
+                        font-size:30px;
+                        ">&#9776;</label>
+                        <input type="checkbox" id="toggle-1">
+                            <nav id="menunav" style="position: absolute; overflow:scroll;overflow-x:hidden;height:450px">
+                            <ul><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='change-font-size' href='#' onclick="TrackPuzzle.analyticsEvent('button', 'click', 'font_size');"><div style='display: inline-block; vertical-align: super; '>Change Font</div><div style='display: inline-block; vertical-align: sub; '> <img id='change-font-size-1' src='https://www.pa-puzzles.com/puzzles/_images/font-size-black.png' title='Toggle Font Size'
+             /></div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='save-game' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'save_game');">
+            <div style='display: inline-block; vertical-align: super; '>Save Game</div>
+            <div style='display: inline-block; vertical-align: sub; '><img id='save-game-1' src='https://www.pa-puzzles.com/puzzles/_images/save-black.png' title='Save Game'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'save_game');" /></div>
+            </a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='puzzle-hint' href='#' 
+                    onclick="TrackPuzzle.analyticsEvent('button', 'click', 'hint'); return false;">
+                    <div style='display: inline-block; vertical-align: super;'>Get Hint</div>
+                    <div style='display: inline-block; vertical-align: sub;'>
+                        <img id='puzzle-hint-1' src='https://www.pa-puzzles.com/puzzles/_images/lightbulb-black.png'title='Get Hint' />
+                    </div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='puzzle-word-hint' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'hint_word');"><div style='display: inline-block; vertical-align: super; '>Get Word Hint</div><div style='display: inline-block; vertical-align: sub; '><img id='puzzle-word-hint-1' src='https://www.pa-puzzles.com/puzzles/_images/lightbulb-word-black.png' title='Get Word Hint'/> </div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='check-answers' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'check_answers');"><div style='display: inline-block; vertical-align: super; '>Check Answers</div><div style='display: inline-block; vertical-align: sub; '><img id='check-answers-1' src='https://www.pa-puzzles.com/puzzles/_images/check-answers-black.png' title='Check Answers'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'check_answers');" /></div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='puzzle-solve' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'show_solution');"><div style='display: inline-block; vertical-align: super; '>Show Solution</div><div style='display: inline-block; vertical-align: sub; '><img id='puzzle-solve-1' src='https://www.pa-puzzles.com/puzzles/_images/show-solution-black.png' title='Show Solution'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'show_solution');"    '/></div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='send-solution' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'send_solution');"><div style='display: inline-block; vertical-align: super; '>Send Solution</div><div style='display: inline-block; vertical-align: sub; '><img id='send-solution-1' src='https://www.pa-puzzles.com/puzzles/_images/envelope-alt-black.png' title='Send Solution'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'send_solution');" /></div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='show-toplist' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'show_leaderboard');"><div style='display: inline-block; vertical-align: super; '>Show Leaderboard</div><div style='display: inline-block; vertical-align: sub; '> <img id='show-toplist-1' src='https://www.pa-puzzles.com/puzzles/_images/toplist-black.png' title='Show Leaderboard'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'show_leaderboard');" /></div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='puzzle-clear' href='#' onclick="TrackPuzzle.analyticsEvent('button', 'click', 'delete_all');"><span style='padding-bottom:20px'><div style='display: inline-block; vertical-align: super; '>Clear Puzzle</div><div style='display: inline-block; vertical-align: sub; '></span><img  id='puzzle-clear-1' src='https://www.pa-puzzles.com/puzzles/_images/trash-black.png' title='Clear Puzzle'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'delete_all');" /></div></a></li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a  id='skip-on' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'skip_on');"><div style='display: inline-block; vertical-align: super; '>Automatic Skip</div><div style='display: inline-block; vertical-align: sub; '>  <img id='skip-off-image' src='https://www.pa-puzzles.com/puzzles/_images/skipOn.png' title='Automatic Skip'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'skip_on');" /></div><input type='hidden' id='gshidden' value='0'></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='print-game' href='#' onclick="return  TrackPuzzle.analyticsEvent('button', 'click', 'print_game');"><div style='display: inline-block; vertical-align: super; '>Print</div><div style='display: inline-block; vertical-align: sub; '> <img id='print-game-1' src='https://www.pa-puzzles.com/puzzles/_images/print-black.png' title='Print'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'print_game');" /></div></a> </li><li style = 'text-align:right;
+    vertical-align: middle;
+    height: 100%;  '> <a id='cross-btn2' href='#' onclick="return  testGS();"><div style='display: inline-block; vertical-align: super; '>Change View</div><div style='display: inline-block; vertical-align: sub; '> <img id='cross-btn-1' src='https://www.pa-puzzles.com/puzzles/_images/btn_cross.png' title='Change View'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'cross-btn');" /></div></a> </li></ul>
+                            </nav>
+							<div style="float:right;margin-right:5px;"><a  id='switch-from' href='#' onclick="return switchGS(); "><img id='switch-to' src='https://www.pa-puzzles.com/puzzles/_images/Switch_from.png' title='Switch View'
+            onclick="TrackPuzzle.analyticsEvent('button', 'click', 'switch-from');" /></a></div>
+                </section>
+                </header>
+                <!-- End of menu-->
+                <!-- GS wip_new_modified -->
+            </div>
+                 
+            <div class="puzzle-wrapper right-clue center" id="gamePrint" >
+                <div id="base"  style="float:left;overflow:hidden;">
+                        <div id="puzzle-grid" class="puzzle-grid" data-x="13">
+                            
+                            <div class="row"><div id='cell-1-1' class='cell  cell-1-1 ' data-clueid='1' data-reverted='0' data-value='1-1'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>1</span>
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cell-2-1' class='cell  cell-2-1 ' data-clueid='1-13' data-reverted='0' data-value='2-1'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>2</span>
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cell-3-1' class='cell  cell-3-1 ' data-clueid='1' data-reverted='0' data-value='3-1'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cell-4-1' class='cell  cell-4-1 ' data-clueid='1-14' data-reverted='0' data-value='4-1'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>3</span>
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-5-1' class='cell blank'></div><div id='cell-6-1' class='cell  cell-6-1 ' data-clueid='15' data-reverted='0' data-value='6-1'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>4</span>
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cell-7-1' class='cell blank'></div><div id='cell-8-1' class='cell  cell-8-1 ' data-clueid='16' data-reverted='0' data-value='8-1'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>5</span>
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-9-1' class='cell blank'></div><div id='cell-10-1' class='cell  cell-10-1 ' data-clueid='17' data-reverted='0' data-value='10-1'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>6</span>
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-11-1' class='cell blank'></div><div id='cell-12-1' class='cell blank'></div><div id='cell-13-1' class='cell  cell-13-1 ' data-clueid='18' data-reverted='0' data-value='13-1'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>7</span>
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class="row"><div id='cell-1-2' class='cell blank'></div><div id='cell-2-2' class='cell  cell-2-2 ' data-clueid='13' data-reverted='0' data-value='2-2'>
+                    
+                    <div class='cell-input' data-solution='V'></div>
+                </div><div id='cell-3-2' class='cell blank'></div><div id='cell-4-2' class='cell  cell-4-2 ' data-clueid='2-14' data-reverted='0' data-value='4-2'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>8</span>
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cell-5-2' class='cell  cell-5-2 ' data-clueid='2' data-reverted='0' data-value='5-2'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-6-2' class='cell  cell-6-2 ' data-clueid='2-15' data-reverted='0' data-value='6-2'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-7-2' class='cell  cell-7-2 ' data-clueid='2' data-reverted='0' data-value='7-2'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cell-8-2' class='cell  cell-8-2 ' data-clueid='2-16' data-reverted='0' data-value='8-2'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-9-2' class='cell  cell-9-2 ' data-clueid='2' data-reverted='0' data-value='9-2'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-10-2' class='cell  cell-10-2 ' data-clueid='2-17' data-reverted='0' data-value='10-2'>
+                    
+                    <div class='cell-input' data-solution='M'></div>
+                </div><div id='cell-11-2' class='cell  cell-11-2 ' data-clueid='2' data-reverted='0' data-value='11-2'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-12-2' class='cell  cell-12-2 ' data-clueid='2' data-reverted='0' data-value='12-2'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cell-13-2' class='cell  cell-13-2 ' data-clueid='2-18' data-reverted='0' data-value='13-2'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div></div><div class="row"><div id='cell-1-3' class='cell blank'></div><div id='cell-2-3' class='cell  cell-2-3 ' data-clueid='13' data-reverted='0' data-value='2-3'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-3-3' class='cell blank'></div><div id='cell-4-3' class='cell  cell-4-3 ' data-clueid='14' data-reverted='0' data-value='4-3'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-5-3' class='cell blank'></div><div id='cell-6-3' class='cell  cell-6-3 ' data-clueid='15' data-reverted='0' data-value='6-3'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-7-3' class='cell blank'></div><div id='cell-8-3' class='cell  cell-8-3 ' data-clueid='16' data-reverted='0' data-value='8-3'>
+                    
+                    <div class='cell-input' data-solution='V'></div>
+                </div><div id='cell-9-3' class='cell blank'></div><div id='cell-10-3' class='cell  cell-10-3 ' data-clueid='17' data-reverted='0' data-value='10-3'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cell-11-3' class='cell blank'></div><div id='cell-12-3' class='cell blank'></div><div id='cell-13-3' class='cell  cell-13-3 ' data-clueid='18' data-reverted='0' data-value='13-3'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div></div><div class="row"><div id='cell-1-4' class='cell  cell-1-4 ' data-clueid='3' data-reverted='0' data-value='1-4'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>9</span>
+                    <div class='cell-input' data-solution='B'></div>
+                </div><div id='cell-2-4' class='cell  cell-2-4 ' data-clueid='3-13' data-reverted='0' data-value='2-4'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-3-4' class='cell  cell-3-4 ' data-clueid='3' data-reverted='0' data-value='3-4'>
+                    
+                    <div class='cell-input' data-solution='U'></div>
+                </div><div id='cell-4-4' class='cell  cell-4-4 ' data-clueid='3-14' data-reverted='0' data-value='4-4'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cell-5-4' class='cell  cell-5-4 ' data-clueid='3' data-reverted='0' data-value='5-4'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-6-4' class='cell  cell-6-4 ' data-clueid='3-15' data-reverted='0' data-value='6-4'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cell-7-4' class='cell  cell-7-4 ' data-clueid='3' data-reverted='0' data-value='7-4'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cell-8-4' class='cell  cell-8-4 ' data-clueid='3-16' data-reverted='0' data-value='8-4'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-9-4' class='cell blank'></div><div id='cell-10-4' class='cell  cell-10-4 ' data-clueid='4-17' data-reverted='0' data-value='10-4'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>10</span>
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cell-11-4' class='cell  cell-11-4 ' data-clueid='4' data-reverted='0' data-value='11-4'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-12-4' class='cell  cell-12-4 ' data-clueid='4-19' data-reverted='0' data-value='12-4'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>11</span>
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-13-4' class='cell  cell-13-4 ' data-clueid='4-18' data-reverted='0' data-value='13-4'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div></div><div class="row"><div id='cell-1-5' class='cell blank'></div><div id='cell-2-5' class='cell  cell-2-5 ' data-clueid='13' data-reverted='0' data-value='2-5'>
+                    
+                    <div class='cell-input' data-solution='M'></div>
+                </div><div id='cell-3-5' class='cell blank'></div><div id='cell-4-5' class='cell blank'></div><div id='cell-5-5' class='cell blank'></div><div id='cell-6-5' class='cell  cell-6-5 ' data-clueid='15' data-reverted='0' data-value='6-5'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-7-5' class='cell blank'></div><div id='cell-8-5' class='cell  cell-8-5 ' data-clueid='16' data-reverted='0' data-value='8-5'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cell-9-5' class='cell blank'></div><div id='cell-10-5' class='cell  cell-10-5 ' data-clueid='17' data-reverted='0' data-value='10-5'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cell-11-5' class='cell blank'></div><div id='cell-12-5' class='cell  cell-12-5 ' data-clueid='19' data-reverted='0' data-value='12-5'>
+                    
+                    <div class='cell-input' data-solution='U'></div>
+                </div><div id='cell-13-5' class='cell blank'></div></div><div class="row"><div id='cell-1-6' class='cell  cell-1-6 ' data-clueid='5' data-reverted='0' data-value='1-6'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>12</span>
+                    <div class='cell-input' data-solution='B'></div>
+                </div><div id='cell-2-6' class='cell  cell-2-6 ' data-clueid='5-13' data-reverted='0' data-value='2-6'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-3-6' class='cell  cell-3-6 ' data-clueid='5' data-reverted='0' data-value='3-6'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cell-4-6' class='cell  cell-4-6 ' data-clueid='5-20' data-reverted='0' data-value='4-6'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>13</span>
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cell-5-6' class='cell  cell-5-6 ' data-clueid='5' data-reverted='0' data-value='5-6'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-6-6' class='cell  cell-6-6 ' data-clueid='5-15' data-reverted='0' data-value='6-6'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cell-7-6' class='cell blank'></div><div id='cell-8-6' class='cell  cell-8-6 ' data-clueid='6-16' data-reverted='0' data-value='8-6'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>14</span>
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-9-6' class='cell  cell-9-6 ' data-clueid='6' data-reverted='0' data-value='9-6'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cell-10-6' class='cell  cell-10-6 ' data-clueid='6-17' data-reverted='0' data-value='10-6'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-11-6' class='cell  cell-11-6 ' data-clueid='6' data-reverted='0' data-value='11-6'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-12-6' class='cell  cell-12-6 ' data-clueid='6-19' data-reverted='0' data-value='12-6'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cell-13-6' class='cell  cell-13-6 ' data-clueid='6' data-reverted='0' data-value='13-6'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class="row"><div id='cell-1-7' class='cell blank'></div><div id='cell-2-7' class='cell  cell-2-7 ' data-clueid='13' data-reverted='0' data-value='2-7'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cell-3-7' class='cell blank'></div><div id='cell-4-7' class='cell  cell-4-7 ' data-clueid='20' data-reverted='0' data-value='4-7'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cell-5-7' class='cell blank'></div><div id='cell-6-7' class='cell blank'></div><div id='cell-7-7' class='cell blank'></div><div id='cell-8-7' class='cell blank'></div><div id='cell-9-7' class='cell blank'></div><div id='cell-10-7' class='cell  cell-10-7 ' data-clueid='17' data-reverted='0' data-value='10-7'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-11-7' class='cell blank'></div><div id='cell-12-7' class='cell  cell-12-7 ' data-clueid='19' data-reverted='0' data-value='12-7'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-13-7' class='cell blank'></div></div><div class="row"><div id='cell-1-8' class='cell  cell-1-8 ' data-clueid='7' data-reverted='0' data-value='1-8'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>15</span>
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-2-8' class='cell  cell-2-8 ' data-clueid='7-13' data-reverted='0' data-value='2-8'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cell-3-8' class='cell  cell-3-8 ' data-clueid='7' data-reverted='0' data-value='3-8'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-4-8' class='cell  cell-4-8 ' data-clueid='7-20' data-reverted='0' data-value='4-8'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cell-5-8' class='cell  cell-5-8 ' data-clueid='7' data-reverted='0' data-value='5-8'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-6-8' class='cell  cell-6-8 ' data-clueid='7-21' data-reverted='0' data-value='6-8'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>16</span>
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-7-8' class='cell blank'></div><div id='cell-8-8' class='cell  cell-8-8 ' data-clueid='8-22' data-reverted='0' data-value='8-8'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>17</span>
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cell-9-8' class='cell  cell-9-8 ' data-clueid='8' data-reverted='0' data-value='9-8'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-10-8' class='cell  cell-10-8 ' data-clueid='8-17' data-reverted='0' data-value='10-8'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-11-8' class='cell  cell-11-8 ' data-clueid='8' data-reverted='0' data-value='11-8'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-12-8' class='cell  cell-12-8 ' data-clueid='8-19' data-reverted='0' data-value='12-8'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-13-8' class='cell  cell-13-8 ' data-clueid='8' data-reverted='0' data-value='13-8'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div></div><div class="row"><div id='cell-1-9' class='cell blank'></div><div id='cell-2-9' class='cell  cell-2-9 ' data-clueid='13' data-reverted='0' data-value='2-9'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-3-9' class='cell blank'></div><div id='cell-4-9' class='cell  cell-4-9 ' data-clueid='20' data-reverted='0' data-value='4-9'>
+                    
+                    <div class='cell-input' data-solution='H'></div>
+                </div><div id='cell-5-9' class='cell blank'></div><div id='cell-6-9' class='cell  cell-6-9 ' data-clueid='21' data-reverted='0' data-value='6-9'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-7-9' class='cell blank'></div><div id='cell-8-9' class='cell  cell-8-9 ' data-clueid='22' data-reverted='0' data-value='8-9'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-9-9' class='cell blank'></div><div id='cell-10-9' class='cell blank'></div><div id='cell-11-9' class='cell blank'></div><div id='cell-12-9' class='cell  cell-12-9 ' data-clueid='19' data-reverted='0' data-value='12-9'>
+                    
+                    <div class='cell-input' data-solution='V'></div>
+                </div><div id='cell-13-9' class='cell blank'></div></div><div class="row"><div id='cell-1-10' class='cell  cell-1-10 ' data-clueid='9-23' data-reverted='0' data-value='1-10'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>18</span>
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cell-2-10' class='cell  cell-2-10 ' data-clueid='9-13' data-reverted='0' data-value='2-10'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cell-3-10' class='cell  cell-3-10 ' data-clueid='9' data-reverted='0' data-value='3-10'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-4-10' class='cell  cell-4-10 ' data-clueid='9-20' data-reverted='0' data-value='4-10'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-5-10' class='cell blank'></div><div id='cell-6-10' class='cell  cell-6-10 ' data-clueid='10-21' data-reverted='0' data-value='6-10'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>19</span>
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cell-7-10' class='cell  cell-7-10 ' data-clueid='10' data-reverted='0' data-value='7-10'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-8-10' class='cell  cell-8-10 ' data-clueid='10-22' data-reverted='0' data-value='8-10'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-9-10' class='cell  cell-9-10 ' data-clueid='10' data-reverted='0' data-value='9-10'>
+                    
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cell-10-10' class='cell  cell-10-10 ' data-clueid='10-24' data-reverted='0' data-value='10-10'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>20</span>
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cell-11-10' class='cell  cell-11-10 ' data-clueid='10' data-reverted='0' data-value='11-10'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-12-10' class='cell  cell-12-10 ' data-clueid='10-19' data-reverted='0' data-value='12-10'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-13-10' class='cell  cell-13-10 ' data-clueid='10' data-reverted='0' data-value='13-10'>
+                    
+                    <div class='cell-input' data-solution='M'></div>
+                </div></div><div class="row"><div id='cell-1-11' class='cell  cell-1-11 ' data-clueid='23' data-reverted='0' data-value='1-11'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-2-11' class='cell blank'></div><div id='cell-3-11' class='cell blank'></div><div id='cell-4-11' class='cell  cell-4-11 ' data-clueid='20' data-reverted='0' data-value='4-11'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-5-11' class='cell blank'></div><div id='cell-6-11' class='cell  cell-6-11 ' data-clueid='21' data-reverted='0' data-value='6-11'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-7-11' class='cell blank'></div><div id='cell-8-11' class='cell  cell-8-11 ' data-clueid='22' data-reverted='0' data-value='8-11'>
+                    
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cell-9-11' class='cell blank'></div><div id='cell-10-11' class='cell  cell-10-11 ' data-clueid='24' data-reverted='0' data-value='10-11'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-11-11' class='cell blank'></div><div id='cell-12-11' class='cell  cell-12-11 ' data-clueid='19' data-reverted='0' data-value='12-11'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-13-11' class='cell blank'></div></div><div class="row"><div id='cell-1-12' class='cell  cell-1-12 ' data-clueid='11-23' data-reverted='0' data-value='1-12'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>21</span>
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cell-2-12' class='cell  cell-2-12 ' data-clueid='11' data-reverted='0' data-value='2-12'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cell-3-12' class='cell  cell-3-12 ' data-clueid='11' data-reverted='0' data-value='3-12'>
+                    
+                    <div class='cell-input' data-solution='B'></div>
+                </div><div id='cell-4-12' class='cell  cell-4-12 ' data-clueid='11-20' data-reverted='0' data-value='4-12'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cell-5-12' class='cell  cell-5-12 ' data-clueid='11' data-reverted='0' data-value='5-12'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cell-6-12' class='cell  cell-6-12 ' data-clueid='11-21' data-reverted='0' data-value='6-12'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cell-7-12' class='cell  cell-7-12 ' data-clueid='11' data-reverted='0' data-value='7-12'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-8-12' class='cell  cell-8-12 ' data-clueid='11-22' data-reverted='0' data-value='8-12'>
+                    
+                    <div class='cell-input' data-solution='U'></div>
+                </div><div id='cell-9-12' class='cell  cell-9-12 ' data-clueid='11' data-reverted='0' data-value='9-12'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cell-10-12' class='cell  cell-10-12 ' data-clueid='11-24' data-reverted='0' data-value='10-12'>
+                    
+                    <div class='cell-input' data-solution='K'></div>
+                </div><div id='cell-11-12' class='cell blank'></div><div id='cell-12-12' class='cell  cell-12-12 ' data-clueid='19' data-reverted='0' data-value='12-12'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cell-13-12' class='cell blank'></div></div><div class="row"><div id='cell-1-13' class='cell  cell-1-13 ' data-clueid='23' data-reverted='0' data-value='1-13'>
+                    
+                    <div class='cell-input' data-solution='K'></div>
+                </div><div id='cell-2-13' class='cell blank'></div><div id='cell-3-13' class='cell blank'></div><div id='cell-4-13' class='cell  cell-4-13 ' data-clueid='20' data-reverted='0' data-value='4-13'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cell-5-13' class='cell blank'></div><div id='cell-6-13' class='cell  cell-6-13 ' data-clueid='21' data-reverted='0' data-value='6-13'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-7-13' class='cell blank'></div><div id='cell-8-13' class='cell  cell-8-13 ' data-clueid='22' data-reverted='0' data-value='8-13'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cell-9-13' class='cell blank'></div><div id='cell-10-13' class='cell  cell-10-13 ' data-clueid='12-24' data-reverted='0' data-value='10-13'>
+                    <span class='cell-number' style='font-size: 10px; margin-top: -5px;'>22</span>
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cell-11-13' class='cell  cell-11-13 ' data-clueid='12' data-reverted='0' data-value='11-13'>
+                    
+                    <div class='cell-input' data-solution='Z'></div>
+                </div><div id='cell-12-13' class='cell  cell-12-13 ' data-clueid='12-19' data-reverted='0' data-value='12-13'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cell-13-13' class='cell  cell-13-13 ' data-clueid='12' data-reverted='0' data-value='13-13'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div></div>
+                        </div>
+		</div>		
+        <div class="clues" id="c1" style="position: relative; ">
+            <h2>ACROSS</h2>
+            <div class="clues-list across" >
+                <ul class="clues-across my-content-mobile-across" style="width:100%">
+                            <div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-1' class='clue-1' data-direction='across' data-x1='1' data-x2='4' data-y1='1' data-y2='1' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='1'> <div style='width:40px;float:left;word-wrap: break-word;'><b>1</b></div><div style=''> Spaniards on the university staff (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-1-1_accross' class='cell  cell-1-1_accross cMob' data-clueid='1' data-reverted='0' data-value='1-1' data-totalClue='12-1' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cellM-2-1_accross' class='cell  cell-2-1_accross cMob' data-clueid='1-13' data-reverted='0' data-value='2-1' data-totalClue='12-1' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cellM-3-1_accross' class='cell  cell-3-1_accross cMob' data-clueid='1' data-reverted='0' data-value='3-1' data-totalClue='12-1' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cellM-4-1_accross' class='cell  cell-4-1_accross cMob' data-clueid='1-14' data-reverted='0' data-value='4-1' data-totalClue='12-1' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-2' class='clue-2' data-direction='across' data-x1='4' data-x2='13' data-y1='2' data-y2='2' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='8'> <div style='width:40px;float:left;word-wrap: break-word;'><b>8</b></div><div style=''> Assembly that puts fellows in partial disarray (10)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-4-2_accross' class='cell  cell-4-2_accross cMob' data-clueid='2-14' data-reverted='0' data-value='4-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cellM-5-2_accross' class='cell  cell-5-2_accross cMob' data-clueid='2' data-reverted='0' data-value='5-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-6-2_accross' class='cell  cell-6-2_accross cMob' data-clueid='2-15' data-reverted='0' data-value='6-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-7-2_accross' class='cell  cell-7-2_accross cMob' data-clueid='2' data-reverted='0' data-value='7-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-8-2_accross' class='cell  cell-8-2_accross cMob' data-clueid='2-16' data-reverted='0' data-value='8-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-9-2_accross' class='cell  cell-9-2_accross cMob' data-clueid='2' data-reverted='0' data-value='9-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-10-2_accross' class='cell  cell-10-2_accross cMob' data-clueid='2-17' data-reverted='0' data-value='10-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='M'></div>
+                </div><div id='cellM-11-2_accross' class='cell  cell-11-2_accross cMob' data-clueid='2' data-reverted='0' data-value='11-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-12-2_accross' class='cell  cell-12-2_accross cMob' data-clueid='2' data-reverted='0' data-value='12-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cellM-13-2_accross' class='cell  cell-13-2_accross cMob' data-clueid='2-18' data-reverted='0' data-value='13-2' data-totalClue='12-2' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-3' class='clue-3' data-direction='across' data-x1='1' data-x2='8' data-y1='4' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='9'> <div style='width:40px;float:left;word-wrap: break-word;'><b>9</b></div><div style=''> Nevertheless she's a member of the fair sex (8)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-1-4_accross' class='cell  cell-1-4_accross cMob' data-clueid='3' data-reverted='0' data-value='1-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='B'></div>
+                </div><div id='cellM-2-4_accross' class='cell  cell-2-4_accross cMob' data-clueid='3-13' data-reverted='0' data-value='2-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-3-4_accross' class='cell  cell-3-4_accross cMob' data-clueid='3' data-reverted='0' data-value='3-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='U'></div>
+                </div><div id='cellM-4-4_accross' class='cell  cell-4-4_accross cMob' data-clueid='3-14' data-reverted='0' data-value='4-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cellM-5-4_accross' class='cell  cell-5-4_accross cMob' data-clueid='3' data-reverted='0' data-value='5-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-6-4_accross' class='cell  cell-6-4_accross cMob' data-clueid='3-15' data-reverted='0' data-value='6-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-7-4_accross' class='cell  cell-7-4_accross cMob' data-clueid='3' data-reverted='0' data-value='7-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-8-4_accross' class='cell  cell-8-4_accross cMob' data-clueid='3-16' data-reverted='0' data-value='8-4' data-totalClue='12-3' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-4' class='clue-4' data-direction='across' data-x1='10' data-x2='13' data-y1='4' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='10'> <div style='width:40px;float:left;word-wrap: break-word;'><b>10</b></div><div style=''> The French way to survive (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-10-4_accross' class='cell  cell-10-4_accross cMob' data-clueid='4-17' data-reverted='0' data-value='10-4' data-totalClue='12-4' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-11-4_accross' class='cell  cell-11-4_accross cMob' data-clueid='4' data-reverted='0' data-value='11-4' data-totalClue='12-4' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-12-4_accross' class='cell  cell-12-4_accross cMob' data-clueid='4-19' data-reverted='0' data-value='12-4' data-totalClue='12-4' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-13-4_accross' class='cell  cell-13-4_accross cMob' data-clueid='4-18' data-reverted='0' data-value='13-4' data-totalClue='12-4' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-5' class='clue-5' data-direction='across' data-x1='1' data-x2='6' data-y1='6' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='12'> <div style='width:40px;float:left;word-wrap: break-word;'><b>12</b></div><div style=''> Everybody interrupting deplorable song (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-1-6_accross' class='cell  cell-1-6_accross cMob' data-clueid='5' data-reverted='0' data-value='1-6' data-totalClue='12-5' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='B'></div>
+                </div><div id='cellM-2-6_accross' class='cell  cell-2-6_accross cMob' data-clueid='5-13' data-reverted='0' data-value='2-6' data-totalClue='12-5' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-3-6_accross' class='cell  cell-3-6_accross cMob' data-clueid='5' data-reverted='0' data-value='3-6' data-totalClue='12-5' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-4-6_accross' class='cell  cell-4-6_accross cMob' data-clueid='5-20' data-reverted='0' data-value='4-6' data-totalClue='12-5' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-5-6_accross' class='cell  cell-5-6_accross cMob' data-clueid='5' data-reverted='0' data-value='5-6' data-totalClue='12-5' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-6-6_accross' class='cell  cell-6-6_accross cMob' data-clueid='5-15' data-reverted='0' data-value='6-6' data-totalClue='12-5' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-6' class='clue-6' data-direction='across' data-x1='8' data-x2='13' data-y1='6' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='14'> <div style='width:40px;float:left;word-wrap: break-word;'><b>14</b></div><div style=''> Takes off for an excursion in the vessel (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-8-6_accross' class='cell  cell-8-6_accross cMob' data-clueid='6-16' data-reverted='0' data-value='8-6' data-totalClue='12-6' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-9-6_accross' class='cell  cell-9-6_accross cMob' data-clueid='6' data-reverted='0' data-value='9-6' data-totalClue='12-6' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-10-6_accross' class='cell  cell-10-6_accross cMob' data-clueid='6-17' data-reverted='0' data-value='10-6' data-totalClue='12-6' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-11-6_accross' class='cell  cell-11-6_accross cMob' data-clueid='6' data-reverted='0' data-value='11-6' data-totalClue='12-6' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-12-6_accross' class='cell  cell-12-6_accross cMob' data-clueid='6-19' data-reverted='0' data-value='12-6' data-totalClue='12-6' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cellM-13-6_accross' class='cell  cell-13-6_accross cMob' data-clueid='6' data-reverted='0' data-value='13-6' data-totalClue='12-6' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:px;' id='clue-7' class='clue-7' data-direction='across' data-x1='1' data-x2='6' data-y1='8' data-y2='8' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='15'> <div style='width:40px;float:left;word-wrap: break-word;'><b>15</b></div><div style=''> Says tastes differ (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-1-8_accross' class='cell  cell-1-8_accross cMob' data-clueid='7' data-reverted='0' data-value='1-8' data-totalClue='12-7' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-2-8_accross' class='cell  cell-2-8_accross cMob' data-clueid='7-13' data-reverted='0' data-value='2-8' data-totalClue='12-7' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-3-8_accross' class='cell  cell-3-8_accross cMob' data-clueid='7' data-reverted='0' data-value='3-8' data-totalClue='12-7' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-4-8_accross' class='cell  cell-4-8_accross cMob' data-clueid='7-20' data-reverted='0' data-value='4-8' data-totalClue='12-7' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-5-8_accross' class='cell  cell-5-8_accross cMob' data-clueid='7' data-reverted='0' data-value='5-8' data-totalClue='12-7' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-6-8_accross' class='cell  cell-6-8_accross cMob' data-clueid='7-21' data-reverted='0' data-value='6-8' data-totalClue='12-7' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-8' class='clue-8' data-direction='across' data-x1='8' data-x2='13' data-y1='8' data-y2='8' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='17'> <div style='width:40px;float:left;word-wrap: break-word;'><b>17</b></div><div style=''> Leave a great deal of waste (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-8-8_accross' class='cell  cell-8-8_accross cMob' data-clueid='8-22' data-reverted='0' data-value='8-8' data-totalClue='12-8' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cellM-9-8_accross' class='cell  cell-9-8_accross cMob' data-clueid='8' data-reverted='0' data-value='9-8' data-totalClue='12-8' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-10-8_accross' class='cell  cell-10-8_accross cMob' data-clueid='8-17' data-reverted='0' data-value='10-8' data-totalClue='12-8' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-11-8_accross' class='cell  cell-11-8_accross cMob' data-clueid='8' data-reverted='0' data-value='11-8' data-totalClue='12-8' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-12-8_accross' class='cell  cell-12-8_accross cMob' data-clueid='8-19' data-reverted='0' data-value='12-8' data-totalClue='12-8' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-13-8_accross' class='cell  cell-13-8_accross cMob' data-clueid='8' data-reverted='0' data-value='13-8' data-totalClue='12-8' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-9' class='clue-9' data-direction='across' data-x1='1' data-x2='4' data-y1='10' data-y2='10' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='18'> <div style='width:40px;float:left;word-wrap: break-word;'><b>18</b></div><div style=''> To sing after this request is enjoyable (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-1-10_accross' class='cell  cell-1-10_accross cMob' data-clueid='9-23' data-reverted='0' data-value='1-10' data-totalClue='12-9' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cellM-2-10_accross' class='cell  cell-2-10_accross cMob' data-clueid='9-13' data-reverted='0' data-value='2-10' data-totalClue='12-9' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-3-10_accross' class='cell  cell-3-10_accross cMob' data-clueid='9' data-reverted='0' data-value='3-10' data-totalClue='12-9' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-4-10_accross' class='cell  cell-4-10_accross cMob' data-clueid='9-20' data-reverted='0' data-value='4-10' data-totalClue='12-9' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-10' class='clue-10' data-direction='across' data-x1='6' data-x2='13' data-y1='10' data-y2='10' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='19'> <div style='width:40px;float:left;word-wrap: break-word;'><b>19</b></div><div style=''> Repudiate Diana's insurance demand (8)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-6-10_accross' class='cell  cell-6-10_accross cMob' data-clueid='10-21' data-reverted='0' data-value='6-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cellM-7-10_accross' class='cell  cell-7-10_accross cMob' data-clueid='10' data-reverted='0' data-value='7-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-8-10_accross' class='cell  cell-8-10_accross cMob' data-clueid='10-22' data-reverted='0' data-value='8-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-9-10_accross' class='cell  cell-9-10_accross cMob' data-clueid='10' data-reverted='0' data-value='9-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cellM-10-10_accross' class='cell  cell-10-10_accross cMob' data-clueid='10-24' data-reverted='0' data-value='10-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-11-10_accross' class='cell  cell-11-10_accross cMob' data-clueid='10' data-reverted='0' data-value='11-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-12-10_accross' class='cell  cell-12-10_accross cMob' data-clueid='10-19' data-reverted='0' data-value='12-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-13-10_accross' class='cell  cell-13-10_accross cMob' data-clueid='10' data-reverted='0' data-value='13-10' data-totalClue='12-10' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='M'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-11' class='clue-11' data-direction='across' data-x1='1' data-x2='10' data-y1='12' data-y2='12' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='21'> <div style='width:40px;float:left;word-wrap: break-word;'><b>21</b></div><div style=''> You'll need a taxi in case there's heavy luggage (5,5)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-1-12_accross' class='cell  cell-1-12_accross cMob' data-clueid='11-23' data-reverted='0' data-value='1-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cellM-2-12_accross' class='cell  cell-2-12_accross cMob' data-clueid='11' data-reverted='0' data-value='2-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-3-12_accross' class='cell  cell-3-12_accross cMob' data-clueid='11' data-reverted='0' data-value='3-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='B'></div>
+                </div><div id='cellM-4-12_accross' class='cell  cell-4-12_accross cMob' data-clueid='11-20' data-reverted='0' data-value='4-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-5-12_accross' class='cell  cell-5-12_accross cMob' data-clueid='11' data-reverted='0' data-value='5-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div style="position:relative;float:left;margin-left:4px;margin:right:4px;">/</div><div style="postion:relative; width:7.1px;">&nbsp</div><div id='cellM-6-12_accross' class='cell  cell-6-12_accross cMob' data-clueid='11-21' data-reverted='0' data-value='6-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-7-12_accross' class='cell  cell-7-12_accross cMob' data-clueid='11' data-reverted='0' data-value='7-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-8-12_accross' class='cell  cell-8-12_accross cMob' data-clueid='11-22' data-reverted='0' data-value='8-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='U'></div>
+                </div><div id='cellM-9-12_accross' class='cell  cell-9-12_accross cMob' data-clueid='11' data-reverted='0' data-value='9-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cellM-10-12_accross' class='cell  cell-10-12_accross cMob' data-clueid='11-24' data-reverted='0' data-value='10-12' data-totalClue='12-11' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='K'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-12' class='clue-12' data-direction='across' data-x1='10' data-x2='13' data-y1='13' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='22'> <div style='width:40px;float:left;word-wrap: break-word;'><b>22</b></div><div style=''> The last character to break up a generation in the Old Testament (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50% !important; margin-bottom:0px;float:right;"><div id='cellM-10-13_accross' class='cell  cell-10-13_accross cMob' data-clueid='12-24' data-reverted='0' data-value='10-13' data-totalClue='12-12' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-11-13_accross' class='cell  cell-11-13_accross cMob' data-clueid='12' data-reverted='0' data-value='11-13' data-totalClue='12-12' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='Z'></div>
+                </div><div id='cellM-12-13_accross' class='cell  cell-12-13_accross cMob' data-clueid='12-19' data-reverted='0' data-value='12-13' data-totalClue='12-12' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-13-13_accross' class='cell  cell-13-13_accross cMob' data-clueid='12' data-reverted='0' data-value='13-13' data-totalClue='12-12' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div></div>
+                </ul> 
+           <ul class="clues-across my-content-desktop-across" style="width:100%">
+                            <li id='clue-1' class='clue-1' data-direction='across' data-x1='1' data-x2='4' data-y1='1' data-y2='1' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='1'> <b>1</b> Spaniards on the university staff (4) <li id='clue-2' class='clue-2' data-direction='across' data-x1='4' data-x2='13' data-y1='2' data-y2='2' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='8'> <b>8</b> Assembly that puts fellows in partial disarray (10) <li id='clue-3' class='clue-3' data-direction='across' data-x1='1' data-x2='8' data-y1='4' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='9'> <b>9</b> Nevertheless she's a member of the fair sex (8) <li id='clue-4' class='clue-4' data-direction='across' data-x1='10' data-x2='13' data-y1='4' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='10'> <b>10</b> The French way to survive (4) <li id='clue-5' class='clue-5' data-direction='across' data-x1='1' data-x2='6' data-y1='6' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='12'> <b>12</b> Everybody interrupting deplorable song (6) <li id='clue-6' class='clue-6' data-direction='across' data-x1='8' data-x2='13' data-y1='6' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='14'> <b>14</b> Takes off for an excursion in the vessel (6) <li id='clue-7' class='clue-7' data-direction='across' data-x1='1' data-x2='6' data-y1='8' data-y2='8' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='15'> <b>15</b> Says tastes differ (6) <li id='clue-8' class='clue-8' data-direction='across' data-x1='8' data-x2='13' data-y1='8' data-y2='8' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='17'> <b>17</b> Leave a great deal of waste (6) <li id='clue-9' class='clue-9' data-direction='across' data-x1='1' data-x2='4' data-y1='10' data-y2='10' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='18'> <b>18</b> To sing after this request is enjoyable (4) <li id='clue-10' class='clue-10' data-direction='across' data-x1='6' data-x2='13' data-y1='10' data-y2='10' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='19'> <b>19</b> Repudiate Diana's insurance demand (8) <li id='clue-11' class='clue-11' data-direction='across' data-x1='1' data-x2='10' data-y1='12' data-y2='12' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='21'> <b>21</b> You'll need a taxi in case there's heavy luggage (5,5) <li id='clue-12' class='clue-12' data-direction='across' data-x1='10' data-x2='13' data-y1='13' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='22'> <b>22</b> The last character to break up a generation in the Old Testament (4) 
+                </ul> 
+                
+        
+        
+            </div>
+            </div>
+            <div class="clues" id="c2" style="position: relative;">
+                <h2>DOWN</h2>
+                <div class="clues-list down">
+                    <ul class="clues-down my-content-mobile-down" style="width:100%">
+                                <div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-13' class='clue-13' data-direction='down' data-x1='2' data-x2='2' data-y1='1' data-y2='10' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='2'> <div style='width:40px;float:left;word-wrap: break-word;'><b>2</b></div><div style=''> A feature of the Victorian room above the gas-fitting, we hear (10)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-2-1_down' class='cell  cell-2-1_down cMob' data-clueid='1-13' data-reverted='0' data-value='2-1' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cellM-2-2_down' class='cell  cell-2-2_down cMob' data-clueid='13' data-reverted='0' data-value='2-2' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='V'></div>
+                </div><div id='cellM-2-3_down' class='cell  cell-2-3_down cMob' data-clueid='13' data-reverted='0' data-value='2-3' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-2-4_down' class='cell  cell-2-4_down cMob' data-clueid='3-13' data-reverted='0' data-value='2-4' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-2-5_down' class='cell  cell-2-5_down cMob' data-clueid='13' data-reverted='0' data-value='2-5' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='M'></div>
+                </div><div id='cellM-2-6_down' class='cell  cell-2-6_down cMob' data-clueid='5-13' data-reverted='0' data-value='2-6' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-2-7_down' class='cell  cell-2-7_down cMob' data-clueid='13' data-reverted='0' data-value='2-7' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div><div id='cellM-2-8_down' class='cell  cell-2-8_down cMob' data-clueid='7-13' data-reverted='0' data-value='2-8' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-2-9_down' class='cell  cell-2-9_down cMob' data-clueid='13' data-reverted='0' data-value='2-9' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-2-10_down' class='cell  cell-2-10_down cMob' data-clueid='9-13' data-reverted='0' data-value='2-10' data-totalClue='12-13' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-14' class='clue-14' data-direction='down' data-x1='4' data-x2='4' data-y1='1' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='3'> <div style='width:40px;float:left;word-wrap: break-word;'><b>3</b></div><div style=''> Part of a bridge nine inches long (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-4-1_down' class='cell  cell-4-1_down cMob' data-clueid='1-14' data-reverted='0' data-value='4-1' data-totalClue='12-14' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-4-2_down' class='cell  cell-4-2_down cMob' data-clueid='2-14' data-reverted='0' data-value='4-2' data-totalClue='12-14' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cellM-4-3_down' class='cell  cell-4-3_down cMob' data-clueid='14' data-reverted='0' data-value='4-3' data-totalClue='12-14' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-4-4_down' class='cell  cell-4-4_down cMob' data-clueid='3-14' data-reverted='0' data-value='4-4' data-totalClue='12-14' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='N'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-15' class='clue-15' data-direction='down' data-x1='6' data-x2='6' data-y1='1' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='4'> <div style='width:40px;float:left;word-wrap: break-word;'><b>4</b></div><div style=''> Packed into a box car, maybe, with Edward (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-6-1_down' class='cell  cell-6-1_down cMob' data-clueid='15' data-reverted='0' data-value='6-1' data-totalClue='12-15' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cellM-6-2_down' class='cell  cell-6-2_down cMob' data-clueid='2-15' data-reverted='0' data-value='6-2' data-totalClue='12-15' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-6-3_down' class='cell  cell-6-3_down cMob' data-clueid='15' data-reverted='0' data-value='6-3' data-totalClue='12-15' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-6-4_down' class='cell  cell-6-4_down cMob' data-clueid='3-15' data-reverted='0' data-value='6-4' data-totalClue='12-15' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-6-5_down' class='cell  cell-6-5_down cMob' data-clueid='15' data-reverted='0' data-value='6-5' data-totalClue='12-15' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-6-6_down' class='cell  cell-6-6_down cMob' data-clueid='5-15' data-reverted='0' data-value='6-6' data-totalClue='12-15' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-16' class='clue-16' data-direction='down' data-x1='8' data-x2='8' data-y1='1' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='5'> <div style='width:40px;float:left;word-wrap: break-word;'><b>5</b></div><div style=''> Strive to break the fasteners (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-8-1_down' class='cell  cell-8-1_down cMob' data-clueid='16' data-reverted='0' data-value='8-1' data-totalClue='12-16' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-8-2_down' class='cell  cell-8-2_down cMob' data-clueid='2-16' data-reverted='0' data-value='8-2' data-totalClue='12-16' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-8-3_down' class='cell  cell-8-3_down cMob' data-clueid='16' data-reverted='0' data-value='8-3' data-totalClue='12-16' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='V'></div>
+                </div><div id='cellM-8-4_down' class='cell  cell-8-4_down cMob' data-clueid='3-16' data-reverted='0' data-value='8-4' data-totalClue='12-16' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-8-5_down' class='cell  cell-8-5_down cMob' data-clueid='16' data-reverted='0' data-value='8-5' data-totalClue='12-16' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-8-6_down' class='cell  cell-8-6_down cMob' data-clueid='6-16' data-reverted='0' data-value='8-6' data-totalClue='12-16' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-17' class='clue-17' data-direction='down' data-x1='10' data-x2='10' data-y1='1' data-y2='8' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='6'> <div style='width:40px;float:left;word-wrap: break-word;'><b>6</b></div><div style=''> What the beggar does could be simple or involved (8)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-10-1_down' class='cell  cell-10-1_down cMob' data-clueid='17' data-reverted='0' data-value='10-1' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-10-2_down' class='cell  cell-10-2_down cMob' data-clueid='2-17' data-reverted='0' data-value='10-2' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='M'></div>
+                </div><div id='cellM-10-3_down' class='cell  cell-10-3_down cMob' data-clueid='17' data-reverted='0' data-value='10-3' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cellM-10-4_down' class='cell  cell-10-4_down cMob' data-clueid='4-17' data-reverted='0' data-value='10-4' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-10-5_down' class='cell  cell-10-5_down cMob' data-clueid='17' data-reverted='0' data-value='10-5' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cellM-10-6_down' class='cell  cell-10-6_down cMob' data-clueid='6-17' data-reverted='0' data-value='10-6' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-10-7_down' class='cell  cell-10-7_down cMob' data-clueid='17' data-reverted='0' data-value='10-7' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-10-8_down' class='cell  cell-10-8_down cMob' data-clueid='8-17' data-reverted='0' data-value='10-8' data-totalClue='12-17' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-18' class='clue-18' data-direction='down' data-x1='13' data-x2='13' data-y1='1' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='7'> <div style='width:40px;float:left;word-wrap: break-word;'><b>7</b></div><div style=''> Leave it in the waste tip (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-13-1_down' class='cell  cell-13-1_down cMob' data-clueid='18' data-reverted='0' data-value='13-1' data-totalClue='12-18' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-13-2_down' class='cell  cell-13-2_down cMob' data-clueid='2-18' data-reverted='0' data-value='13-2' data-totalClue='12-18' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-13-3_down' class='cell  cell-13-3_down cMob' data-clueid='18' data-reverted='0' data-value='13-3' data-totalClue='12-18' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-13-4_down' class='cell  cell-13-4_down cMob' data-clueid='4-18' data-reverted='0' data-value='13-4' data-totalClue='12-18' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-19' class='clue-19' data-direction='down' data-x1='12' data-x2='12' data-y1='4' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='11'> <div style='width:40px;float:left;word-wrap: break-word;'><b>11</b></div><div style=''> Excellent face-saving device for the foreman (10)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-12-4_down' class='cell  cell-12-4_down cMob' data-clueid='4-19' data-reverted='0' data-value='12-4' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-12-5_down' class='cell  cell-12-5_down cMob' data-clueid='19' data-reverted='0' data-value='12-5' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='U'></div>
+                </div><div id='cellM-12-6_down' class='cell  cell-12-6_down cMob' data-clueid='6-19' data-reverted='0' data-value='12-6' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cellM-12-7_down' class='cell  cell-12-7_down cMob' data-clueid='19' data-reverted='0' data-value='12-7' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-12-8_down' class='cell  cell-12-8_down cMob' data-clueid='8-19' data-reverted='0' data-value='12-8' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-12-9_down' class='cell  cell-12-9_down cMob' data-clueid='19' data-reverted='0' data-value='12-9' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='V'></div>
+                </div><div id='cellM-12-10_down' class='cell  cell-12-10_down cMob' data-clueid='10-19' data-reverted='0' data-value='12-10' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-12-11_down' class='cell  cell-12-11_down cMob' data-clueid='19' data-reverted='0' data-value='12-11' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-12-12_down' class='cell  cell-12-12_down cMob' data-clueid='19' data-reverted='0' data-value='12-12' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cellM-12-13_down' class='cell  cell-12-13_down cMob' data-clueid='12-19' data-reverted='0' data-value='12-13' data-totalClue='12-19' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-20' class='clue-20' data-direction='down' data-x1='4' data-x2='4' data-y1='6' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='13'> <div style='width:40px;float:left;word-wrap: break-word;'><b>13</b></div><div style=''> Playful philanderer left before Horatio got upset (8)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-4-6_down' class='cell  cell-4-6_down cMob' data-clueid='5-20' data-reverted='0' data-value='4-6' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-4-7_down' class='cell  cell-4-7_down cMob' data-clueid='20' data-reverted='0' data-value='4-7' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div><div id='cellM-4-8_down' class='cell  cell-4-8_down cMob' data-clueid='7-20' data-reverted='0' data-value='4-8' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-4-9_down' class='cell  cell-4-9_down cMob' data-clueid='20' data-reverted='0' data-value='4-9' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='H'></div>
+                </div><div id='cellM-4-10_down' class='cell  cell-4-10_down cMob' data-clueid='9-20' data-reverted='0' data-value='4-10' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-4-11_down' class='cell  cell-4-11_down cMob' data-clueid='20' data-reverted='0' data-value='4-11' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='R'></div>
+                </div><div id='cellM-4-12_down' class='cell  cell-4-12_down cMob' data-clueid='11-20' data-reverted='0' data-value='4-12' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-4-13_down' class='cell  cell-4-13_down cMob' data-clueid='20' data-reverted='0' data-value='4-13' data-totalClue='12-20' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='O'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-21' class='clue-21' data-direction='down' data-x1='6' data-x2='6' data-y1='8' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='16'> <div style='width:40px;float:left;word-wrap: break-word;'><b>16</b></div><div style=''> To quieten down when badly teased (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-6-8_down' class='cell  cell-6-8_down cMob' data-clueid='7-21' data-reverted='0' data-value='6-8' data-totalClue='12-21' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-6-9_down' class='cell  cell-6-9_down cMob' data-clueid='21' data-reverted='0' data-value='6-9' data-totalClue='12-21' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-6-10_down' class='cell  cell-6-10_down cMob' data-clueid='10-21' data-reverted='0' data-value='6-10' data-totalClue='12-21' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cellM-6-11_down' class='cell  cell-6-11_down cMob' data-clueid='21' data-reverted='0' data-value='6-11' data-totalClue='12-21' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='A'></div>
+                </div><div id='cellM-6-12_down' class='cell  cell-6-12_down cMob' data-clueid='11-21' data-reverted='0' data-value='6-12' data-totalClue='12-21' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='T'></div>
+                </div><div id='cellM-6-13_down' class='cell  cell-6-13_down cMob' data-clueid='21' data-reverted='0' data-value='6-13' data-totalClue='12-21' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-22' class='clue-22' data-direction='down' data-x1='8' data-x2='8' data-y1='8' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='17'> <div style='width:40px;float:left;word-wrap: break-word;'><b>17</b></div><div style=''> In the event, the record is given to you and me (6)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-8-8_down' class='cell  cell-8-8_down cMob' data-clueid='8-22' data-reverted='0' data-value='8-8' data-totalClue='12-22' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='D'></div>
+                </div><div id='cellM-8-9_down' class='cell  cell-8-9_down cMob' data-clueid='22' data-reverted='0' data-value='8-9' data-totalClue='12-22' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-8-10_down' class='cell  cell-8-10_down cMob' data-clueid='10-22' data-reverted='0' data-value='8-10' data-totalClue='12-22' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div><div id='cellM-8-11_down' class='cell  cell-8-11_down cMob' data-clueid='22' data-reverted='0' data-value='8-11' data-totalClue='12-22' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cellM-8-12_down' class='cell  cell-8-12_down cMob' data-clueid='11-22' data-reverted='0' data-value='8-12' data-totalClue='12-22' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='U'></div>
+                </div><div id='cellM-8-13_down' class='cell  cell-8-13_down cMob' data-clueid='22' data-reverted='0' data-value='8-13' data-totalClue='12-22' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='S'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-23' class='clue-23' data-direction='down' data-x1='1' data-x2='1' data-y1='10' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='18'> <div style='width:40px;float:left;word-wrap: break-word;'><b>18</b></div><div style=''> Nibble a quantity of grain (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-1-10_down' class='cell  cell-1-10_down cMob' data-clueid='9-23' data-reverted='0' data-value='1-10' data-totalClue='12-23' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='P'></div>
+                </div><div id='cellM-1-11_down' class='cell  cell-1-11_down cMob' data-clueid='23' data-reverted='0' data-value='1-11' data-totalClue='12-23' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div><div id='cellM-1-12_down' class='cell  cell-1-12_down cMob' data-clueid='11-23' data-reverted='0' data-value='1-12' data-totalClue='12-23' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='C'></div>
+                </div><div id='cellM-1-13_down' class='cell  cell-1-13_down cMob' data-clueid='23' data-reverted='0' data-value='1-13' data-totalClue='12-23' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='K'></div>
+                </div></div><div class='hideClue' style='width:50%; position: relative;' ><li style='height:auto;' id='clue-24' class='clue-24' data-direction='down' data-x1='10' data-x2='10' data-y1='10' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='20'> <div style='width:40px;float:left;word-wrap: break-word;'><b>20</b></div><div style=''> Enjoy showing a resemblance (4)</div> </li></div><div id="puzzle-grid" class="puzzle-grid mobile" data-x="13" style="border-top: 0px !important; border-left: 0px !important;width:50%; margin-bottom:0px; float:right;"><div id='cellM-10-10_down' class='cell  cell-10-10_down cMob' data-clueid='10-24' data-reverted='0' data-value='10-10' data-totalClue='12-24' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='L'></div>
+                </div><div id='cellM-10-11_down' class='cell  cell-10-11_down cMob' data-clueid='24' data-reverted='0' data-value='10-11' data-totalClue='12-24' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='I'></div>
+                </div><div id='cellM-10-12_down' class='cell  cell-10-12_down cMob' data-clueid='11-24' data-reverted='0' data-value='10-12' data-totalClue='12-24' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='K'></div>
+                </div><div id='cellM-10-13_down' class='cell  cell-10-13_down cMob' data-clueid='12-24' data-reverted='0' data-value='10-13' data-totalClue='12-24' style='margin:0px 5px !important; border-right: 0px !important;'>
+                    
+                    <div class='cell-input' data-solution='E'></div>
+                </div></div>
+                    </ul> 
+                   <ul class="clues-down my-content-desktop-down" style="width:100%">
+                                <li id='clue-13' class='clue-13' data-direction='down' data-x1='2' data-x2='2' data-y1='1' data-y2='10' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='2'> <b>2</b> A feature of the Victorian room above the gas-fitting, we hear (10) <li id='clue-14' class='clue-14' data-direction='down' data-x1='4' data-x2='4' data-y1='1' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='3'> <b>3</b> Part of a bridge nine inches long (4) <li id='clue-15' class='clue-15' data-direction='down' data-x1='6' data-x2='6' data-y1='1' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='4'> <b>4</b> Packed into a box car, maybe, with Edward (6) <li id='clue-16' class='clue-16' data-direction='down' data-x1='8' data-x2='8' data-y1='1' data-y2='6' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='5'> <b>5</b> Strive to break the fasteners (6) <li id='clue-17' class='clue-17' data-direction='down' data-x1='10' data-x2='10' data-y1='1' data-y2='8' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='6'> <b>6</b> What the beggar does could be simple or involved (8) <li id='clue-18' class='clue-18' data-direction='down' data-x1='13' data-x2='13' data-y1='1' data-y2='4' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='7'> <b>7</b> Leave it in the waste tip (4) <li id='clue-19' class='clue-19' data-direction='down' data-x1='12' data-x2='12' data-y1='4' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='11'> <b>11</b> Excellent face-saving device for the foreman (10) <li id='clue-20' class='clue-20' data-direction='down' data-x1='4' data-x2='4' data-y1='6' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='13'> <b>13</b> Playful philanderer left before Horatio got upset (8) <li id='clue-21' class='clue-21' data-direction='down' data-x1='6' data-x2='6' data-y1='8' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='16'> <b>16</b> To quieten down when badly teased (6) <li id='clue-22' class='clue-22' data-direction='down' data-x1='8' data-x2='8' data-y1='8' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='17'> <b>17</b> In the event, the record is given to you and me (6) <li id='clue-23' class='clue-23' data-direction='down' data-x1='1' data-x2='1' data-y1='10' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='18'> <b>18</b> Nibble a quantity of grain (4) <li id='clue-24' class='clue-24' data-direction='down' data-x1='10' data-x2='10' data-y1='10' data-y2='13' 
+                    data-islink='0' data-linkid='clue-' data-cluenum='20'> <b>20</b> Enjoy showing a resemblance (4) 
+                    </ul>  
+                </div>
+            </div>
+            <!-- 26/05/2021 Client keyboard suggestion  -->
+            <div class="keyboard" style="background-color:#00000030"> <!-- 0037409: Mobile Static Keyboard Colour (5)  -->
+            <div class="keyboard__keys">
+                <span>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="Q">Q</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="W">W</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="E">E</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="R">R</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="T">T</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="Y">Y</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="U">U</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="I">I</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="O">O</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="P">P</button>
+                </span>
+                <br>
+                <span>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="A">A</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="S">S</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="D">D</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="F">F</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="G">G</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="H">H</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="J">J</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="K">K</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="L">L</button>
+                   
+                </span>
+                <br>
+                <span>
+                    <!-- <button type="button" class="keyboard__key keyboard__key--wide" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="8">123</button> -->
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="Z">Z</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="X">X</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="C">C</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="V">V</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="B">B</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="N">N</button>
+                    <button type="button" class="keyboard__key" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="M">M</button>
+                    <button type="button" class="keyboard__key keyboard__key--wide" onclick='setvalue(this.getAttribute("data-btnValue"))' data-btnvalue="isBackspace">
+                    <span><img src="https://www.pa-puzzles.com/puzzles/_images/static_backspace.png"></span>
+                </button>
+                </span>
+            </div>
+        </div>
+        <!-- 26/05/2021 Client keyboard suggestion  -->
+        </div>
+            
+                <div id="puzzle-dimmed-layer" class="puzzle-popup" ></div>
+                <div id="puzzle-submit-score" class="puzzle-box PuzzlePopUpFuto">
+                    <div class="close-btn" onclick="hideSubmit(); return false;">&#x2716;</div>
+                    <form id="scoreForm" medthod="post" action="#" onsubmit="return false;">
+                        <fieldset>
+                            <legend class="xlarge-text">Add To Leaderboard</legend>
+                            <p class="score"></p>
+                                <input id="txtName" class="leximatePopUpinput" name="txtName" type="text" placeholder="Your Name"  maxlength="12" onkeyup="KeyStringCheck()" >							
+                            
+                <script async src="https://www.google.com/recaptcha/api.js?render=6LfshFghAAAAAJNuOT5UvhFBGOl5L3KVSVRcgrUB"></script>
+                <input type="hidden" name="recaptcha_response" value="" id="recaptchaResponse">
+                            <span class="buttons"><input type="submit" class="btn btn-green" id="submitScoreButtonID" value="Submit" onclick="submitScore(true); TrackPuzzle.analyticsEvent('leaderboard', 'input', 'submit_name'); return false;"></span>
+                        </fieldset>
+                    </form>
+                    
+                    <div id="div-social-share" style="padding-bottom: 20px;"  class="PuzzlePopUpMain">
+                        <h3 class="PuzzlePopUp"></h3>
+                        <h3  class="PuzzlePopUp" >Share your score:</h3>
+                        <div class="PuzzlePopUp" >
+                            <a class="toolbar-icons tooltip-share-btn social-share-icon" id="btn-copy-Score-share" href="#" onclick="copyScore(this); return false;" onblur="copyScoreSetNull()">
+                                <i class="icon-copy" >
+                                    <img src="https://www.pa-puzzles.com/puzzles/_images/copy.png">
+                                </i> 
+                                <span class="tooltiptext-share-txt" id="myTooltip">Copy to clipboard</span>
+                            </a>
+                            <a id="btn-email-score-share" class="social-share-tooltip social-share-icon" href="#" onclick="TrackPuzzle.analyticsEvent('button', 'click', 'share'); return false;" ><img src="https://www.pa-puzzles.com/puzzles/_images/envelope-alt-black.png">
+                               <span>Share on Email</span>
+                            </a>
+                        <!-- //GS BUG #1065 -->
+                            <a id="btn-facebook-score-share" class="social-share-tooltip social-share-icon" href="#" onclick="TrackPuzzle.analyticsEvent('button', 'click', 'share'); return false;" ><img src="https://www.pa-puzzles.com/puzzles/_images/facebook.png">
+                               <span>Share on Facebook</span>
+                            </a>
+                            <a id="btn-twitter-score-share"  class="social-share-tooltip social-share-icon" href="#" onclick="TrackPuzzle.analyticsEvent('button', 'click', 'share'); return false;" ><img src="https://www.pa-puzzles.com/puzzles/_images/twitter.png">
+                                <span>Share on Twitter</span>
+                            </a>
+                            <a id="btn-whatapp-score-share"  class="social-share-tooltip social-share-icon" href="#" onclick="TrackPuzzle.analyticsEvent('button', 'click', 'share'); return false;" ><img src="https://www.pa-puzzles.com/puzzles/_images/whatsapp.png">
+                                <span>Share on WhatsApp</span>
+                            </a>
+                            <a id="btn-linkedin-score-share" class="social-share-tooltip social-share-icon" href="#" onclick="TrackPuzzle.analyticsEvent('button', 'click', 'share'); return false;" ><img src="https://www.pa-puzzles.com/puzzles/_images/linkedin.png">
+                             <span>Share on LinkedIn</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div id="STREAK-ID-SHOW" style="margin-bottom: 25px;"></div>
+                </div>
+                <div id="puzzle-toplist" class="puzzle-box">
+                    <div class="close-btn rank-btn" onclick="hideToplist(); return false;">&#x2716;</div>
+                    <div id="toplist-table"></div>
+                </div>
+                <div id="competition-submissions-popup" class="puzzle-box"> 
+                    <!-- // Competition Submissions -->
+                </div>
+                
+        </div>
+        
+            <script type="text/javascript">
+                var isCompetition = false;
+                var isScoreEnabled = true;
+                var hasPuzzleTimer = true;
+                var isForDownload = false;
+                var puzzleId = "271868";
+                var puzzleGroupId = "1"; 
+                var EnablePencilMode = "0";
+                var puzzleUniqueHash = "633aa72e62e5006f1c6f6c3fbd3028de";
+                var puzzleTypeId = "1";
+                var clueLayoutCross = "0"; //0037676: Toggle Default Crossword Clue Layout on Desktop
+                var c2wPopupEnabled = "0"; // //phpupgradeissue WT-128
+                var isClientiPad = /iPad/i.test(navigator.userAgent) ? true : false;
+                var hasTutorial = false;
+                var pauseTutorial = true;
+                var isDownloadPrintEnabled = true;
+                var puzzleCaptchaMode = true;
+                var BlackTextList = "0fay,0fays,0ld fart,0ld farts,0nan1sm,0nanism,0ral sex,0rdure,0rgasm,0rgasm1c,0rgasmic,0rgasms,0versexed,1ncest,1nd1an g1ver,1njun,1ntersex,1ntersexes,1ntersexual,1r1sh bull,Ab0,Abo,ars1ng,arse,arse-licker,arses,ars-h0le,ars-hole,arsing,assh0le,assh0les,asshole,assholes,aut0er0t1c,aut0er0t1sm,aut0er0tic,aut0er0tism,autoerot1c,autoerot1sm,autoerotic,autoerotism,b00b,b00bs,B0che,b0ll0cks,b0ll0cks up,b0ll0cks1ng,b0ll0cksed,b0ll0cksing,b0ll1x,b0ll1x up,b0llix,b0llix up,b0nk,b0nk1ng,b0nked,b0nking,b0nks,b0rdell0,b0s0m,b0s0ms,b1mb0,b1mb0es,b1mb0s,b1mbo,b1mboes,b1mbos,b1nt,b1sexual,b1sexual1ty,b1sexuals,bagn10,bagn1o,bagni0,bagnio,ballsed up,ballsed-up,balls-up,balls-ups,ballup,bastard,bastards,bawd,bawdyh0use,bawdyhouse,bedh0p,bed-h0p,bedhop,bed-hop,bed-wett1ng,bedwetter,bed-wetting,best1al,best1al1ty,best1ally,bestial,bestiality,bestially,bimb0,bimb0es,bimb0s,bimbo,bimboes,bimbos,bint,bisexual,bisexuality,bisexuals,bl0wj0b,bl0wj0bs,blowjob,blowjobs,Boche,boll1x,boll1x up,bollix,bollix up,bollocks,bollocks up,bollocks1ng,bollocksed,bollocksing,bonk,bonk1ng,bonked,bonking,bonks,boob,boobs,bordello,bosom,bosoms,br0thel,br0thels,br1st0ls,br1stols,break w1nd,break wind,brist0ls,bristols,brothel,brothels,bugger,bugger 0ff,bugger all,bugger off,bugger1ng,buggered,buggering,buggers,buggery,bukkake,bullsh1t,bullsh1ts,bullsh1tt1ng,bullsh1tted,bullsh1tter,bullshit,bullshits,bullshitted,bullshitter,bullshitting,butch,butthead,c u n t,c un t,c unt,c00l1e,c00lie,c00ly,c01t10n,c01tus,c0c0tte,c0ck suck1ng,c0ck sucking,c0cksuck1ng,c0cksucker,c0cksucking,c0iti0n,c0itus,c0ncub1ne,c0ncub1nes,c0ncubine,c0ncubines,c0nd0m,c0nd0ms,c0pulat0ry,c0pulat10n,c0pulat10ns,c0pulat1ng,c0pulate,c0pulated,c0pulates,c0pulati0n,c0pulati0ns,c0pulating,c0ttag1ng,c0ttaging,c0urtesan,c0urtesans,cack,call g1rl,call g1rls,call girl,call girls,candy-ass,carnal abuse,castrat10n,castrat10ns,castrat1ng,castrat1on,castrat1ons,castrate,castrated,castrates,castrati0n,castrati0ns,castrating,castration,castrations,catam1te,catam1tes,catamen1al,catamenial,catamite,catamites,cath0use,cath0uses,cathouse,cathouses,cerv1cal,cerv1ces,cerv1x,cerv1xes,cervical,cervices,cervix,cervixes,ch1ckensh1t,ch1ckensh1ts,ch1nky,chickenshit,chickenshits,chinky,cl1t0r1s,cl1t0r1ses,cl1t0ral,cl1tor1s,cl1tor1ses,cl1toral,clit0ral,clit0ris,clit0rises,clitoral,clitoris,clitorises,co1t1on,co1tus,cock suck1ng,cock sucking,cocksuck1ng,cocksucker,cocksucking,cocotte,coition,coitus,concub1ne,concub1nes,concubine,concubines,condom,condoms,cool1e,coolie,cooly,copulat1ng,copulat1on,copulat1ons,copulate,copulated,copulates,copulating,copulation,copulations,copulatory,cottag1ng,cottaging,courtesan,courtesans,cr0tch,cr0tches,crap,crap1ng,craped,craping,crapp1ng,crapped,crapping,crappy,craps,crotch,crotches,crumbly,cu nt,cum sh0t,cum shot,cumsh0t,cumshot,cun t,cunn1l1nctus,cunn1l1ngus,cunnilinctus,cunnilingus,cunt,cunts,cybersex,d00-d00,d0g sh1t,d0g shit,d0gsh1t,d0gshit,d0x1es,d0xies,d0xy,d1ck,d1ckhead,d1ckheads,d1cks,d1ddlysh1t,d1ddly-sh1t,d1ld0,d1ld0e,d1ld0s,d1ldo,d1ldoe,d1ldos,dag0,dag0s,dago,dagos,dark1e,darkey,darkie,darky,defecate,defecated,defecates,defl0wer,defl0wer1ng,defl0wered,defl0wering,defl0wers,deflower,deflower1ng,deflowered,deflowering,deflowers,derr1ere,derr1eres,derriere,derrieres,desexual1se,desexual1sed,desexual1ses,desexual1ze,desexual1zed,desexual1zes,desexualise,desexualised,desexualises,desexualize,desexualized,desexualizes,dick,dickhead,dickheads,dicks,diddlyshit,diddly-shit,dild0,dild0e,dild0s,dildo,dildoe,dildos,dog sh1t,dog shit,dogsh1t,dogshit,doo-doo,dox1es,doxies,doxy,eff 0ff,eff off,eff1ng,effing,ejaculat1ng,ejaculate,ejaculated,ejaculates,ejaculating,er0t1c,er0t1ca,er0t1cally,er0tic,er0tica,er0tically,erect10n,erect10ns,erect1le,erect1on,erect1ons,erecti0n,erecti0ns,erectile,erection,erections,erot1c,erot1ca,erot1cally,erotic,erotica,erotically,excrement,excreta,f u c k,f uc k,f uck,f0replay,f0resk1n,f0resk1ns,f0reskin,f0reskins,f0rn1cat0r,f0rn1cat0rs,f0rn1cat10n,f0rn1cat10ns,f0rn1cate,f0rn1cated,f0rn1cates,f0rn1catress,f0rnicat0r,f0rnicat0rs,f0rnicate,f0rnicated,f0rnicates,f0rnicati0n,f0rnicati0ns,f0rnicatress,f1st1ng,f3ck,faecal,faeces,fancy man,fancy w0man,fancy w0men,fancy woman,fancy women,fann1es,fannies,fanny,fart,fart1ng,farter,farting,farts,fcuk,fecal,feces,feck,fellat10,fellat10n,fellat1o,fellat1on,fellati0,fellati0n,fellatio,fellation,fet1sh,fet1sh1sm,fet1sh1st1c,fet1shes,fetish,fetishes,fetishism,fetishistic,fisting,fl00z1es,fl00zies,fl00zy,flatulence,flatulency,flatulent,flooz1es,floozies,floozy,foreplay,foresk1n,foresk1ns,foreskin,foreskins,forn1cat1on,forn1cat1ons,forn1cate,forn1cated,forn1cates,forn1cator,forn1cators,forn1catress,fornicate,fornicated,fornicates,fornication,fornications,fornicator,fornicators,fornicatress,fr1g,fr1gg1ng,fr1gged,free l0ve,free love,frig,frigged,frigging,fu ck,fuc ,fuc k,fuck,fuck 0ff,fuck all,fuck off,fuck up,fuck1ng,fuck1ng hell,fuck1ngs,fucked,fucked-up,fucker,fuckers,fuckhead,fucking,fucking hell,fuckings,fucks,fuckup,fuck-up,fuckups,fuck-ups,fuckw1t,fuckwit,fuk,g00l1e,g00l1es,g00lie,g00lies,g00ly,g0bsh1te,g0bshite,g0nad,g0nads,g0t la1d,g0t laid,g1nz0,g1nzo,gen1tal,gen1tal1a,gen1tals,genital,genitalia,genitals,get kn0tted,get knotted,get la1d,get laid,gett1ng la1d,getting laid,ginz0,ginzo,glandes,glans,gobsh1te,gobshite,gonad,gonads,gool1e,gool1es,goolie,goolies,gooly,got la1d,got laid,greaseball,greaseballs,greaser,h00ker,h00kers,h0ly crap,h0m0,h0m0er0t1c,h0m0er0tic,h0m0ph1le,h0m0ph1les,h0m0phile,h0m0philes,h0m0s,h0m0sexual,h0m0sexuals,h0nk1e,h0nk1es,h0nkey,h0nkie,h0nkies,h0nky,h0rn1er,h0rn1est,h0rnier,h0rniest,h0rny,h0rsesh1t,h0rsesh1ts,h0rseshit,h0rseshits,h0t flush,h0t flushes,had 1t 0ff,had 1t off,had it 0ff,had it off,half-breed,half-caste,hand j0b,hand j0bs,hand job,hand jobs,hard 0n,hard on,hard-0n,hard-on,harl0t,harl0try,harl0ts,harlot,harlotry,harlots,have 1t 0ff,have 1t away,have 1t off,have it 0ff,have it away,have it off,have sex,heter0sexual,heterosexual,holy crap,homo,homoerot1c,homoerotic,homoph1le,homoph1les,homophile,homophiles,homos,homosexual,homosexuals,honk1e,honk1es,honkey,honkie,honkies,honky,hooker,hookers,horn1er,horn1est,hornier,horniest,horny,horsesh1t,horsesh1ts,horseshit,horseshits,hot flush,hot flushes,hustler,hym1e,hymie,incest,Indian giver,Injun,intersex,intersexes,intersexual,Irish bull,j1gab00,j1gaboo,j1sm,j1ss0m,j1ssom,j1zz,jack 0ff,jack off,jack1ng 0ff,jack1ng off,jacked 0ff,jacked off,jacking 0ff,jacking off,Jap,jerk 0ff,jerk off,jerk-0ff,jerk1ng 0ff,jerk1ng off,jerked 0ff,jerked off,jerker,jerking 0ff,jerking off,jerk-off,Jerry,jigab00,jigaboo,jism,jiss0m,jissom,jizz,k1ke,k1kes,k1nk1er,k1nk1est,k1nk1ly,k1nky,ke1ster,ke1sters,keister,keisters,kept w0man,kept woman,kerb crawler,kike,kikes,kinkier,kinkiest,kinkily,kinky,kn0b,kn0ckers,knob,knockers,Kraut,Krauthead,krauts,l0ve b1te,l0ve b1tes,l0ve bite,l0ve bites,l0vemak1ng,l0vemaking,lab1a,lab1a m1n0ra,lab1a m1nora,lab1a maj0ra,lab1a majora,lab1um,labia,labia maj0ra,labia majora,labia min0ra,labia minora,labium,LALHKRS,lech,lech1ng,leched,lecher,lecher0us,lecher0usly,lecherous,lecherously,lechers,lechery,leches,leching,lesb1an,lesb1an1sm,lesb1ans,lesbian,lesbianism,lesbians,love b1te,love b1tes,love bite,love bites,lovemak1ng,lovemaking,lustful,lustfully,M0ns,m0therfucker,m1nge,m1nger,mak1ng l0ve,mak1ng love,make l0ve,make love,making l0ve,making love,masturbat0r,masturbat0rs,masturbat10n,masturbat1ng,masturbat1on,masturbate,masturbates,masturbati0n,masturbating,masturbation,masturbator,masturbators,menses,menstru0us,menstrual,menstruat10n,menstruat1ng,menstruat1on,menstruate,menstruated,menstruates,menstruati0n,menstruating,menstruation,menstruous,menstruum,minge,minger,Mons,motherfucker,mulatt0,mulatto,n00k1e,n00kie,n00ky,n0nce,n1gga,n1gger,n1ggers,n1gra,N1p,naff 0ff,naff off,nance,nelly,nigga,nigger,niggers,nigra,Nip,nonce,nook1e,nookie,nooky,ofay,ofays,old fart,old farts,onan1sm,onanism,oral sex,ordure,orgasm,orgasm1c,orgasmic,orgasms,oversexed,p00,p00f,p00fs,p00fter,p00fters,p00-p00,p00r wh1te,p00r white,p00s,p00ve,p0nc1ng,p0nce,p0nces,p0ncing,p0p1sh,p0pish,p0rn,p0rn0,p0rn0graph1c,p0rn0grapher,p0rn0graphic,p0rn0graphy,p0rn0s,p0rns,p1can1nny,p1ccan1nn1es,p1ccan1nny,p1ckan1nny,p1ece 0f ass,p1ece of ass,p1gsh1t,p1ll0ck,p1ll0cks,p1llock,p1llocks,p1mp,p1mp1ng,p1mps,p1ss,p1ss 0ff,p1ss ab0ut,p1ss about,p1ss ar0und,p1ss around,p1ss art1st,p1ss art1sts,p1ss d0wn,p1ss down,p1ss off,p1ss p0t,p1ss pot,p1ss01r,p1ss01rs,p1ss1ng,p1ssed,p1ssed 0ff,p1ssed 0n,p1ssed off,p1ssed on,p1sser,p1ssers,p1sses,p1sshead,p1ssheads,p1sso1r,p1sso1rs,p1ssp0t,p1ssp0ts,p1sspot,p1sspots,p1ss-take,p1ss-up,p1ss-ups,p33d0,p33do,p3d0,p3do,paed0,paed0ph1l1a,paed0ph1le,paed0ph1les,paed0phile,paed0philes,paed0philia,paederast,paederasts,paederasty,paedo,paedoph1l1a,paedoph1le,paedoph1les,paedophile,paedophiles,paedophilia,pak1,Pak1s,paki,Pakis,pansexual,pap1st,papist,param0ur,paramour,ped0,ped0ph1le,ped0ph1les,ped0phile,ped0philes,pederast,pederasts,pedo,pedoph1le,pedoph1les,pedophile,pedophiles,pee1ng,peed0,peedo,peeing,pee-pee1ng,pee-peeing,pen1le,pen1s,pen1s envy,pen1ses,penile,penis,penis envy,penises,phag,phall1c,phallic,phallus,picaninny,piccaninnies,piccaninny,pickaninny,piece 0f ass,piece of ass,pigshit,pill0ck,pill0cks,pillock,pillocks,pimp,pimping,pimps,piss,piss 0ff,piss ab0ut,piss about,piss ar0und,piss around,piss artist,piss artists,piss d0wn,piss down,piss off,piss p0t,piss pot,piss0ir,piss0irs,pissed,pissed 0ff,pissed 0n,pissed off,pissed on,pisser,pissers,pisses,pisshead,pissheads,pissing,pissoir,pissoirs,pissp0t,pissp0ts,pisspot,pisspots,piss-take,piss-up,piss-ups,ponc1ng,ponce,ponces,poncing,poo,poof,poofs,poofter,poofters,poo-poo,poor wh1te,poor white,poos,poove,pop1sh,popish,porn,porno,pornograph1c,pornographer,pornographic,pornography,pornos,porns,pr0st1tute,pr0st1tutes,pr0stitute,pr0stitutes,prat,prats,prepuce,prost1tute,prost1tutes,prostitute,prostitutes,psych0sexual,psychosexual,pub1c,pub1c ha1r,pub1s,pubes,pubic,pubic hair,pubis,puff,puke,pukes,pyr0clast1c,pyr0clastic,pyroclast1c,pyroclastic,qu1m,queer,quim,r001nek,r00inek,r0ger,r0ger1ng,r0gered,r0gering,r0m1sh,r0mish,rand1er,rand1est,randier,randiest,randy,rat-arsed,red man,Redsk1n,Redskin,rent b0y,rent b0ys,rent boy,rent boys,roger,roger1ng,rogered,rogering,rom1sh,romish,roo1nek,rooinek,rutt1sh,ruttish,s h1 t,s h1t,s hi t,s hit,s0d0m1se,s0d0m1sed,s0d0m1te,s0d0m1tes,s0d0m1ze,s0d0m1zed,s0d0mise,s0d0mised,s0d0mite,s0d0mites,s0d0mize,s0d0mized,s0d0my,s1xty-n1ne,Samb0,Sambo,saphead,sapph1c,sapphic,sch1z0,sch1zo,schiz0,schizo,scr0ta,scr0tal,scr0tum,scr0tums,screw1ng,screwing,scrota,scrotal,scrotum,scrotums,sem1nal duct,semen,seminal duct,sex 0bject,sex 0bjects,sex act,sex act1v1ty,sex activity,sex acts,sex appeal,sex b0mb,sex bomb,sex change,sex k1tten,sex k1ttens,sex kitten,sex kittens,sex l1fe,sex life,sex man1ac,sex man1acs,sex maniac,sex maniacs,sex object,sex objects,sex0l0g1st,sex0l0gist,sex0l0gy,sex1er,sex1est,sex1ly,sex1ness,sexier,sexiest,sexily,sexiness,sexless,sexlessness,sexolog1st,sexologist,sexology,sexp0t,sexp0ts,sexpot,sexpots,sex-starved,sexual1s1ng,sexual1se,sexual1sed,sexual1ses,sexual1t1es,sexual1z1ng,sexual1ze,sexual1zed,sexual1zes,sexualise,sexualised,sexualises,sexualising,sexualities,sexualize,sexualized,sexualizes,sexualizing,sexy,sh 1t,sh it,sh1 t,sh1t,sh1t1ng,sh1te,sh1tes,sh1th0le,sh1t-h0t,sh1thead,sh1theads,sh1thole,sh1t-hot,sh1tl1st,sh1tless,sh1ts,sh1t-scared,sh1tt1er,sh1tt1est,sh1tt1ness,sh1tt1ng,sh1tted,sh1tter,sh1tters,sh1tty,sh1tw0rk,sh1twork,shagg1ng,shagged 0ut,shagged out,shagging,shat,she-b0p,she-bop,sheeny,shegetz,shi t,shit,shite,shites,shith0le,shit-h0t,shithead,shitheads,shithole,shit-hot,shiting,shitless,shitlist,shits,shit-scared,shitted,shitter,shitters,shittier,shittiest,shittiness,shitting,shitty,shitw0rk,shitwork,shtup,sixty-nine,slattern,sleep ar0und,sleep around,sleep w1th,sleep with,slept ar0und,slept around,smear test,smear tests,sn0t,sn0ts,snot,snots,sodom1se,sodom1sed,sodom1te,sodom1tes,sodom1ze,sodom1zed,sodomise,sodomised,sodomite,sodomites,sodomize,sodomized,sodomy,sp1c,sp1ck,sp1k,sperm,sperm1c1dal,sperm1c1de,spermary,spermat0c1de,spermat0cide,spermat1c,spermatic,spermatoc1de,spermatocide,spermicidal,spermicide,sperms,spic,spick,spik,st1ff1es,st1ffy,stiffies,stiffy,streetwalk,streetwalker,T0b1n cheat,T0b1n g1t,T0bin cheat,T0bin git,t0dger,t0nk,t0sser,t1t1llat10n,t1t1llat1ng,t1t1llat1on,t1ts,t1tty,take a crap,take a sh1t,take a shit,tamp0n,tamp0ned,tamp0ns,tampon,tamponed,tampons,test1cles,test1s,testes,testicles,testis,the sh1ts,the shits,titillati0n,titillating,titillation,tits,titty,Tob1n cheat,Tob1n g1t,Tobin cheat,Tobin git,todger,tonk,tosser,tr0ll0p,tr0ll0ps,tr1bad1sm,tr1bad1st1c,tr1bade,tr1bades,transsexual,transsexuals,transvest1te,transvestite,tribade,tribades,tribadism,tribadistic,trollop,trollops,turd,turds,turned 0n,turned on,twat,twats,undersexed,unsex1ng,unsexed,unsexes,unsexing,ur0gen1tal,ur0genital,ur1nal,ur1nals,ur1nat10n,ur1nat1ng,ur1nat1on,ur1nate,ur1nated,ur1nates,ureter,ureters,urethra,urethrae,urethral,urethras,urinal,urinals,urinate,urinated,urinates,urinati0n,urinating,urination,urogen1tal,urogenital,uterus,v1brat0r,v1brat0rs,v1brator,v1brators,vag1n1t1s,vag1na,vag1nae,vag1nal,vag1nally,vag1nas,vagina,vaginae,vaginal,vaginally,vaginas,vaginitis,vibrat0r,vibrat0rs,vibrator,vibrators,vulva,vulval,vulvar,vulvas,w a n k e r,w anker,w0g,w0gs,w0p,w0ps,w0rk1ng g1rl,w0rking girl,w1lly,wa nker,wan ker,wank,wank er,wank1ng,wanke r,wanked,wanker,wankers,wanking,wanks,wee-wee,wee-wee1ng,wee-weed,wee-weeing,wee-wees,well end0wed,well endowed,wet dream,wet dreams,wetback,wetbacks,wh0r1ng,wh0r1sh,wh0re,wh0red0m,wh0reh0use,wh0reh0uses,wh0rem0nger,wh0rem0ngers,wh0remaster,wh0res,wh0res0n,wh0res0ns,wh0ring,wh0rish,wh1te slave,wh1te trash,wh1tey,wh1ty,whack 0ff,whack off,white slave,white trash,whitey,whity,whor1ng,whor1sh,whore,whoredom,whorehouse,whorehouses,whoremaster,whoremonger,whoremongers,whores,whoreson,whoresons,whoring,whorish,willy,wog,wogs,wop,wops,work1ng g1rl,working girl,Y1d,yatee,yell0w man,yell0w w0man,yellow man,yellow woman,Yid,z00erast1a,z00erastia,z00erasty,zooerast1a,zooerastia,zooerasty,fag,kunt,f a g,k unt,ku nt,kun t,k u n t,p hag,Tobin,ph ag,pha g,p h a g,faggot,phaggot,fagg0t,phagg0t,fagot,phagot,fux,c u nt,k u nt,cu n t,ku n t,prick,prik,pr ik,p rik,pri k,pr1k,p r1k,pr1 k,pr 1k,p r 1 k,d1k,dik,p r I k,pric k,pr ick,p rick,pri ck,pr1ck,p r1ck,pr1 ck,pr 1ck,p r 1 ck,p r I ck,Tobin u ,Tobi u ,Tob1n u ,Tob1 u ,T0bin u ,T0bi u ,T0b1n u ,T0b1 u ,khunt,qunt,cuhnt,cu hnt,cuh nt,cu h nt,fuq,fuqs,f-uq,f-u-q,fu-q,curnt,cu rnt,c urnt,cur nt,curn t,screw,fiddle,f1ddle,kids,k1ds,c-u-nt,c-u-n-t,c-unt,cu-n-t,cu-nt,schit,sch1t,molest,P3ADOPHILE,pa3do,mol3st,m0lest,mo1est,m013st,mo13st,m0l3st,spastic,spast1c,gimp,g1mp,f4ggot,spastic,sp4stic,fahggot,p34do,PEDQ,P3DQ,TVVAT,CU Greg NT,asshol,assh0l,a55,455H,4ssh,p4ed0,p4edo,p43do,p43d0,cvnt,mong,mqng,m0ng,Greg u ,Greg-u-,Gr3g u ,Gr3g-u-,buttock";
+                var GCaptchaCLIENTCode = "6LfshFghAAAAAJNuOT5UvhFBGOl5L3KVSVRcgrUB";
+                var is_share_enabled = "1";
+                var puzzleGroupName =  "IrishNews_Daily_Cryptic"; // Event Listeners & Data Sharing 
+                var puzzleName = "INE_cryp_2026-08-21.xml"; // Event Listeners & Data Sharing 
+                var puzzleType = "Crossword"; // Event Listeners & Data Sharing 
+                var is_event_listeners = "0"; // Event Listeners & Data Sharing 
+                var timezone_format = "UTC"; // Event Listeners & Data Sharing 
+                var event_listeners_data = ""; // Event Listeners & Data Sharing 
+                //0005979: Social Share buttons
+                window.addEventListener("load", function() {
+                    FastClick.attach(document.body);
+
+
+                }, false);
+
+                function copyScore(link) {  //0005979: Social Share buttons
+                        $(".tooltiptext-share-txt").text("Copied!");
+                        return false;
+                    }
+
+                    function copyScoreSetNull(){ //0005979: Social Share buttons
+                        $(".tooltiptext-share-txt").text("Copy to clipboard");
+                        return false;
+                    }
+            </script>
+                <script type="text/javascript">
+                    var isClientMobile = false;
+                    var isClientiOS = false;
+                </script>
+                <script type="text/javascript">
+                    var leaderboardURL = "https://www.pa-puzzles.com/puzzles/puzzleleaderboard.php";
+                    var showLeaderboardURL = "https://www.pa-puzzles.com/puzzles/showleaderboard.php";
+                    var scoreboardURL = "https://www.pa-puzzles.com/puzzles/puzzlescoreboard.php";
+                    var showScoreboardURL = "https://www.pa-puzzles.com/puzzles/showscoreboard.php";
+                    var keepAliveURL = "https://www.pa-puzzles.com/keepalive.php";
+                    var baseURL = "https://www.pa-puzzles.com/";
+                    var gameToken = "dd945b02d3f36dd9485338e1251f5c38";
+                    var competitionsubmissionsURL = "https://www.pa-puzzles.com/puzzles/utility.php"; // Competition Submissions
+                </script>
+        <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/TweenMax.min.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/fastclick.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/jquery.nicescroll.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/json2.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/puzzle.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/tracking.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/gamestate.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/share.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/userdata.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/score.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/timer.jquery.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/jquery.puzzle.timer.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/puzzleScore.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/jquery-confirm.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/statData.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/puzzleevents.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/crossword/js/main.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/crossword/js/crossword.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/crossword/js/savecs.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/crossword/js/trackcs.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/crossword/js/solution.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/hammer1.min.js'></script><script type='text/javascript' src='https://www.pa-puzzles.com/puzzles/_js/zoom.js'></script>
+		
+		<script>
+		var androidChrome = (navigator.userAgent.toLowerCase().indexOf("android") > -1 && navigator.userAgent.toLowerCase().indexOf("chrome") > -1 );
+		var iphoneChrome = (navigator.userAgent.toLowerCase().indexOf("iphone") > -1 && navigator.userAgent.toLowerCase().indexOf("safari") > -1 );
+		if(iphoneChrome==true || androidChrome==true)
+		{
+		   document.getElementById("base").style.backgroundColor  = '#E0E0E0';
+		   getBaseDetail();
+		}else{
+			var elementmynav = document.getElementById('menunav');
+			elementmynav.style.zIndex = "3";
+			
+			var elementmyc1 = document.getElementById('c1');
+			elementmyc1.style.zIndex = "-1";
+			elementmyc1.style.position = null;
+			
+			var elementmyc2 = document.getElementById('c2');
+			elementmyc2.style.zIndex = "-4";
+			elementmyc2.style.position = null;
+		   
+		}
+		</script>
+		
+        <script>
+
+        // code start 0002173: Responsive layout only operates on page load
+
+        $(window).resize(function(){
+            if (($(window).width() <= 575)) { 
+                isBrowserMobile = true;
+            }else{
+                isBrowserMobile = false;
+            }
+            resizeCrosswordStaticKeyboard()
+        });
+
+        $(document).ready(function() {  
+            resizeCrosswordStaticKeyboard()
+        });
+
+        function resizeCrosswordStaticKeyboard(){
+            if(isBrowserMobile){ //// 26/05/2021 Client keyboard suggestion
+                $('.keyboard').show();
+              
+            }else{
+               
+                $('.keyboard').hide();
+            }
+        }
+        // code end 0002173: Responsive layout only operates on page load
+            $(document).ready(function() {
+                
+            UserManagement.init('271868', 'https://www.pa-puzzles.com/puzzles/puzzleusers.php', 0);
+            TrackCs.init('271868', 'https://www.pa-puzzles.com/puzzles/puzzlestatistics.php', true, '{ \
+                    "clue_time": \
+                    { \
+                        "title": "Time spent on clues", \
+                        "enabled": "1" \
+                    }, \
+                    "game_completion": \
+                    { \
+                        "title": "Game completion", \
+                        "enabled": "1" \
+                    }, \
+                    "game_duration": \
+                    { \
+                        "title": "Total time", \
+                        "enabled": "1" \
+                    }, \
+                    "flags": \
+                    { \
+                        "title": "Flags", \
+                        "enabled": "1" \
+                    }, \
+                    "share": \
+                    { \
+                        "title": "Sharing", \
+                        "enabled": "1" \
+                    }}'); 
+            Crossword.init();
+            SaveCs.init('crossword-state-a6472c5749e6d5542b9ef1b2b213e606');
+            CrosswordSolution.init('test@wiredproductions.com', false);
+            Crossword.setSize(13, 13);
+            SharePuzzle.init({
+                fbAppId: '335068073289131',
+                baseURL: 'https://www.pa-puzzles.com/',
+                puzzleShareLink: '',
+                puzzleShareText: "",
+                puzzleType: 'crossword'
+            });
+            // getBaseDetail();
+            
+                
+                setInterval(function() {
+                    Puzzle.keepAlive();
+                }, 300000);
+
+            
+            });
+                
+                //GS BUG #2603
+                window.onload=function(){
+                    if(navigator.userAgent.indexOf('Safari')!=-1&&navigator.userAgent.indexOf('Chrome')==-1){
+                     var cookies=document.cookie;
+
+                     if(top.location!=document.location){
+                      if(!cookies){
+                       href=document.location.href;
+                       href=(href.indexOf('?')==-1)?href+'?':href+'&';
+                       top.location.href =href+'reref='+encodeURIComponent(document.referrer);
+                      }
+                     } else {
+                      ts=new Date().getTime();document.cookie='ts='+ts;
+                      rerefidx=document.location.href.indexOf('reref=');
+                      if(rerefidx!=-1){
+                       href=decodeURIComponent(document.location.href.substr(rerefidx+6));
+                      // window.location.replace(href);
+                      }
+                     }
+                    }
+                    }
+                //GS BUG #2603
+        </script>
+        <script>
+        // 26/05/2021 Client keyboard suggestion
+        function setvalue(ele)
+                {
+                    if (!$(Crossword.lastSelected.cell).hasClass(Crossword.defaults.hintCellClass))
+                    {
+                        if (ele == "isBackspace") {
+                            //Backspace
+                            //Set cell text to empty value
+                            var cellIDval = Crossword.lastSelected.cell;
+                            var controls = $("div").find("[data-value='" + cellIDval.getAttribute("data-value") + "']");
+                            for (i = 0; i <= controls.length - 1; i++) {
+                                var controls_ = controls[i].getAttribute("id");
+                                $('#' + controls_).children('.cell-input').html('');
+                                Crossword.setCellValue($('#' + controls_), "");
+                            }
+                            //Crossword.setCellValue(Crossword.lastSelected.cell, "");
+                            //Focus previous cell
+                            Crossword.focusPrevInputCell();
+                        }
+                        var cellIDval = Crossword.lastSelected.cell;
+                        var controls = $("div").find("[data-value='" + cellIDval.getAttribute("data-value") + "']");
+                        console.log("controls :-",controls);
+                        if (ele != "isBackspace" && !/[^A-Z]/.test(ele)) {  
+                            for (i = 0; i <= controls.length - 1; i++) {
+                                var controls_ = controls[i].getAttribute("id");
+                                $('#' + controls_).children('.cell-input').html(ele);
+                                Crossword.setCellValue($('#' + controls_), ele);
+                            }
+                            //Set cell text to inputted value
+                            //Crossword.setCellValue(Crossword.lastSelected.cell, inputLastChar);
+                            dirsGSA = 1;
+                            //Focus next cell
+                            Crossword.focusNextInputCell();
+                        } else {
+                            console.log("Key is not valid!");
+                        }
+                    }
+                }
+                // 26/05/2021 Client keyboard suggestion
+                
+        </script>
+    </body>
+</html>
+<div class='g-recaptcha' data-sitekey='6LfshFghAAAAAJNuOT5UvhFBGOl5L3KVSVRcgrUB' data-callback='onRecaptchaVerify' data-size='invisible'></div>
+<script src="//www.google.com/recaptcha/api.js?render=6LfshFghAAAAAJNuOT5UvhFBGOl5L3KVSVRcgrUB" async defer></script>  
