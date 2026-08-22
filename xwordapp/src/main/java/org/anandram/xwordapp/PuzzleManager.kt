@@ -46,6 +46,18 @@ object PuzzleManager {
         ensureBundled()
     }
 
+    /**
+     * Re-initializes against [context] even if already initialized; for
+     * tests only, where each run gets a fresh files directory.
+     */
+    @Synchronized
+    internal fun initForTests(context: Context) {
+        appContext = context.applicationContext
+        dir = File(appContext.filesDir, DIR_NAME)
+        dir.mkdirs()
+        ensureBundled()
+    }
+
     private fun ensureBundled() {
         if (getEntry(BUNDLED_ID) != null) return
 

@@ -16,6 +16,9 @@ object GuardianSubscription {
     private const val MAX_PER_SWEEP = 30
     private val PUZZLE_PATH = Regex("/crosswords/cryptic/\\d+$")
 
+    /** Whether [url] points at a Guardian cryptic puzzle page. */
+    fun matchesPuzzleUrl(url: String): Boolean = PUZZLE_PATH.containsMatchIn(url)
+
     fun default(): Subscription = Subscription(
             name = NAME,
             url = URL,
@@ -28,7 +31,7 @@ object GuardianSubscription {
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
-                if (PUZZLE_PATH.containsMatchIn(href)) href else null
+                if (matchesPuzzleUrl(href)) href else null
             }.distinct().sortedDescending().take(MAX_PER_SWEEP)
 
             var count = 0

@@ -19,6 +19,13 @@ object NewYorkerSubscription {
     private val GAME_ID = Regex(
             "\"inline-embed\",\\s*\\{\"props\":\\{\"id\":\"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\"")
 
+    /** Whether [url] points at a New Yorker puzzles-and-games page. */
+    fun matchesPuzzleUrl(url: String): Boolean = PUZZLE_PATH.containsMatchIn(url)
+
+    /** Extract the inline-embed game id from a New Yorker puzzle page. */
+    fun extractGameId(pageHtml: String): String? =
+            GAME_ID.find(pageHtml)?.groupValues?.get(1)
+
     fun default(): Subscription = Subscription(
             name = NAME,
             url = URL,
@@ -31,7 +38,7 @@ object NewYorkerSubscription {
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
-                if (PUZZLE_PATH.containsMatchIn(href)) href else null
+                if (matchesPuzzleUrl(href)) href else null
             }.distinct().sortedDescending().take(MAX_PER_SWEEP)
 
             var count = 0
@@ -43,7 +50,7 @@ object NewYorkerSubscription {
                             .timeout(30_000)
                             .execute()
                             .bodyAsBytes(), Charsets.UTF_8)
-                    val id = GAME_ID.find(page)?.groupValues?.get(1) ?: continue
+                    val id = extractGameId(page) ?: continue
                     val body = String(Jsoup.connect(String.format(API_URL, id))
                             .ignoreContentType(true)
                             .timeout(30_000)

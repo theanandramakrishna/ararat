@@ -20,6 +20,13 @@ object EverymanSubscription {
             "\\\\{0,2}\"uuid\\\\{0,2}\"\\s*:\\s*\\\\{0,2}\\s*\"" +
                     "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
 
+    /**
+     * Extract the SlowDownWiseUp puzzle uuid from an observer.co.uk article
+     * page. The payload escapes its quotes, but bare quotes are tolerated.
+     */
+    fun extractUuid(pageHtml: String): String? =
+            UUID_REGEX.find(pageHtml)?.groupValues?.get(1)
+
     fun default(): Subscription = Subscription(
             name = NAME,
             url = URL,
@@ -44,7 +51,7 @@ object EverymanSubscription {
                             .timeout(30_000)
                             .execute()
                             .bodyAsBytes(), Charsets.UTF_8)
-                    val id = UUID_REGEX.find(page)?.groupValues?.get(1) ?: continue
+                    val id = extractUuid(page) ?: continue
                     val body = Jsoup.connect(String.format(API_URL, id))
                             .ignoreContentType(true)
                             .timeout(30_000)
