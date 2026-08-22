@@ -35,6 +35,7 @@
     <string name="downloaded_puzzles">Downloaded %1$d puzzles</string>
     <string name="no_puzzles_found">No puzzles found</string>
     <string name="downloading">Downloading…</string>
+    <string name="downloading_count">Downloading… (%1$d)</string>
     <string name="no_subscriptions_enabled">No enabled subscriptions</string>
     <string name="tab_all">All</string>
     <string name="tab_unsolved">Unsolved</string>

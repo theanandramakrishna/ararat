@@ -71,8 +71,18 @@ class SubscriptionsActivity : AppCompatActivity() {
         return when (subscription.fetchFrequency) {
             "Weekly" -> lastDate >= startOfWeek(today)
             "Daily" -> lastDate == today
+            "Weekdays" -> !isWeekday(today) || lastDate == today
             else -> true
         }
+    }
+
+    private fun isWeekday(today: String): Boolean {
+        val parts = today.split("-")
+        val cal = Calendar.getInstance()
+        cal.clear()
+        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+        return dayOfWeek != Calendar.SATURDAY && dayOfWeek != Calendar.SUNDAY
     }
 
     private fun startOfWeek(today: String): String {
@@ -96,48 +106,81 @@ class SubscriptionsActivity : AppCompatActivity() {
         downloadButton.isEnabled = false
         downloadButton.text = getString(R.string.downloading)
 
-        Thread {
-            var count = 0
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-            for (subscription in enabled) {
-                if (shouldSkip(subscription, today)) continue
-                SubscriptionManager.markDownloadStarted(subscription.name, today)
-                val index = subscriptions.indexOfFirst { it.name == subscription.name }
-                if (index >= 0) {
-                    subscriptions[index] = subscriptions[index].copy(lastDownloadDate = today)
-                }
-                count += downloadFromSubscription(subscription)
-            }
-
+        var count = 0
+        PuzzleManager.onPuzzleAdded = {
             runOnUiThread {
-                downloadButton.isEnabled = true
-                downloadButton.text = getString(R.string.download)
-                val message = if (count > 0) {
-                    getString(R.string.downloaded_puzzles, count)
-                } else {
-                    getString(R.string.no_puzzles_found)
+                downloadButton.text = getString(R.string.downloading_count, ++count)
+            }
+        }
+
+        Thread {
+            try {
+                var total = 0
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                for (subscription in enabled) {
+                    if (shouldSkip(subscription, today)) continue
+                    SubscriptionManager.markDownloadStarted(subscription.name, today)
+                    val index = subscriptions.indexOfFirst { it.name == subscription.name }
+                    if (index >= 0) {
+                        subscriptions[index] = subscriptions[index].copy(lastDownloadDate = today)
+                    }
+                    total += downloadFromSubscription(subscription)
                 }
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+                runOnUiThread { showDownloadResult(total) }
+            } finally {
+                runOnUiThread {
+                    PuzzleManager.onPuzzleAdded = null
+                    downloadButton.isEnabled = true
+                    downloadButton.text = getString(R.string.download)
+                }
             }
         }.start()
     }
 
+    private fun showDownloadResult(count: Int) {
+        val message = if (count > 0) {
+            getString(R.string.downloaded_puzzles, count)
+        } else {
+            getString(R.string.no_puzzles_found)
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
     private fun downloadFromSubscription(subscription: Subscription): Int {
         return try {
+            if (subscription.name.equals(MyCrosswordSubscription.NAME, ignoreCase = true)) {
+                return MyCrosswordSubscription.download(subscription)
+            }
             if (subscription.puzzleFormat.equals("XD", ignoreCase = true)) {
                 return NewYorkerSubscription.download(subscription)
+            }
+            if (subscription.puzzleFormat.equals("guardian-json", ignoreCase = true)) {
+                return GuardianSubscription.download(subscription)
+            }
+            if (subscription.puzzleFormat.equals("wsj-json", ignoreCase = true)) {
+                return EverymanSubscription.download(subscription)
+            }
+            if (subscription.puzzleFormat.equals("jsoup-html", ignoreCase = true)) {
+                return IrishNewsSubscription.download(subscription)
+            }
+            if (subscription.puzzleFormat.equals("pml-json", ignoreCase = true)) {
+                return MetroSubscription.download(subscription)
             }
 
             val document = Jsoup.connect(subscription.url).get()
             var count = 0
             for (link in document.select("a[href]")) {
-                val href = link.attr("href")
-                if (href.endsWith(".puz", ignoreCase = true)) {
-                    val absUrl = link.absUrl("href")
-                    if (absUrl.isNotEmpty() && !PuzzleManager.hasPuzzleByUrl(absUrl)
-                            && addPuzzleIfNew(absUrl, subscription.name)) {
-                        count++
-                    }
+                val absUrl = link.absUrl("href")
+                if (absUrl.isEmpty()) continue
+
+                // File-hosted links often carry query strings or fragments
+                // (e.g. Dropbox "?dl=1"), so test the path portion only.
+                val pathOnly = absUrl.substringBefore('#').substringBefore('?')
+                if (pathOnly.endsWith(".puz", ignoreCase = true)
+                        && !PuzzleManager.hasPuzzleByUrl(absUrl)
+                        && addPuzzleIfNew(absUrl, subscription.name)) {
+                    count++
                 }
             }
             count
@@ -180,7 +223,7 @@ class SubscriptionsActivity : AppCompatActivity() {
         private fun rebuild() {
             rows.clear()
             val groups = subscriptions.groupBy { it.fetchFrequency }
-            val orderedKeys = listOf("One-Time", "Weekly", "Daily")
+            val orderedKeys = listOf("One-Time", "Weekly", "Daily", "Weekdays")
                     .filter { groups.containsKey(it) }
             val keys = orderedKeys + (groups.keys - orderedKeys.toSet())
             for (key in keys) {

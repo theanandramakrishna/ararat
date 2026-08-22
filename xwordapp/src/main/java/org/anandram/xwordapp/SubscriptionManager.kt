@@ -16,6 +16,8 @@ object SubscriptionManager {
     private const val CRU_URL = "https://archive.nytimes.com/www.nytimes.com/premium/xword/cryptic-archive.html"
     private const val WJ_NAME = "Will Johnston Cryptics"
     private const val WJ_URL = "https://www.fleetingimage.com/wij/puzzles/wij-cryptic.html"
+    private const val ARIES_NAME = "Aries Cryptics"
+    private const val ARIES_URL = "https://www.ariespuzzles.com/search/label/Cryptic"
 
     private lateinit var appContext: Context
     private lateinit var file: File
@@ -29,15 +31,33 @@ object SubscriptionManager {
         ensureDefaults()
     }
 
-    private fun ensureDefaults() {
-        if (file.exists()) return
+    private val DEFAULT_SUBSCRIPTIONS = listOf(
+            Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
+            Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
+            Subscription(name = CRU_NAME, url = CRU_URL, enabled = true),
+            Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
+            Subscription(name = ARIES_NAME, url = ARIES_URL, enabled = true),
+            NewYorkerSubscription.default(),
+            GuardianSubscription.default(),
+            EverymanSubscription.default(),
+            IrishNewsSubscription.crypticDefault(),
+            IrishNewsSubscription.prizeCrypticDefault(),
+            MetroSubscription.default(),
+            MyCrosswordSubscription.default())
 
-        saveSubscriptions(listOf(
-                Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
-                Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
-                Subscription(name = CRU_NAME, url = CRU_URL, enabled = true),
-                Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
-                NewYorkerSubscription.default()))
+    private fun ensureDefaults() {
+        if (!file.exists()) {
+            saveSubscriptions(DEFAULT_SUBSCRIPTIONS)
+            return
+        }
+
+        val existing = getSubscriptions()
+        val missing = DEFAULT_SUBSCRIPTIONS.filter { def ->
+            existing.none { it.name == def.name }
+        }
+        if (missing.isNotEmpty()) {
+            saveSubscriptions(existing + missing)
+        }
     }
 
     @Synchronized

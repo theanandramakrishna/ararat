@@ -47,24 +47,33 @@ class WSJFormatter : CrosswordFormatter {
         val json = inputStream.bufferedReader(encoding).use { it.readText() }
         val obj = JSONObject(json)
 
-        val dataObj = obj.optJSONObject("data")
-                ?: throw FormatException("Missing 'data'")
+        // The WSJ schema wraps everything in a "data" object, but other
+        // publishers using the same schema (e.g. Everyman Observer) do not.
+        val dataObj = obj.optJSONObject("data") ?: obj
         val copyObj = dataObj.optJSONObject("copy")
-                ?: throw FormatException("Missing 'data.copy'")
+                ?: throw FormatException("Missing 'copy'")
         val pubDate = copyObj.optString("date-publish")
-        val gridObj = copyObj.optJSONObject("gridsize")
-                ?: throw FormatException("Missing 'data.copy.gridsize'")
+        val gridArray = dataObj.optJSONArray("grid")
+                ?: throw FormatException("Missing 'grid'")
 
-        builder.width = gridObj.optInt("cols")
-        builder.height = gridObj.optInt("rows")
+        // Prefer the explicit grid size when present; otherwise derive it
+        // from the grid array itself.
+        copyObj.optJSONObject("gridsize")?.let {
+            builder.width = it.optInt("cols")
+            builder.height = it.optInt("rows")
+        } ?: run {
+            builder.height = gridArray.length()
+            builder.width = gridArray.optJSONArray(0)?.length() ?: 0
+        }
+
         builder.title = copyObj.optString("title")
         builder.description = copyObj.optString("description")
         builder.copyright = copyObj.optString("publisher")
-        builder.author = copyObj.optString("byline")
+        val byline = copyObj.optString("byline")
+        builder.author = if (byline.isEmpty()) copyObj.optString("setter") else byline
         builder.date = PUBLISH_DATE_FORMAT.parse(pubDate)!!.time
 
-        val grid = Grid(builder.width, builder.height,
-                dataObj.getJSONArray("grid"))
+        val grid = Grid(builder.width, builder.height, gridArray)
 
         readClues(builder, copyObj, grid)
     }

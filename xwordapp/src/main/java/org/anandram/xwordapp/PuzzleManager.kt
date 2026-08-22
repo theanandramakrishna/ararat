@@ -8,7 +8,11 @@ import org.akop.ararat.core.CrosswordState
 import org.akop.ararat.core.CrosswordStateReader
 import org.akop.ararat.core.CrosswordStateWriter
 import org.akop.ararat.core.buildCrossword
+import org.akop.ararat.io.GuardianJsonFormatter
+import org.akop.ararat.io.JsoupHtmlFormatter
+import org.akop.ararat.io.PmlJsonFormatter
 import org.akop.ararat.io.PuzFormatter
+import org.akop.ararat.io.WSJFormatter
 import org.akop.ararat.io.XdFormatter
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -24,6 +28,13 @@ object PuzzleManager {
 
     private lateinit var appContext: Context
     private lateinit var dir: File
+
+    /**
+     * Optional observer notified after each puzzle is successfully added
+     * (via any of the add methods). Callers must clear it when done.
+     */
+    @Volatile
+    var onPuzzleAdded: (() -> Unit)? = null
 
     @Synchronized
     fun init(context: Context) {
@@ -105,6 +116,8 @@ object PuzzleManager {
         list += entry
         saveList(list)
 
+        onPuzzleAdded?.invoke()
+
         return entry
     }
 
@@ -170,6 +183,10 @@ fun parse(file: File, format: String = "puz"): Crossword? = try {
 fun parse(source: InputStream, format: String = "puz"): Crossword? = try {
     when (format) {
         "xd" -> source.use { s -> buildCrossword { XdFormatter().read(this, s) } }
+        "guardian-json" -> source.use { s -> buildCrossword { GuardianJsonFormatter().read(this, s) } }
+        "wsj-json" -> source.use { s -> buildCrossword { WSJFormatter().read(this, s) } }
+        "jsoup-html" -> source.use { s -> buildCrossword { JsoupHtmlFormatter().read(this, s) } }
+        "pml-json" -> source.use { s -> buildCrossword { PmlJsonFormatter().read(this, s) } }
         else -> source.use { s -> buildCrossword { PuzFormatter().read(this, s) } }
     }
 } catch (e: Exception) {
