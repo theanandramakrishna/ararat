@@ -28,6 +28,10 @@ import org.json.JSONObject
 
 import java.io.IOException
 import java.io.InputStream
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 /**
  * Formatter for the Guardian's crossword JSON, as embedded in the "data" prop of
@@ -65,7 +69,14 @@ class GuardianJsonFormatter : CrosswordFormatter {
         builder.title = root.optString("name")
         builder.author = root.optJSONObject("creator")?.optString("name")
         builder.description = root.optString("instructions").stripHtmlEntities()
-        builder.date = root.optLong("date")
+
+        // guardian.com carries the date as epoch millis; other publishers
+        // using the same schema (e.g. MyCrossword.co.uk) use ISO 8601.
+        when (val dateValue = root.opt("date")) {
+            is Number -> builder.date = dateValue.toLong()
+            is String -> builder.date = parseIsoDate(dateValue)
+            else -> builder.date = 0L
+        }
 
         val entries = (0 until entriesJson.length()).map { i ->
             Entry(entriesJson.optJSONObject(i)
@@ -149,5 +160,26 @@ class GuardianJsonFormatter : CrosswordFormatter {
         }
 
         fun solutionAt(offset: Int): String? = solution.getOrNull(offset)?.toString()
+    }
+
+    companion object {
+        private val ISO_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+
+        init {
+            ISO_DATE_FORMAT.timeZone = TimeZone.getTimeZone("UTC")
+        }
+
+        /**
+         * Parse an ISO 8601 date string, e.g. "2026-08-05T00:00:00.000Z".
+         * Fractional seconds and the zone designator are ignored; the time
+         * is interpreted as UTC.
+         */
+        private fun parseIsoDate(value: String): Long = try {
+            val withoutFraction = value.substringBefore('.')
+                    .removeSuffix("Z")
+            ISO_DATE_FORMAT.parse(withoutFraction)?.time ?: 0L
+        } catch (e: ParseException) {
+            0L
+        }
     }
 }

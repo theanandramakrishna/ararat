@@ -21,12 +21,23 @@
 package org.akop.ararat.formatter
 
 import org.akop.ararat.io.GuardianJsonFormatter
+import org.junit.Assert
 import org.junit.Test
 
 
 class TestGuardianJsonFormatter : BaseTest() {
 
     val crossword = GuardianJsonFormatter().load("guardian.json")
+
+    @Test
+    fun crossword_testIsoDateString() {
+        val isoCrossword = GuardianJsonFormatter().load("guardian-isodate.json")
+        Assert.assertEquals(metadata.date, isoCrossword.date)
+        Assert.assertEquals("Sample Guardian Cryptic", isoCrossword.title)
+        assertLayout(isoCrossword, Array(layout.size) { row ->
+            layout[row].chunked(1).map { when (it) { "#" -> null else -> it } }.toTypedArray()
+        })
+    }
 
     @Test
     fun crossword_testMetadata() {

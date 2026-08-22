@@ -39,7 +39,8 @@ object SubscriptionManager {
             EverymanSubscription.default(),
             IrishNewsSubscription.crypticDefault(),
             IrishNewsSubscription.prizeCrypticDefault(),
-            MetroSubscription.default())
+            MetroSubscription.default(),
+            MyCrosswordSubscription.default())
 
     private fun ensureDefaults() {
         if (!file.exists()) {

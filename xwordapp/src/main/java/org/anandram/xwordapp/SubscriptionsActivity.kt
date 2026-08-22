@@ -134,6 +134,9 @@ class SubscriptionsActivity : AppCompatActivity() {
 
     private fun downloadFromSubscription(subscription: Subscription): Int {
         return try {
+            if (subscription.name.equals(MyCrosswordSubscription.NAME, ignoreCase = true)) {
+                return MyCrosswordSubscription.download(subscription)
+            }
             if (subscription.puzzleFormat.equals("XD", ignoreCase = true)) {
                 return NewYorkerSubscription.download(subscription)
             }
