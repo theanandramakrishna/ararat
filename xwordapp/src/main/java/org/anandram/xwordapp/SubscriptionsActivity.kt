@@ -156,13 +156,16 @@ class SubscriptionsActivity : AppCompatActivity() {
             val document = Jsoup.connect(subscription.url).get()
             var count = 0
             for (link in document.select("a[href]")) {
-                val href = link.attr("href")
-                if (href.endsWith(".puz", ignoreCase = true)) {
-                    val absUrl = link.absUrl("href")
-                    if (absUrl.isNotEmpty() && !PuzzleManager.hasPuzzleByUrl(absUrl)
-                            && addPuzzleIfNew(absUrl, subscription.name)) {
-                        count++
-                    }
+                val absUrl = link.absUrl("href")
+                if (absUrl.isEmpty()) continue
+
+                // File-hosted links often carry query strings or fragments
+                // (e.g. Dropbox "?dl=1"), so test the path portion only.
+                val pathOnly = absUrl.substringBefore('#').substringBefore('?')
+                if (pathOnly.endsWith(".puz", ignoreCase = true)
+                        && !PuzzleManager.hasPuzzleByUrl(absUrl)
+                        && addPuzzleIfNew(absUrl, subscription.name)) {
+                    count++
                 }
             }
             count
