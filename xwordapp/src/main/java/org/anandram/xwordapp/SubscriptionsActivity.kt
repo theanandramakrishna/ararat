@@ -106,30 +106,45 @@ class SubscriptionsActivity : AppCompatActivity() {
         downloadButton.isEnabled = false
         downloadButton.text = getString(R.string.downloading)
 
-        Thread {
-            var count = 0
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-            for (subscription in enabled) {
-                if (shouldSkip(subscription, today)) continue
-                SubscriptionManager.markDownloadStarted(subscription.name, today)
-                val index = subscriptions.indexOfFirst { it.name == subscription.name }
-                if (index >= 0) {
-                    subscriptions[index] = subscriptions[index].copy(lastDownloadDate = today)
-                }
-                count += downloadFromSubscription(subscription)
-            }
-
+        var count = 0
+        PuzzleManager.onPuzzleAdded = {
             runOnUiThread {
-                downloadButton.isEnabled = true
-                downloadButton.text = getString(R.string.download)
-                val message = if (count > 0) {
-                    getString(R.string.downloaded_puzzles, count)
-                } else {
-                    getString(R.string.no_puzzles_found)
+                downloadButton.text = getString(R.string.downloading_count, ++count)
+            }
+        }
+
+        Thread {
+            try {
+                var total = 0
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                for (subscription in enabled) {
+                    if (shouldSkip(subscription, today)) continue
+                    SubscriptionManager.markDownloadStarted(subscription.name, today)
+                    val index = subscriptions.indexOfFirst { it.name == subscription.name }
+                    if (index >= 0) {
+                        subscriptions[index] = subscriptions[index].copy(lastDownloadDate = today)
+                    }
+                    total += downloadFromSubscription(subscription)
                 }
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+                runOnUiThread { showDownloadResult(total) }
+            } finally {
+                runOnUiThread {
+                    PuzzleManager.onPuzzleAdded = null
+                    downloadButton.isEnabled = true
+                    downloadButton.text = getString(R.string.download)
+                }
             }
         }.start()
+    }
+
+    private fun showDownloadResult(count: Int) {
+        val message = if (count > 0) {
+            getString(R.string.downloaded_puzzles, count)
+        } else {
+            getString(R.string.no_puzzles_found)
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun downloadFromSubscription(subscription: Subscription): Int {

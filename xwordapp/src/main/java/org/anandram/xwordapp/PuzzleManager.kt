@@ -29,6 +29,13 @@ object PuzzleManager {
     private lateinit var appContext: Context
     private lateinit var dir: File
 
+    /**
+     * Optional observer notified after each puzzle is successfully added
+     * (via any of the add methods). Callers must clear it when done.
+     */
+    @Volatile
+    var onPuzzleAdded: (() -> Unit)? = null
+
     @Synchronized
     fun init(context: Context) {
         if (::appContext.isInitialized) return
@@ -108,6 +115,8 @@ object PuzzleManager {
         val list = getPuzzlesInternal().toMutableList()
         list += entry
         saveList(list)
+
+        onPuzzleAdded?.invoke()
 
         return entry
     }
