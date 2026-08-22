@@ -146,6 +146,9 @@ class SubscriptionsActivity : AppCompatActivity() {
             if (subscription.puzzleFormat.equals("jsoup-html", ignoreCase = true)) {
                 return IrishNewsSubscription.download(subscription)
             }
+            if (subscription.puzzleFormat.equals("pml-json", ignoreCase = true)) {
+                return MetroSubscription.download(subscription)
+            }
 
             val document = Jsoup.connect(subscription.url).get()
             var count = 0

@@ -38,7 +38,8 @@ object SubscriptionManager {
             GuardianSubscription.default(),
             EverymanSubscription.default(),
             IrishNewsSubscription.crypticDefault(),
-            IrishNewsSubscription.prizeCrypticDefault())
+            IrishNewsSubscription.prizeCrypticDefault(),
+            MetroSubscription.default())
 
     private fun ensureDefaults() {
         if (!file.exists()) {
