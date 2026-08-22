@@ -130,6 +130,9 @@ class SubscriptionsActivity : AppCompatActivity() {
             if (subscription.puzzleFormat.equals("guardian-json", ignoreCase = true)) {
                 return GuardianSubscription.download(subscription)
             }
+            if (subscription.puzzleFormat.equals("wsj-json", ignoreCase = true)) {
+                return EverymanSubscription.download(subscription)
+            }
 
             val document = Jsoup.connect(subscription.url).get()
             var count = 0

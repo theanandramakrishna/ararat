@@ -35,7 +35,8 @@ object SubscriptionManager {
             Subscription(name = CRU_NAME, url = CRU_URL, enabled = true),
             Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
             NewYorkerSubscription.default(),
-            GuardianSubscription.default())
+            GuardianSubscription.default(),
+            EverymanSubscription.default())
 
     private fun ensureDefaults() {
         if (!file.exists()) {
