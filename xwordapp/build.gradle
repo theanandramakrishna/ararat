@@ -13,6 +13,20 @@ android {
         versionCode 6
         versionName "0.9"
         multiDexEnabled true
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    kotlinOptions {
+        // Robolectric 4.15+ pulls Kotlin 1.8-compiled dependencies; the project
+        // compiler is pinned to 1.6.21. The newer metadata is readable once the
+        // version check is skipped.
+        freeCompilerArgs += ["-Xskip-metadata-version-check"]
     }
     configurations {
         all {
@@ -44,6 +58,13 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'org.jsoup:jsoup:1.15.3'
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.15.1'
+    testImplementation 'androidx.test:core:1.5.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.11.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
     implementation project(':library')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 

@@ -10,9 +10,11 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import org.jsoup.Jsoup
 import java.io.ByteArrayInputStream
@@ -39,6 +41,7 @@ class SubscriptionsActivity : AppCompatActivity() {
 
         SubscriptionManager.init(this)
         PuzzleManager.init(this)
+        CredentialStore.init(this)
 
         subscriptions = SubscriptionManager.getSubscriptions().toMutableList()
 
@@ -65,35 +68,7 @@ class SubscriptionsActivity : AppCompatActivity() {
     }
 
     private fun shouldSkip(subscription: Subscription, today: String): Boolean {
-        val lastDate = subscription.lastDownloadDate
-        if (lastDate.isEmpty()) return false
-
-        return when (subscription.fetchFrequency) {
-            "Weekly" -> lastDate >= startOfWeek(today)
-            "Daily" -> lastDate == today
-            "Weekdays" -> !isWeekday(today) || lastDate == today
-            else -> true
-        }
-    }
-
-    private fun isWeekday(today: String): Boolean {
-        val parts = today.split("-")
-        val cal = Calendar.getInstance()
-        cal.clear()
-        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
-        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-        return dayOfWeek != Calendar.SATURDAY && dayOfWeek != Calendar.SUNDAY
-    }
-
-    private fun startOfWeek(today: String): String {
-        val parts = today.split("-")
-        val cal = Calendar.getInstance()
-        cal.clear()
-        cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
-        cal.firstDayOfWeek = Calendar.SUNDAY
-        cal.minimalDaysInFirstWeek = 1
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-        return SimpleDateFormat("yyyy-MM-dd", Locale.US).format(cal.time)
+        return subscription.isSkipped(today)
     }
 
     private fun download() {
@@ -119,6 +94,7 @@ class SubscriptionsActivity : AppCompatActivity() {
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 for (subscription in enabled) {
                     if (shouldSkip(subscription, today)) continue
+                    if (!subscription.isDownloadable(CredentialStore.has(subscription.name))) continue
                     SubscriptionManager.markDownloadStarted(subscription.name, today)
                     val index = subscriptions.indexOfFirst { it.name == subscription.name }
                     if (index >= 0) {
@@ -166,6 +142,12 @@ class SubscriptionsActivity : AppCompatActivity() {
             }
             if (subscription.puzzleFormat.equals("pml-json", ignoreCase = true)) {
                 return MetroSubscription.download(subscription)
+            }
+            if (subscription.puzzleFormat.equals("amuse-json", ignoreCase = true)) {
+                return HinduSubscription.download(subscription)
+            }
+            if (subscription.puzzleFormat.equals("jpz", ignoreCase = true)) {
+                return IndependentSubscription.download(subscription)
             }
 
             val document = Jsoup.connect(subscription.url).get()
@@ -258,7 +240,22 @@ class SubscriptionsActivity : AppCompatActivity() {
 
             val checkbox = view.findViewById<CheckBox>(R.id.subscription_enabled)
             checkbox.setOnCheckedChangeListener(null)
-            checkbox.isChecked = subscription.enabled
+
+            val credsButton = view.findViewById<Button>(R.id.subscription_credentials)
+            val hasCreds = CredentialStore.has(subscription.name)
+            if (subscription.needCreds) {
+                credsButton.visibility = View.VISIBLE
+                credsButton.setOnClickListener {
+                    showCredentialsDialog(subscription)
+                }
+            } else {
+                credsButton.visibility = View.GONE
+                credsButton.setOnClickListener(null)
+            }
+
+            val enableable = subscription.isEnableable(hasCreds)
+            checkbox.isEnabled = enableable
+            checkbox.isChecked = subscription.enabled && enableable
             checkbox.setOnCheckedChangeListener { _, isChecked ->
                 val index = subscriptions.indexOfFirst { it.name == subscription.name }
                 if (index >= 0) {
@@ -272,6 +269,31 @@ class SubscriptionsActivity : AppCompatActivity() {
             view.findViewById<TextView>(R.id.subscription_url).text = subscription.url
 
             return view
+        }
+
+        private fun showCredentialsDialog(subscription: Subscription) {
+            val context = inflater.context
+            val view = LayoutInflater.from(context)
+                    .inflate(R.layout.dialog_credentials, null)
+            val usernameEdit = view.findViewById<EditText>(R.id.credential_username)
+            val passwordEdit = view.findViewById<EditText>(R.id.credential_password)
+
+            CredentialStore.get(subscription.name)?.let { (username, password) ->
+                usernameEdit.setText(username)
+                passwordEdit.setText(password)
+            }
+
+            AlertDialog.Builder(context)
+                    .setTitle(R.string.credentials)
+                    .setView(view)
+                    .setPositiveButton(R.string.ok) { _, _ ->
+                        CredentialStore.set(subscription.name,
+                                usernameEdit.text.toString().trim(),
+                                passwordEdit.text.toString())
+                        notifyDataSetChanged()
+                    }
+                    .setNegativeButton(R.string.cancel, null)
+                    .show()
         }
     }
 }

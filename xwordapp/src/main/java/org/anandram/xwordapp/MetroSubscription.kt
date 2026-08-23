@@ -18,6 +18,10 @@ object MetroSubscription {
     private val EMBED_JSON_REGEX = Regex("\\{\"pml_id\".*\\}")
     private const val FALLBACK_TITLE = NAME
 
+    /** Extract the embedded PML puzzle JSON blob from a metro.co.uk page. */
+    fun extractPuzzleJson(pageHtml: String): String? =
+            EMBED_JSON_REGEX.find(pageHtml)?.groupValues?.get(0)
+
     fun default(): Subscription = Subscription(
             name = NAME,
             url = URL,
@@ -34,8 +38,7 @@ object MetroSubscription {
                     .execute()
                     .bodyAsBytes(), Charsets.UTF_8)
 
-            val puzzleJson = EMBED_JSON_REGEX.find(page)?.groupValues?.get(0)
-                    ?: return 0
+            val puzzleJson = extractPuzzleJson(page) ?: return 0
 
             val downloadUrl = "${subscription.url}#$dateStamp"
             if (PuzzleManager.hasPuzzleByUrl(downloadUrl)) return 0

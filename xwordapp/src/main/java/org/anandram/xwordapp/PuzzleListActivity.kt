@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.tabs.TabLayout
 
+import java.io.ByteArrayInputStream
 import java.text.DateFormat
 import java.util.Date
 
@@ -179,8 +180,11 @@ class PuzzleListActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     data?.data?.let { uri ->
                         val fileName = displayName(uri)
-                        val added = contentResolver.openInputStream(uri)?.let { input ->
-                            PuzzleManager.addPuzzle(input, downloadUrl = "file:$fileName")
+                        val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                        val format = bytes?.let { PuzzleManager.detectFormat(fileName, it) } ?: "puz"
+                        val added = bytes?.let {
+                            PuzzleManager.addPuzzle(ByteArrayInputStream(it),
+                                    format = format, downloadUrl = "file:$fileName")
                         }
                         if (added == null) {
                             Toast.makeText(this, R.string.add_failed, Toast.LENGTH_SHORT).show()

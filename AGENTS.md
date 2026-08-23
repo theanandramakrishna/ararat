@@ -22,9 +22,9 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 ## Architecture
 
 ### Puzzle Formats
-- `.puz` — raw Puzzler's Assistant bytes, parsed by `PuzFormatter` on load.
-- `.xd` — raw XD text (kotwords-compatible), parsed by `XdFormatter` on load.
-- Both stored as verbatim files (`{id}.puz` / `{id}.xd`); no serialization step.
+- `.puz`, `.xd`, `guardian-json`, `wsj-json` (Everyman), `jsoup-html` (Irish News), `pml-json` (Metro), `amuse-json` (Hindu Sunday), `jpz` (Independent).
+- All stored as verbatim files (`{id}.{format}`); no serialization step.
+- `PuzzleManager.parse()` is the source of truth for the format registry.
 
 ### Key Classes
 | File | Role |
@@ -33,10 +33,10 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 | `library/.../core/WordBuilder.kt` | Bar-aware word boundary helpers. Word runs require length >= 2. |
 | `library/.../io/XdFormatter.kt` | Generic XD parser (Metadata/Grid/Clues/Design/Start sections). |
 | `library/.../io/PuzFormatter.kt` | Puz parser. Uses WordBuilder for word detection. |
-| `xwordapp/.../PuzzleEntry.kt` | Has `format: String` field — `"puz"` or `"xd"`. Drives load path. |
+| `xwordapp/.../PuzzleEntry.kt` | Has `format: String` field. Drives load path. |
 | `xwordapp/.../PuzzleManager.kt` | Format-aware: `addPuzzle(source, format, ...)`, `addXdIfNew(xdText, ...)`, `puzzleFile(id, format)`, `parse(file, format)`. |
-| `xwordapp/.../NewYorkerSubscription.kt` | NY-specific scraping (listing -> page -> UUID -> API -> XD). |
-| `xwordapp/.../SubscriptionsActivity.kt` | Generic: dispatches on `subscription.puzzleFormat`. No site-specific logic. |
+| `xwordapp/.../*Subscription.kt` | One object per source with scraping logic (`NewYorker`, `Guardian`, `Everyman`, `IrishNews`, `Metro`, `MyCrossword`, `Hindu`, `Independent`). |
+| `xwordapp/.../SubscriptionsActivity.kt` | Dispatches downloads: one name-based branch first, then per-`puzzleFormat` branches; generic `.puz` link path is the fallback. |
 | `xwordapp/.../DriveManager.kt` | Backup/restore zip. Uses `puzzleFile(id, format)` — format-aware. |
 
 ### Adding a New Subscription Source
@@ -48,6 +48,7 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 1. Add formatter in `library/.../io/` implementing `CrosswordFormatter`.
 2. Add `"xyz"` branch in `PuzzleManager.parse()`.
 3. Store files as `{id}.xyz`, set `format = "xyz"` on the entry.
+4. Tests: `BaseTest` has `dumpMetadata()/dumpLayout()/dumpHints()`. Write the test with placeholder expected values plus a temporary test method calling `crossword.dumpAll()`; run, harvest actuals from `library/build/reports/tests/testDebugUnitTest/classes/<TestClass>.html`, then delete the dump method (report stdout may truncate — fall back to mirroring parse logic in python).
 
 ## Gotchas
 - Library pinned to `compileSdk 31` (Kotlin 1.6.21). App uses `compileSdk 36`.
@@ -55,4 +56,8 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 - Gson uses Kotlin no-arg constructor for data classes with all-default params. Missing JSON fields get Kotlin defaults. `normalized()` handles blanks.
 - `.puz` GEXT has no bar bits. `GEXT_CIRCLED = 0x80`. Bars only from XD Design section.
 - New Yorker cryptics use per-cell numbering (not sequential). Single-barred isolated cells are not word starts.
+- Format strings are not unique per source: `guardian-json` is emitted by both `GuardianSubscription` and `MyCrosswordSubscription`. Dispatch checks `subscription.name` (MyCrossword) *before* the format branches.
+- Constant-URL sources ("always today's puzzle": Irish News, Metro) dedupe via `downloadUrl = "<page-url>#<yyyy-MM-dd>"` + date-suffixed `fallbackTitle`. Note `addPuzzleIfNew` prefers the parsed crossword title over `fallbackTitle`, so such formatters must leave title unset (see `PmlJsonFormatter`).
+- thehindu.com sits behind Cloudflare: non-browser User-Agents get 403. All Jsoup fetches there need a browser UA. AmuseLabs prize puzzles (Hindu Sunday) withhold `placedWords[].word`; extents come from `nBoxes` and letters from the column-major `box` grid.
+- Default subscriptions merge by name into existing installs (`DEFAULT_SUBSCRIPTIONS`); a fresh `subscriptions.json` is written only when the file is absent.
 - User tests manually after install. Never commit unless explicitly asked.

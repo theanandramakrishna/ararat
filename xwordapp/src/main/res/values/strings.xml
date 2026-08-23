@@ -36,6 +36,9 @@
     <string name="no_puzzles_found">No puzzles found</string>
     <string name="downloading">Downloading…</string>
     <string name="downloading_count">Downloading… (%1$d)</string>
+    <string name="credentials">Credentials</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
     <string name="no_subscriptions_enabled">No enabled subscriptions</string>
     <string name="tab_all">All</string>
     <string name="tab_unsolved">Unsolved</string>

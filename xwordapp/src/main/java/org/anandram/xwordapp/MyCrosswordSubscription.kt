@@ -17,6 +17,9 @@ object MyCrosswordSubscription {
     private val PUZZLE_PATH = Regex("/cryptic/\\d+$")
     private const val DATA_SUFFIX = "?_data=routes%2Fcryptic.%24crosswordId"
 
+    /** Whether [url] points at a MyCrossword puzzle page. */
+    fun matchesPuzzleUrl(url: String): Boolean = PUZZLE_PATH.containsMatchIn(url)
+
     fun default(): Subscription = Subscription(
             name = NAME,
             url = URL,
@@ -29,7 +32,7 @@ object MyCrosswordSubscription {
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
-                if (PUZZLE_PATH.containsMatchIn(href)) href else null
+                if (matchesPuzzleUrl(href)) href else null
             }.distinct().sortedDescending().take(MAX_PER_SWEEP)
 
             var count = 0

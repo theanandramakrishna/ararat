@@ -31,6 +31,17 @@ object SubscriptionManager {
         ensureDefaults()
     }
 
+    /**
+     * Re-initializes against [context] even if already initialized; for
+     * tests only, where each run gets a fresh files directory.
+     */
+    @Synchronized
+    internal fun initForTests(context: Context) {
+        appContext = context.applicationContext
+        file = File(appContext.filesDir, FILE_NAME)
+        ensureDefaults()
+    }
+
     private val DEFAULT_SUBSCRIPTIONS = listOf(
             Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
             Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
@@ -43,7 +54,10 @@ object SubscriptionManager {
             IrishNewsSubscription.crypticDefault(),
             IrishNewsSubscription.prizeCrypticDefault(),
             MetroSubscription.default(),
-            MyCrosswordSubscription.default())
+            MyCrosswordSubscription.default(),
+            HinduSubscription.dailyDefault(),
+            HinduSubscription.sundayDefault(),
+            IndependentSubscription.default())
 
     private fun ensureDefaults() {
         if (!file.exists()) {
@@ -51,13 +65,18 @@ object SubscriptionManager {
             return
         }
 
-        val existing = getSubscriptions()
+        saveSubscriptions(mergeDefaults(getSubscriptions()))
+    }
+
+    /**
+     * Appends any default subscriptions missing from [existing], matched by
+     * name. Existing entries are preserved as-is.
+     */
+    fun mergeDefaults(existing: List<Subscription>): List<Subscription> {
         val missing = DEFAULT_SUBSCRIPTIONS.filter { def ->
             existing.none { it.name == def.name }
         }
-        if (missing.isNotEmpty()) {
-            saveSubscriptions(existing + missing)
-        }
+        return if (missing.isEmpty()) existing else existing + missing
     }
 
     @Synchronized

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<crossword-compiler>
+<rectangular-puzzle>
+<metadata><title>Barred Test</title></metadata>
+<crossword>
+<grid width="4" height="3">
+<cell x="1" y="1" number="1" solution="A" top-bar="true"/>
+<cell x="2" y="1" solution="B" right-bar="true"/>
+<cell x="3" y="1" number="2" solution="C"/>
+<cell x="4" y="1" solution="D"/>
+<cell x="1" y="2" number="3" solution="E" top-bar="true"/>
+<cell x="2" y="2" solution="F" right-bar="true"/>
+<cell x="3" y="2" number="4" solution="G"/>
+<cell x="4" y="2" solution="H"/>
+<cell x="1" y="3" number="5" solution="I" top-bar="true"/>
+<cell x="2" y="3" solution="J" right-bar="true"/>
+<cell x="3" y="3" number="6" solution="K"/>
+<cell x="4" y="3" solution="L"/>
+</grid>
+<word id="ba1" x="1-2" y="1"/><word id="ba3" x="3-4" y="1"/>
+<word id="ba5" x="1-2" y="2"/><word id="ba7" x="3-4" y="2"/>
+<word id="ba9" x="1-2" y="3"/><word id="ba11" x="3-4" y="3"/>
+<word id="bd1" x="1" y="1-3"/><word id="bd2" x="2" y="1-3"/>
+<word id="bd3" x="3" y="1-3"/><word id="bd4" x="4" y="1-3"/>
+<clues><title>Across</title>
+<clue number="1" word="ba1">ab</clue>
+<clue number="3" word="ba3">cd</clue>
+<clue number="5" word="ba5">ef</clue>
+<clue number="7" word="ba7">gh</clue>
+<clue number="9" word="ba9">ij</clue>
+<clue number="11" word="ba11">kl</clue>
+</clues>
+<clues><title>Down</title>
+<clue number="1" word="bd1">aei</clue>
+<clue number="2" word="bd2">bfj</clue>
+<clue number="3" word="bd3">cgk</clue>
+<clue number="4" word="bd4">dhl</clue>
+</clues>
+</crossword>
+</rectangular-puzzle>
+</crossword-compiler>

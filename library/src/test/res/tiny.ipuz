@@ -1,0 +1,16 @@
+{
+  "version": "http://ipuz.org/v2",
+  "kind": ["http://ipuz.org/crossword#1"],
+  "dimensions": {"width": 2, "height": 2},
+  "puzzle": [["C", {"style": "circled", "cell": "A"}], ["R", "T"]],
+  "styles": {"circled": {"shapebg": "circle"}},
+  "solution": [["C","A"],["R","T"]],
+  "clues": {
+    "Across": [
+      {"number": 1, "clue": "Across one"},
+      {"number": 2, "clue": "Across two"}],
+    "Down": [
+      {"number": 1, "clue": "Down one"},
+      {"number": 2, "clue": "Down two"}]
+  }
+}

@@ -22,6 +22,10 @@ object IrishNewsSubscription {
             "src=\\\\\"([^\"]*pa-puzzles\\.com[^\"]*)\\\\\"", RegexOption.IGNORE_CASE)
     private val TITLE_REGEX = Regex("<title>([^<]*)</title>", RegexOption.IGNORE_CASE)
 
+    /** Extract the pa-puzzles.com embed URL from an irishnews.com puzzle page. */
+    fun extractEmbedUrl(pageHtml: String): String? =
+            EMBED_URL_REGEX.find(pageHtml)?.groupValues?.get(1)
+
     fun crypticDefault(): Subscription = Subscription(
             name = CRYPTIC_NAME,
             url = CRYPTIC_URL,
@@ -45,7 +49,7 @@ object IrishNewsSubscription {
                     .execute()
                     .bodyAsBytes(), Charsets.UTF_8)
 
-            val embedUrl = EMBED_URL_REGEX.find(page)?.groupValues?.get(1) ?: return 0
+            val embedUrl = extractEmbedUrl(page) ?: return 0
 
             val downloadUrl = "${subscription.url}#$dateStamp"
             if (PuzzleManager.hasPuzzleByUrl(downloadUrl)) return 0
