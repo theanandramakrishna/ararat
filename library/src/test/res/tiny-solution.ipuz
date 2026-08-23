@@ -1,0 +1,31 @@
+{
+  "version": "http://ipuz.org/v2",
+  "kind": [
+    "http://ipuz.org/crossword#1"
+  ],
+  "dimensions": {
+    "width": 2,
+    "height": 1
+  },
+  "puzzle": [
+    [
+      "0",
+      "0"
+    ]
+  ],
+  "solution": [
+    [
+      "X",
+      "Y"
+    ]
+  ],
+  "clues": {
+    "Across": [
+      {
+        "number": 1,
+        "clue": "Two letters (2)"
+      }
+    ],
+    "Down": []
+  }
+}

@@ -20,8 +20,6 @@ import java.io.FileInputStream
 @Config(sdk = [33])
 class PuzzleManagerFormatWiringTest {
 
-    private val SAMPLES: Map<String, () -> java.io.InputStream> = mapOf()
-
     private fun parse(format: String, body: String) =
             PuzzleManager.parse(ByteArrayInputStream(body.toByteArray()), format)
 
@@ -29,21 +27,6 @@ class PuzzleManagerFormatWiringTest {
         assertNotNull(
                 "format '$format' has no parse branch (fell through to PuzFormatter)",
                 parse(format, body))
-    }
-
-    @Test
-    fun DIAG_wsjDirect() {
-        val body = SAMPLES.getValue("wsj-json")
-        try {
-            org.akop.ararat.core.buildCrossword {
-                org.akop.ararat.io.WSJFormatter().read(this, body.byteInputStream())
-            }
-            println("DIAG OK")
-        } catch (t: Throwable) {
-            println("DIAG FAIL: " + t)
-            t.printStackTrace()
-            throw t
-        }
     }
 
     @Test
@@ -85,13 +68,12 @@ class PuzzleManagerFormatWiringTest {
             {"data":{"copy":{
                 "title":"Tiny","byline":"A",
                 "date-publish":"Sunday, 22 March 2026",
-                "gridsize":{"cols":2,"rows":1},
+                "gridsize":{"cols":1,"rows":2},
                 "clues":[
                   {"title":"Across","clues":[{"word":1,"number":1,"clue":"top"}]},
                   {"title":"Down","clues":[{"word":2,"number":2,"clue":"side"}]}],
-                "words":[{"id":1,"x":"1-2","y":"1"},{"id":2,"x":"1","y":"1-2"}]},
-              "grid":[[{"Letter":"A"},{"Letter":"B"}],
-                      [{"Letter":"C"},{"Letter":"D"}]]}}
+                "words":[{"id":1,"x":"1","y":"1"},{"id":2,"x":"1","y":"1-2"}]},
+              "grid":[[{"Letter":"A"}],[{"Letter":"B"}]]}}
         """.trimIndent())
     }
 
@@ -136,6 +118,17 @@ class PuzzleManagerFormatWiringTest {
              "placedWords":[{"word":"AB","x":"0","y":"0","acrossNotDown":"True",
                              "direction":"E","clueNum":"1","nBoxes":"2",
                              "clue":{"clue":"Twice (2)"}}]}
+        """.trimIndent())
+    }
+
+    @Test
+    fun ipuz_isRegistered() {
+        assertParses("ipuz", """
+            {"version":"http://ipuz.org/v2",
+             "kind":["http://ipuz.org/crossword#1"],
+             "dimensions":{"width":2,"height":1},
+             "puzzle":[["A","B"]],
+             "clues":{"Across":[{"number":1,"clue":"Twice (2)"}]}}
         """.trimIndent())
     }
 

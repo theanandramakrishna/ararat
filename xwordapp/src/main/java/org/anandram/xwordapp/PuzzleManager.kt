@@ -10,6 +10,7 @@ import org.akop.ararat.core.CrosswordStateWriter
 import org.akop.ararat.core.buildCrossword
 import org.akop.ararat.io.AmuseLabsJsonFormatter
 import org.akop.ararat.io.GuardianJsonFormatter
+import org.akop.ararat.io.IpuzFormatter
 import org.akop.ararat.io.JpzFormatter
 import org.akop.ararat.io.JsoupHtmlFormatter
 import org.akop.ararat.io.PmlJsonFormatter
@@ -179,6 +180,35 @@ object PuzzleManager {
         return entry
     }
 
+    /**
+     * Best-effort format detection for local file imports: file extension
+     * first, then magic bytes / JSON markers. Defaults to "puz".
+     */
+    fun detectFormat(fileName: String, bytes: ByteArray): String {
+        when (fileName.substringAfterLast('.', "").lowercase()) {
+            "puz" -> return "puz"
+            "xd" -> return "xd"
+            "jpz" -> return "jpz"
+            "ipuz" -> return "ipuz"
+        }
+        if (bytes.size >= 11 && bytes[0] == 0xAA.toByte() && bytes[1] == 0x99.toByte()) {
+            return "puz"
+        }
+        if (bytes.size >= 4 && bytes[0] == 0x50.toByte() && bytes[1] == 0x4B.toByte()) {
+            return "jpz"
+        }
+        val head = bytes.toString(Charsets.UTF_8).trimStart()
+        if (head.startsWith("{")) {
+            return when {
+                head.contains("\"kind\"") -> "ipuz"
+                head.contains("\"placedWords\"") || head.contains("\"box\"") -> "amuse-json"
+                else -> "guardian-json"
+            }
+        }
+        if (head.startsWith("## ")) return "xd"
+        return "puz"
+    }
+
     fun solvedPercent(id: String): Int {
         val state = loadState(id) ?: return 0
         if (state.squareCount <= 0) return 0
@@ -203,6 +233,7 @@ fun parse(source: InputStream, format: String = "puz"): Crossword? = try {
         "pml-json" -> source.use { s -> buildCrossword { PmlJsonFormatter().read(this, s) } }
         "amuse-json" -> source.use { s -> buildCrossword { AmuseLabsJsonFormatter().read(this, s) } }
         "jpz" -> source.use { s -> buildCrossword { JpzFormatter().read(this, s) } }
+        "ipuz" -> source.use { s -> buildCrossword { IpuzFormatter().read(this, s) } }
         else -> source.use { s -> buildCrossword { PuzFormatter().read(this, s) } }
     }
 } catch (e: Exception) {
