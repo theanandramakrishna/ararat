@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 
 object IndependentSubscription {
     private const val TAG = "IndependentSubscription"
@@ -41,7 +40,7 @@ object IndependentSubscription {
     fun download(subscription: Subscription): Int {
         return try {
             var count = 0
-            val cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/London"))
+            val cal = Calendar.getInstance()
             for (daysBack in 0 until MAX_DAYS_BACK) {
                 val dateStamp = SimpleDateFormat("yyMMdd", Locale.US).format(cal.time)
                 val url = "$baseUrl/c_$dateStamp.xml"
