@@ -22,7 +22,7 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 ## Architecture
 
 ### Puzzle Formats
-- `.puz`, `.xd`, `guardian-json`, `wsj-json` (Everyman), `jsoup-html` (Irish News), `pml-json` (Metro).
+- `.puz`, `.xd`, `guardian-json`, `wsj-json` (Everyman), `jsoup-html` (Irish News), `pml-json` (Metro), `amuse-json` (Hindu Sunday), `jpz` (Independent).
 - All stored as verbatim files (`{id}.{format}`); no serialization step.
 - `PuzzleManager.parse()` is the source of truth for the format registry.
 
@@ -35,7 +35,7 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 | `library/.../io/PuzFormatter.kt` | Puz parser. Uses WordBuilder for word detection. |
 | `xwordapp/.../PuzzleEntry.kt` | Has `format: String` field. Drives load path. |
 | `xwordapp/.../PuzzleManager.kt` | Format-aware: `addPuzzle(source, format, ...)`, `addXdIfNew(xdText, ...)`, `puzzleFile(id, format)`, `parse(file, format)`. |
-| `xwordapp/.../*Subscription.kt` | One object per source with scraping logic (`NewYorker`, `Guardian`, `Everyman`, `IrishNews`, `Metro`, `MyCrossword`). |
+| `xwordapp/.../*Subscription.kt` | One object per source with scraping logic (`NewYorker`, `Guardian`, `Everyman`, `IrishNews`, `Metro`, `MyCrossword`, `Hindu`, `Independent`). |
 | `xwordapp/.../SubscriptionsActivity.kt` | Dispatches downloads: one name-based branch first, then per-`puzzleFormat` branches; generic `.puz` link path is the fallback. |
 | `xwordapp/.../DriveManager.kt` | Backup/restore zip. Uses `puzzleFile(id, format)` — format-aware. |
 
@@ -58,5 +58,6 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 - New Yorker cryptics use per-cell numbering (not sequential). Single-barred isolated cells are not word starts.
 - Format strings are not unique per source: `guardian-json` is emitted by both `GuardianSubscription` and `MyCrosswordSubscription`. Dispatch checks `subscription.name` (MyCrossword) *before* the format branches.
 - Constant-URL sources ("always today's puzzle": Irish News, Metro) dedupe via `downloadUrl = "<page-url>#<yyyy-MM-dd>"` + date-suffixed `fallbackTitle`. Note `addPuzzleIfNew` prefers the parsed crossword title over `fallbackTitle`, so such formatters must leave title unset (see `PmlJsonFormatter`).
+- thehindu.com sits behind Cloudflare: non-browser User-Agents get 403. All Jsoup fetches there need a browser UA. AmuseLabs prize puzzles (Hindu Sunday) withhold `placedWords[].word`; extents come from `nBoxes` and letters from the column-major `box` grid.
 - Default subscriptions merge by name into existing installs (`DEFAULT_SUBSCRIPTIONS`); a fresh `subscriptions.json` is written only when the file is absent.
 - User tests manually after install. Never commit unless explicitly asked.

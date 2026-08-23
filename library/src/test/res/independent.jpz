@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<crossword-compiler-applet>
+<crossword-compiler>
+<rectangular-puzzle xmlns="http://crosswordcompiler.com/xmlschema" metadata="true">
+<metadata>
+<title>Independent Test</title>
+<creator>Tester</creator>
+<copyright>IRN</copyright>
+<description><![CDATA[A test description]]></description>
+</metadata>
+<completion>Well done!</completion>
+<crossword>
+<grid width="4" height="4">
+<cell x="1" y="1" number="1" solution="A" solve-state="A"/>
+<cell x="2" y="1" solution="B"/>
+<cell x="3" y="1" solution="C"/>
+<cell x="4" y="1" solution="D"/>
+<cell x="1" y="2" number="2" solution="E"/>
+<cell x="2" y="2" background-shape="circle" solution="F"/>
+<cell x="3" y="2" solution="G"/>
+<cell x="4" y="2" solution="H"/>
+<cell x="1" y="3" number="3" solution="I"/>
+<cell x="2" y="3" solution="J"/>
+<cell x="3" y="3" solution="K"/>
+<cell x="4" y="3" solution="L"/>
+<cell x="1" y="4" number="4" solution="M"/>
+<cell x="2" y="4" solution="N"/>
+<cell x="3" y="4" solution="O"/>
+<cell x="4" y="4" solution="P"/>
+</grid>
+<word id="wa1" x="1-4" y="1"/>
+<word id="wa2" x="1-4" y="2"/>
+<word id="wa3" x="1-4" y="3"/>
+<word id="wa4" x="1-4" y="4"/>
+<word id="wd1" x="1" y="1-4"/>
+<word id="wd2" x="2" y="1-4"/>
+<word id="wd3" x="3" y="1-4"/>
+<word id="wd4" x="4" y="1-4"/>
+<clues ordering="normal">
+<title><b>Across</b></title>
+<clue number="1" word="wa1" format="4" citation="definition of ABCD">Sea letters</clue>
+<clue number="2" word="wa2">Second row</clue>
+<clue number="3" word="wa3">Third row</clue>
+<clue number="4" word="wa4">Fourth row</clue>
+</clues>
+<clues ordering="normal">
+<title><b>Down</b></title>
+<clue number="1" word="wd1">First column</clue>
+<clue number="1" word="wd1" is-link="1">ignored continuation</clue>
+<clue number="2" word="wd2">Second column</clue>
+<clue number="3" word="wd3">Third column</clue>
+<clue number="4" word="wd4">Fourth column</clue>
+</clues>
+</crossword>
+</rectangular-puzzle>
+</crossword-compiler>

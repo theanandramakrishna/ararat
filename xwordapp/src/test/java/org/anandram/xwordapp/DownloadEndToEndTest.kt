@@ -196,4 +196,50 @@ class DownloadEndToEndTest {
         assertEquals(0, HinduSubscription.download(hinduSub))
         assertEquals(beforeHindu, PuzzleManager.getPuzzles().size)
     }
-}
+
+    @Test
+    fun independentDownloadsDatedJpz() {
+        fun jpzBody(dateStamp: String): String {
+        val title = "Indy Test $dateStamp"
+        return ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<crossword-compiler><rectangular-puzzle>" +
+                "<metadata><title>$title</title><creator>Setter</creator></metadata>" +
+                "<crossword><grid width=\"2\" height=\"1\">" +
+                "<cell x=\"1\" y=\"1\" number=\"1\" solution=\"A\"/>" +
+                "<cell x=\"2\" y=\"1\" solution=\"B\"/></grid>" +
+                "<word id=\"w1\" x=\"1-2\" y=\"1\"/>" +
+                "<clues><title>Across</title>" +
+                "<clue number=\"1\" word=\"w1\">Twice (2)</clue></clues>" +
+                "</crossword></rectangular-puzzle></crossword-compiler>")
+
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val path = request.path ?: ""
+                val dateMatch = Regex("c_(\\d{6})\\.xml").find(path)
+                return if (dateMatch != null)
+                    MockResponse().setBody(jpzBody(dateMatch.groupValues[1]))
+                else MockResponse().setResponseCode(404)
+            }
+        }
+
+        IndependentSubscription.baseUrl = server.url("/daily-crossword").toString()
+        val sub = IndependentSubscription.default()
+
+        // Sweeps up to six days back; the mock answers every date.
+        assertEquals(6, IndependentSubscription.download(sub))
+
+        val entries = PuzzleManager.getPuzzles()
+                .filter { it.source == "Independent Cryptic" }
+        assertEquals(6, entries.size)
+        val entry = entries[0]
+        assertEquals("jpz", entry.format)
+        assertTrue(entry.title.startsWith("Indy Test "))
+
+        val crossword = PuzzleManager.parse(
+                PuzzleManager.puzzleFile(entry.id, entry.format), entry.format)
+        assertEquals(2, crossword!!.width)
+        val word = crossword.wordsAcross[0]
+        assertEquals(2, word.length)
+        assertEquals("AB", (0 until word.length).joinToString("") { word.cellAt(it).chars })
+    }
+}}

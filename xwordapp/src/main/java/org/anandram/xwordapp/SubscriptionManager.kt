@@ -55,7 +55,8 @@ object SubscriptionManager {
             IrishNewsSubscription.prizeCrypticDefault(),
             MetroSubscription.default(),
             MyCrosswordSubscription.default(),
-            HinduSubscription.default())
+            HinduSubscription.default(),
+            IndependentSubscription.default())
 
     private fun ensureDefaults() {
         if (!file.exists()) {
