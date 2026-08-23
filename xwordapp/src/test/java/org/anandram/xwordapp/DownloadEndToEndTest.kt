@@ -139,4 +139,61 @@ class DownloadEndToEndTest {
         assertEquals(0, MyCrosswordSubscription.download(sub))
         assertEquals(before, PuzzleManager.getPuzzles().size)
     }
+
+    @Test
+    fun hinduDownloadAddsCurrentPuzzle() {
+        // The player page embeds rawc; use a plain-Base64 blob so the fast
+        // decode path runs (the obfuscated path is covered in the library).
+        val hinduJson = ("{\"title\":\"Sunday #70\",\"author\":\"Setter\",\"w\":2,\"h\":1," +
+                "\"publishTime\":1787337000000," +
+                "\"box\":[[\"A\"],[\"B\"]]," +
+                "\"placedWords\":[{\"word\":\"AB\",\"x\":\"0\",\"y\":\"0\"," +
+                "\"acrossNotDown\":\"True\",\"direction\":\"E\",\"clueNum\":\"1\"," +
+                "\"clue\":{\"clue\":\"Twice (2)\"},\"clueSection\":\"Across\"}]}")
+        val hinduRawc = java.util.Base64.getEncoder().encodeToString(
+                hinduJson.toByteArray())
+
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val path = request.path ?: ""
+                return when {
+                    path == "/crosswords/hindu-cryptic-sunday" ->
+                        MockResponse().setBody("<html><body>" +
+                                "<a href=\"/crosswords/hindu-cryptic-sunday/8035ebe8\">Cryptic</a>" +
+                                "</body></html>")
+                    path.startsWith("/hindu/crossword") && request.requestUrl?.queryParameter("set") == "hindu-cryptic-sunday" ->
+                        MockResponse().setBody("<html><body><script>var p = " +
+                                "{\"rawc\": \"$hinduRawc\"};</script></body></html>")
+                    else -> MockResponse().setResponseCode(404)
+                }
+            }
+        }
+
+        HinduSubscription.playerPageBaseUrl = server.url("/hindu/crossword").toString()
+        assertEquals(HinduSubscription.FETCH_FREQUENCY, "Weekly")
+        assertEquals(HinduSubscription.NAME, "Hindu Sunday Cryptic")
+        val hinduSub = HinduSubscription.default()
+                .copy(url = server.url("/crosswords/hindu-cryptic").toString())
+
+        assertEquals(1, HinduSubscription.download(hinduSub))
+
+        val hinduEntries = PuzzleManager.getPuzzles()
+                .filter { it.source == "Hindu Sunday Cryptic" }
+        assertEquals(1, hinduEntries.size)
+        val hinduEntry = hinduEntries[0]
+        assertEquals("amuse-json", hinduEntry.format)
+        assertEquals("Sunday #70", hinduEntry.title)
+        assertEquals("Setter", hinduEntry.author)
+
+        val hinduCw = PuzzleManager.parse(
+                PuzzleManager.puzzleFile(hinduEntry.id, hinduEntry.format),
+                hinduEntry.format)
+        assertEquals(2, hinduCw!!.width)
+        assertEquals(1787337000000L, hinduCw.date)
+
+        // Stable player URL: rerun adds nothing.
+        val beforeHindu = PuzzleManager.getPuzzles().size
+        assertEquals(0, HinduSubscription.download(hinduSub))
+        assertEquals(beforeHindu, PuzzleManager.getPuzzles().size)
+    }
 }

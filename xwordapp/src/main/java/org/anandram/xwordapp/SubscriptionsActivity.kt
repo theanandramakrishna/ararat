@@ -143,6 +143,9 @@ class SubscriptionsActivity : AppCompatActivity() {
             if (subscription.puzzleFormat.equals("pml-json", ignoreCase = true)) {
                 return MetroSubscription.download(subscription)
             }
+            if (subscription.puzzleFormat.equals("amuse-json", ignoreCase = true)) {
+                return HinduSubscription.download(subscription)
+            }
 
             val document = Jsoup.connect(subscription.url).get()
             var count = 0

@@ -8,6 +8,7 @@ import org.akop.ararat.core.CrosswordState
 import org.akop.ararat.core.CrosswordStateReader
 import org.akop.ararat.core.CrosswordStateWriter
 import org.akop.ararat.core.buildCrossword
+import org.akop.ararat.io.AmuseLabsJsonFormatter
 import org.akop.ararat.io.GuardianJsonFormatter
 import org.akop.ararat.io.JsoupHtmlFormatter
 import org.akop.ararat.io.PmlJsonFormatter
@@ -199,6 +200,7 @@ fun parse(source: InputStream, format: String = "puz"): Crossword? = try {
         "wsj-json" -> source.use { s -> buildCrossword { WSJFormatter().read(this, s) } }
         "jsoup-html" -> source.use { s -> buildCrossword { JsoupHtmlFormatter().read(this, s) } }
         "pml-json" -> source.use { s -> buildCrossword { PmlJsonFormatter().read(this, s) } }
+        "amuse-json" -> source.use { s -> buildCrossword { AmuseLabsJsonFormatter().read(this, s) } }
         else -> source.use { s -> buildCrossword { PuzFormatter().read(this, s) } }
     }
 } catch (e: Exception) {
