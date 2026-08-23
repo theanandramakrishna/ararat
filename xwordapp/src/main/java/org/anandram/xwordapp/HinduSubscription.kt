@@ -3,24 +3,20 @@ package org.anandram.xwordapp
 import android.util.Log
 import org.akop.ararat.io.AmuseLabsJsonFormatter
 import org.jsoup.Jsoup
-import java.io.ByteArrayInputStream
 
 object HinduSubscription {
     private const val TAG = "HinduSubscription"
 
-    const val NAME = "Hindu Sunday Cryptic"
-    const val URL = "https://www.thehindu.com/crosswords/hindu-cryptic-sunday"
+    const val DAILY_NAME = "Hindu Daily Cryptic"
+    const val DAILY_URL = "https://www.thehindu.com/crosswords/hindu-cryptic"
+    const val DAILY_FREQUENCY = "Weekdays"
+    const val SUNDAY_NAME = "Hindu Sunday Cryptic"
+    const val SUNDAY_URL = "https://www.thehindu.com/crosswords/hindu-cryptic-sunday"
+    const val SUNDAY_FREQUENCY = "Weekly"
     const val PUZZLE_FORMAT = "amuse-json"
-    const val FETCH_FREQUENCY = "Weekly"
 
-    // thehindu.com sits behind Cloudflare, which rejects non-browser user
-    // agents with 403 before the request even reaches the app.
     private const val USER_AGENT = ("Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36" +
             " (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36")
-
-    // The index sometimes embeds the id directly (".../b71a44e5") and sometimes
-    // inside RSC/flight JSON where slashes are escaped ("hindu-cryptic\/b71a44e5").
-    private val PUZZLE_ID_REGEX = Regex("hindu-cryptic-sunday[/\\\\]+([a-f0-9]{8})")
 
     /** Overridable for tests. */
     internal var playerPageBaseUrl = "https://cdn3.amuselabs.com/hindu/crossword"
@@ -29,15 +25,23 @@ object HinduSubscription {
     fun matchesListingUrl(url: String): Boolean =
             url.startsWith("https://www.thehindu.com/crosswords")
 
-    /** Extract candidate current-puzzle ids from a listing/index page. */
-    fun extractPuzzleId(pageHtml: String): String? =
-            PUZZLE_ID_REGEX.find(pageHtml)?.groupValues?.get(1)
+    /** Extract the current puzzle id from a listing/index page. */
+    fun extractPuzzleId(pageHtml: String, seriesSlug: String): String? =
+            Regex(Regex.escape(seriesSlug) + "[/\\\\]+([a-f0-9]{8})")
+                    .find(pageHtml)?.groupValues?.get(1)
 
-    fun default(): Subscription = Subscription(
-            name = NAME,
-            url = URL,
+    fun dailyDefault(): Subscription = Subscription(
+            name = DAILY_NAME,
+            url = DAILY_URL,
             enabled = true,
-            fetchFrequency = FETCH_FREQUENCY,
+            fetchFrequency = DAILY_FREQUENCY,
+            puzzleFormat = PUZZLE_FORMAT)
+
+    fun sundayDefault(): Subscription = Subscription(
+            name = SUNDAY_NAME,
+            url = SUNDAY_URL,
+            enabled = true,
+            fetchFrequency = SUNDAY_FREQUENCY,
             puzzleFormat = PUZZLE_FORMAT)
 
     private fun fetchPage(url: String): String =
@@ -53,13 +57,17 @@ object HinduSubscription {
      * puzzle id and sometimes renders a bare shell. Try the series page, then
      * the crosswords index, before giving up for today.
      */
-    private fun discoverCurrentPuzzleId(subscription: Subscription): String? {
+    private fun discoverCurrentPuzzleId(
+            subscription: Subscription,
+            seriesSlug: String,
+            idRegex: Regex,
+    ): String? {
         val candidates = listOf(subscription.url,
                 "${subscription.url}/",
                 "https://www.thehindu.com/crosswords")
         for (url in candidates) {
             try {
-                val id = extractPuzzleId(fetchPage(url))
+                val id = idRegex.find(fetchPage(url))?.groupValues?.get(1)
                 Log.i(TAG, "Discovered puzzle id $id from $url")
                 if (id != null) return id
             } catch (e: Exception) {
@@ -71,11 +79,14 @@ object HinduSubscription {
 
     fun download(subscription: Subscription): Int {
         return try {
-            val id = discoverCurrentPuzzleId(subscription) ?: run {
+            val seriesSlug = subscription.url.trimEnd('/').substringAfterLast('/')
+            val idRegex = Regex(Regex.escape(seriesSlug) + "[/\\\\]+([a-f0-9]{8})")
+
+            val id = discoverCurrentPuzzleId(subscription, seriesSlug, idRegex) ?: run {
                 Log.i(TAG, "No puzzle id discovered; skipping this sweep")
                 return 0
             }
-            val playerUrl = "$playerPageBaseUrl?id=$id&set=hindu-cryptic-sunday&embed=1"
+            val playerUrl = "$playerPageBaseUrl?id=$id&set=$seriesSlug&embed=1"
 
             if (PuzzleManager.hasPuzzleByUrl(playerUrl)) {
                 Log.i(TAG, "Puzzle already downloaded: $playerUrl")
@@ -95,7 +106,7 @@ object HinduSubscription {
             Log.i(TAG, "Decoded puzzle json (${json.length} chars)")
 
             val added = PuzzleManager.addPuzzleIfNew(
-                    ByteArrayInputStream(json.toByteArray(Charsets.UTF_8)),
+                    java.io.ByteArrayInputStream(json.toByteArray(Charsets.UTF_8)),
                     format = PUZZLE_FORMAT,
                     sourceName = subscription.name,
                     downloadUrl = playerUrl)

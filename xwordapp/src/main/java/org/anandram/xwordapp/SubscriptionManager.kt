@@ -55,7 +55,8 @@ object SubscriptionManager {
             IrishNewsSubscription.prizeCrypticDefault(),
             MetroSubscription.default(),
             MyCrosswordSubscription.default(),
-            HinduSubscription.default(),
+            HinduSubscription.dailyDefault(),
+            HinduSubscription.sundayDefault(),
             IndependentSubscription.default())
 
     private fun ensureDefaults() {

@@ -170,10 +170,10 @@ class DownloadEndToEndTest {
         }
 
         HinduSubscription.playerPageBaseUrl = server.url("/hindu/crossword").toString()
-        assertEquals(HinduSubscription.FETCH_FREQUENCY, "Weekly")
-        assertEquals(HinduSubscription.NAME, "Hindu Sunday Cryptic")
-        val hinduSub = HinduSubscription.default()
-                .copy(url = server.url("/crosswords/hindu-cryptic").toString())
+        assertEquals(HinduSubscription.SUNDAY_FREQUENCY, "Weekly")
+        assertEquals(HinduSubscription.SUNDAY_NAME, "Hindu Sunday Cryptic")
+        val hinduSub = HinduSubscription.sundayDefault()
+                .copy(url = server.url("/crosswords/hindu-cryptic-sunday").toString())
 
         assertEquals(1, HinduSubscription.download(hinduSub))
 

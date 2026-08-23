@@ -113,27 +113,40 @@ class ScraperExtractionTest {
     // --- HinduSubscription ---------------------------------------------------
 
     @Test
-    fun hinduExtractsCurrentPuzzleId() {
+    fun hinduSundayExtractsCurrentPuzzleId() {
         val page = "<a href=\"/crosswords/hindu-cryptic-sunday/8035ebe8\">Cryptic</a>"
-        assertEquals("8035ebe8", HinduSubscription.extractPuzzleId(page))
+        assertEquals("8035ebe8",
+                HinduSubscription.extractPuzzleId(page, "hindu-cryptic-sunday"))
+    }
+
+    @Test
+    fun hinduDailyExtractsCurrentPuzzleId() {
+        val page = "<a href=\"/crosswords/hindu-cryptic/b71a44e5\">Cryptic</a>"
+        assertEquals("b71a44e5",
+                HinduSubscription.extractPuzzleId(page, "hindu-cryptic"))
     }
 
     @Test
     fun hinduExtractsIdFromEscapedFlightJson() {
         val page = "self.__next_f.push([1,\"hindu-cryptic-sunday\\\\/8035ebe8\"])"
-        assertEquals("8035ebe8", HinduSubscription.extractPuzzleId(page))
+        assertEquals("8035ebe8",
+                HinduSubscription.extractPuzzleId(page, "hindu-cryptic-sunday"))
     }
 
     @Test
     fun hinduIgnoresOtherSeriesIds() {
         assertNull(HinduSubscription.extractPuzzleId(
                 "<a href=\"/crosswords/hindu-cryptic/b71a44e5\">old</a>" +
-                        "<a href=\"/crosswords/thehindu-mini-crossword/26d4aa34\">mini</a>"))
+                        "<a href=\"/crosswords/thehindu-mini-crossword/26d4aa34\">mini</a>",
+                "hindu-cryptic-sunday"))
+        assertNull(HinduSubscription.extractPuzzleId(
+                "<a href=\"/crosswords/hindu-cryptic-sunday/8035ebe8\">new</a>",
+                "hindu-cryptic"))
     }
 
     @Test
     fun hinduReturnsNullWithoutId() {
         assertNull(HinduSubscription.extractPuzzleId(
-                "<html><body>No crosswords here</body></html>"))
+                "<html><body>No crosswords here</body></html>", "hindu-cryptic"))
     }
 }
