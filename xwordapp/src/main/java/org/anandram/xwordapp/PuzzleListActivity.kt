@@ -7,8 +7,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -16,6 +14,10 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 
 import java.io.ByteArrayInputStream
@@ -35,6 +37,8 @@ class PuzzleListActivity : AppCompatActivity() {
 
     private lateinit var listView: ListView
     private lateinit var tabLayout: TabLayout
+    private lateinit var toolbar: Toolbar
+    private lateinit var drawerLayout: DrawerLayout
     private lateinit var puzzleAdapter: PuzzleListAdapter
     private lateinit var subscriptionAdapter: ArrayAdapter<Subscription>
     private lateinit var driveManager: DriveManager
@@ -55,6 +59,34 @@ class PuzzleListActivity : AppCompatActivity() {
 
         listView = findViewById(R.id.puzzle_list)
         tabLayout = findViewById(R.id.tabs)
+        toolbar = findViewById(R.id.toolbar)
+        drawerLayout = findViewById(R.id.drawer_layout)
+        val navigationView = findViewById<NavigationView>(R.id.nav_view)
+
+        setSupportActionBar(toolbar)
+        toolbar.setNavigationOnClickListener {
+            if (currentSource == null) {
+                drawerLayout.openDrawer(GravityCompat.START)
+            } else {
+                currentSource = null
+                renderBySource()
+                updateActionBar()
+            }
+        }
+        navigationView.setNavigationItemSelectedListener { item ->
+            drawerLayout.closeDrawer(GravityCompat.START)
+            when (item.itemId) {
+                R.id.menu_add_puzzle -> pickPuzzleFile()
+                R.id.menu_subscriptions ->
+                    startActivity(Intent(this, SubscriptionsActivity::class.java))
+                R.id.menu_sign_in_drive -> driveManager.signIn()
+                R.id.menu_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            }
+            true
+        }
+        if (!BuildConfig.DEBUG) {
+            navigationView.menu.findItem(R.id.menu_sign_in_drive).isVisible = false
+        }
 
         puzzleAdapter = PuzzleListAdapter(this, mutableListOf())
         subscriptionAdapter = SubscriptionAdapter(this, mutableListOf())
@@ -117,9 +149,18 @@ class PuzzleListActivity : AppCompatActivity() {
     private fun renderBySource() {
         val source = currentSource
         if (source == null) {
+            val puzzles = PuzzleManager.getPuzzles()
+            val puzzlesBySource = puzzles.groupBy { it.source }.keys
             subscriptionAdapter.clear()
-            subscriptionAdapter.addAll(SubscriptionManager.getSubscriptions())
+            if (puzzles.any { it.source == null }) {
+                subscriptionAdapter.add(
+                        Subscription(name = getString(R.string.manually_added)))
+            }
+            subscriptionAdapter.addAll(SubscriptionManager.getSubscriptions()
+                    .filter { it.name in puzzlesBySource })
             listView.adapter = subscriptionAdapter
+        } else if (source == getString(R.string.manually_added)) {
+            showPuzzles(PuzzleManager.getPuzzles().filter { it.source == null })
         } else {
             showPuzzles(PuzzleManager.getPuzzles().filter { it.source == source })
         }
@@ -131,37 +172,16 @@ class PuzzleListActivity : AppCompatActivity() {
         listView.adapter = puzzleAdapter
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.activity_puzzle_list, menu)
-        return true
-    }
-
     private fun updateActionBar() {
         val source = currentSource
-        supportActionBar?.setDisplayHomeAsUpEnabled(source != null)
+        if (source == null) {
+            toolbar.setNavigationIcon(R.drawable.ic_menu)
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+        } else {
+            toolbar.setNavigationIcon(R.drawable.ic_arrow_back)
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+        }
         title = source ?: getString(R.string.app_name)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            if (currentSource != null) {
-                currentSource = null
-                renderBySource()
-                updateActionBar()
-            } else {
-                finish()
-            }
-            return true
-        }
-
-        when (item.itemId) {
-            R.id.menu_add_puzzle -> pickPuzzleFile()
-            R.id.menu_sign_in_drive -> driveManager.signIn()
-            R.id.menu_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            else -> return super.onOptionsItemSelected(item)
-        }
-
-        return true
     }
 
     private fun pickPuzzleFile() {

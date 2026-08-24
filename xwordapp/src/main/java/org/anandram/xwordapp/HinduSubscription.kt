@@ -33,14 +33,12 @@ object HinduSubscription {
     fun dailyDefault(): Subscription = Subscription(
             name = DAILY_NAME,
             url = DAILY_URL,
-            enabled = true,
             fetchFrequency = DAILY_FREQUENCY,
             puzzleFormat = PUZZLE_FORMAT)
 
     fun sundayDefault(): Subscription = Subscription(
             name = SUNDAY_NAME,
             url = SUNDAY_URL,
-            enabled = true,
             fetchFrequency = SUNDAY_FREQUENCY,
             puzzleFormat = PUZZLE_FORMAT)
 
