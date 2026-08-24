@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_add"
         android:title="@string/add_puzzle" />
     <item
+        android:id="@+id/menu_subscriptions"
+        android:icon="@drawable/ic_cloud_download"
+        android:title="@string/subscriptions" />
+    <item
         android:id="@+id/menu_sign_in_drive"
         android:icon="@drawable/ic_cloud"
         android:title="@string/sign_in_drive" />

@@ -77,10 +77,15 @@ class PuzzleListActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
             when (item.itemId) {
                 R.id.menu_add_puzzle -> pickPuzzleFile()
+                R.id.menu_subscriptions ->
+                    startActivity(Intent(this, SubscriptionsActivity::class.java))
                 R.id.menu_sign_in_drive -> driveManager.signIn()
                 R.id.menu_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             }
             true
+        }
+        if (!BuildConfig.DEBUG) {
+            navigationView.menu.findItem(R.id.menu_sign_in_drive).isVisible = false
         }
 
         puzzleAdapter = PuzzleListAdapter(this, mutableListOf())

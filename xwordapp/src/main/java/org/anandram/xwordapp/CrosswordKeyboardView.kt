@@ -34,15 +34,15 @@ class CrosswordKeyboardView @JvmOverloads constructor(
     private val topPadding = dp(6f)
     private val bottomPadding = dp(6f)
 
-    private val keyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF3D3D3D.toInt() }
-    private val keyPressedPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF666666.toInt() }
+    private val keyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFE0E0E0.toInt() }
+    private val keyPressedPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFBDBDBD.toInt() }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFFFFFFF.toInt()
+        color = 0xFF212121.toInt()
         textAlign = Paint.Align.CENTER
         textSize = dp(20f)
     }
     private val specialTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFAAAAAA.toInt()
+        color = 0xFF757575.toInt()
         textAlign = Paint.Align.CENTER
         textSize = dp(20f)
     }
