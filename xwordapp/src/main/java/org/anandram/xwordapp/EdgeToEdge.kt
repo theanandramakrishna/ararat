@@ -1,12 +1,16 @@
 package org.anandram.xwordapp
 
 import android.app.Activity
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 fun Activity.applySystemBarInsets() {
+    // targetSdk 35+ forces edge-to-edge on Android 15+, where statusBarColor is
+    // ignored; the window background is what shows through around the system bars.
+    window.setBackgroundDrawable(ColorDrawable(getColor(R.color.colorPrimaryDark)))
     val content = findViewById<View>(android.R.id.content)
     ViewCompat.setOnApplyWindowInsetsListener(content) { v, insets ->
         val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

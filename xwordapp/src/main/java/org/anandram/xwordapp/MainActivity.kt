@@ -20,6 +20,8 @@
 
 package org.anandram.xwordapp
 
+import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -32,6 +34,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 
 import org.akop.ararat.core.Crossword
 import org.akop.ararat.core.CrosswordState
@@ -77,6 +80,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             else -> getString(R.string.app_name)
         }
 
+        val caveat = ResourcesCompat.getFont(this, R.font.caveat)
         with (crosswordView) {
             crossword = puzzle
             onLongPressListener = this@MainActivity
@@ -86,6 +90,12 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             undoMode = CrosswordView.UNDO_NONE
             markerDisplayMode = CrosswordView.MARKER_CHEAT
             inputMode = CrosswordView.INPUT_MODE_NONE
+            answerTypeface = when {
+                caveat == null -> null
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
+                    Typeface.create(caveat, 700, false)
+                else -> Typeface.create(caveat, Typeface.BOLD)
+            }
         }
 
         keyboard.listener = object : CrosswordKeyboardView.Listener {

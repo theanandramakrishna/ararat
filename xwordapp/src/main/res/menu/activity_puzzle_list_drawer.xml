@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_add_puzzle"
+        android:icon="@drawable/ic_add"
+        android:title="@string/add_puzzle" />
+    <item
+        android:id="@+id/menu_sign_in_drive"
+        android:icon="@drawable/ic_cloud"
+        android:title="@string/sign_in_drive" />
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/settings" />
+</menu>
