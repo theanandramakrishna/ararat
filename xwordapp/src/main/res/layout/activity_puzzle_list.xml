@@ -39,6 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        app:headerLayout="@layout/nav_header_puzzle_list"
         app:menu="@menu/activity_puzzle_list_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
