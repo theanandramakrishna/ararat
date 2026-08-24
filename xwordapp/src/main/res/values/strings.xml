@@ -44,6 +44,7 @@
     <string name="tab_unsolved">Unsolved</string>
     <string name="tab_solved">Solved</string>
     <string name="tab_by_source">By Source</string>
+    <string name="manually_added">Manually Added</string>
     <string name="solved_percent">%1$d%% solved</string>
     <string name="view_notes">View notes</string>
     <string name="close">Close</string>

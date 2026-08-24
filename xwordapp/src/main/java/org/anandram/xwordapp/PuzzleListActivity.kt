@@ -149,12 +149,18 @@ class PuzzleListActivity : AppCompatActivity() {
     private fun renderBySource() {
         val source = currentSource
         if (source == null) {
-            val puzzlesBySource = PuzzleManager.getPuzzles()
-                    .groupBy { it.source }.keys
+            val puzzles = PuzzleManager.getPuzzles()
+            val puzzlesBySource = puzzles.groupBy { it.source }.keys
             subscriptionAdapter.clear()
+            if (puzzles.any { it.source == null }) {
+                subscriptionAdapter.add(
+                        Subscription(name = getString(R.string.manually_added)))
+            }
             subscriptionAdapter.addAll(SubscriptionManager.getSubscriptions()
                     .filter { it.name in puzzlesBySource })
             listView.adapter = subscriptionAdapter
+        } else if (source == getString(R.string.manually_added)) {
+            showPuzzles(PuzzleManager.getPuzzles().filter { it.source == null })
         } else {
             showPuzzles(PuzzleManager.getPuzzles().filter { it.source == source })
         }
