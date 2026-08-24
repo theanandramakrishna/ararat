@@ -33,7 +33,6 @@ object IndependentSubscription {
     fun default(): Subscription = Subscription(
             name = NAME,
             url = URL,
-            enabled = true,
             fetchFrequency = FETCH_FREQUENCY,
             puzzleFormat = PUZZLE_FORMAT)
 

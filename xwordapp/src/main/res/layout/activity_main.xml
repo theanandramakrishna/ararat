@@ -38,7 +38,7 @@
         android:minLines="3"
         android:maxLines="3"
         android:textColor="#fff"
-        android:background="#000"/>
+        android:background="@color/colorPrimary"/>
     <org.anandram.xwordapp.CrosswordKeyboardView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"

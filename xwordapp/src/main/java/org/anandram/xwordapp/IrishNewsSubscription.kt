@@ -29,14 +29,12 @@ object IrishNewsSubscription {
     fun crypticDefault(): Subscription = Subscription(
             name = CRYPTIC_NAME,
             url = CRYPTIC_URL,
-            enabled = true,
             fetchFrequency = CRYPTIC_FREQUENCY,
             puzzleFormat = PUZZLE_FORMAT)
 
     fun prizeCrypticDefault(): Subscription = Subscription(
             name = PRIZE_NAME,
             url = PRIZE_URL,
-            enabled = true,
             fetchFrequency = PRIZE_FREQUENCY,
             puzzleFormat = PUZZLE_FORMAT)
 

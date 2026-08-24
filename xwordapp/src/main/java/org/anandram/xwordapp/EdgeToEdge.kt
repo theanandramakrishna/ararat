@@ -4,6 +4,7 @@ import android.app.Activity
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -21,7 +22,10 @@ fun Activity.applySystemBarInsets() {
             top = WindowInsetsCompat.toWindowInsetsCompat(v.rootWindowInsets)
                     .getInsets(WindowInsetsCompat.Type.systemBars()).top
         }
-        v.setPadding(0, top, 0, systemBars.bottom)
+        v.setPadding(0, top, 0, 0)
+        // The bottom inset is applied to the activity's root layout instead,
+        // so the gesture-navigation strip takes on that screen's background.
+        (v as? ViewGroup)?.getChildAt(0)?.setPadding(0, 0, 0, systemBars.bottom)
         insets
     }
 }

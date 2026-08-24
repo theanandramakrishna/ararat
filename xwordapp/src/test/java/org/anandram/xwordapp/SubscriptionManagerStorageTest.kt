@@ -50,6 +50,6 @@ class SubscriptionManagerStorageTest {
         val loaded = SubscriptionManager.getSubscriptions()
         assertEquals(1, loaded.size)
         assertTrue(loaded[0].needCreds)
-        assertFalse(loaded[0].enabled.not()) // sanity: default preserved through Gson
+        assertFalse(loaded[0].enabled) // sanity: missing field defaults to disabled via Gson
     }
 }

@@ -43,11 +43,11 @@ object SubscriptionManager {
     }
 
     private val DEFAULT_SUBSCRIPTIONS = listOf(
-            Subscription(name = DEFAULT_NAME, url = DEFAULT_URL, enabled = true),
-            Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL, enabled = true),
-            Subscription(name = CRU_NAME, url = CRU_URL, enabled = true),
-            Subscription(name = WJ_NAME, url = WJ_URL, enabled = true),
-            Subscription(name = ARIES_NAME, url = ARIES_URL, enabled = true),
+            Subscription(name = DEFAULT_NAME, url = DEFAULT_URL),
+            Subscription(name = PRIVATE_EYE_NAME, url = PRIVATE_EYE_URL),
+            Subscription(name = CRU_NAME, url = CRU_URL),
+            Subscription(name = WJ_NAME, url = WJ_URL),
+            Subscription(name = ARIES_NAME, url = ARIES_URL),
             NewYorkerSubscription.default(),
             GuardianSubscription.default(),
             EverymanSubscription.default(),
