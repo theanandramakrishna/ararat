@@ -42,4 +42,12 @@
         android:id="@+id/menu_view_notes"
         android:title="@string/view_notes"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_export"
+        android:title="@string/export"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_play_cwf"
+        android:title="@string/play_cwf"
+        app:showAsAction="never" />
 </menu>

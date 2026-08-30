@@ -47,8 +47,16 @@
     <string name="manually_added">Manually Added</string>
     <string name="solved_percent">%1$d%% solved</string>
     <string name="view_notes">View notes</string>
+    <string name="export">Export</string>
+    <string name="export_failed">Could not export puzzle</string>
     <string name="close">Close</string>
     <string name="rebus">Rebus</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="play_cwf">Play on Cross With Friends</string>
+    <string name="cwf_game_starting">Starting Cross With Friends game…</string>
+    <string name="cwf_game_started">Cross With Friends game started</string>
+    <string name="cwf_game_failed">Could not start Cross With Friends game</string>
+    <string name="cwf_live_game">Live game at %1$s</string>
+    <string name="cwf_live_in_progress">Live game in progress</string>
 </resources>

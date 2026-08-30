@@ -53,13 +53,17 @@ class CrosswordStateWriter @Throws(IOException::class) constructor(stream: Outpu
         outStream.writeObject(state.charMatrix.flatten().toTypedArray())
         outStream.writeObject(IntArray(state.height * state.width) {
             state.attrMatrix[it / state.width][it % state.width] })
+
+        // v4: Cross With Friends game linkage.
+        outStream.writeObject(state.cwfGid)
+        outStream.writeObject(state.cwfGameUrl)
     }
 
     @Throws(IOException::class)
     override fun close() { outStream.close() }
 
     companion object {
-        internal const val VERSION_CURRENT = 3
+        internal const val VERSION_CURRENT = 4
         internal const val MAGIC_NUMBER = -0x45522113
     }
 }

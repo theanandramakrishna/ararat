@@ -20,8 +20,12 @@
 
 package org.akop.ararat.formatter
 
+import org.akop.ararat.core.buildCrossword
 import org.akop.ararat.io.PuzFormatter
 import org.junit.Test
+
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 
 
 class TestPuzFormatter: BaseTest() {
@@ -43,6 +47,32 @@ class TestPuzFormatter: BaseTest() {
     @Test
     fun crossword_testHints() {
         assertHints(crossword, hints)
+    }
+
+    @Test
+    fun writeRoundTrip() {
+        val bytes = ByteArrayOutputStream()
+                .also { PuzFormatter().write(crossword, it) }
+                .toByteArray()
+
+        val roundTripped = ByteArrayInputStream(bytes).use { s ->
+            buildCrossword { PuzFormatter().read(this, s) }
+        }
+
+        assertHashAndText(roundTripped, crossword)
+        assertLayout(roundTripped, Array(charMap.size) { row ->
+            charMap[row].chunked(1).map { when (it) { "#" -> null else -> it } }.toTypedArray()
+        })
+        assertHints(roundTripped, hints)
+    }
+
+    private fun assertHashAndText(actual: org.akop.ararat.core.Crossword,
+                                  expected: org.akop.ararat.core.Crossword) {
+        org.junit.Assert.assertEquals("Hash mismatch!", expected.hash, actual.hash)
+        org.junit.Assert.assertEquals("Title mismatch!", expected.title, actual.title)
+        org.junit.Assert.assertEquals("Author mismatch!", expected.author, actual.author)
+        org.junit.Assert.assertEquals("Copyright mismatch!", expected.copyright, actual.copyright)
+        org.junit.Assert.assertEquals("Comment mismatch!", expected.comment, actual.comment)
     }
 
     companion object {

@@ -27,6 +27,7 @@ import org.json.JSONObject
 
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -110,6 +111,113 @@ class IpuzFormatter : CrosswordFormatter {
             }
             else -> throw FormatException("Unsupported 'clues' type")
         }
+    }
+
+    @Throws(IOException::class)
+    override fun write(crossword: Crossword, outputStream: OutputStream) {
+        val cellMap = crossword.cellMap
+        val numberAt = Array(crossword.height) { IntArray(crossword.width) }
+        for (word in crossword.wordsAcross + crossword.wordsDown) {
+            numberAt[word.startRow][word.startColumn] = word.number
+        }
+
+        val styleNames = HashMap<Int, String>()
+        val styles = JSONObject()
+        for (row in cellMap) {
+            for (cell in row) {
+                if (cell == null || cell.isEmpty && cell.attrFlags.toInt() == 0) continue
+                val flags = cell.attrFlags.toInt() and STYLE_MASK
+                if (flags == 0 || styleNames.containsKey(flags)) continue
+
+                val style = JSONObject()
+                if (flags and Crossword.Cell.ATTR_CIRCLED != 0) {
+                    style.put("shapebg", "circle")
+                }
+                val barred = buildString {
+                    if (flags and Crossword.Cell.ATTR_BAR_TOP != 0) append('T')
+                    if (flags and Crossword.Cell.ATTR_BAR_BOTTOM != 0) append('B')
+                    if (flags and Crossword.Cell.ATTR_BAR_LEFT != 0) append('L')
+                    if (flags and Crossword.Cell.ATTR_BAR_RIGHT != 0) append('R')
+                }
+                if (barred.isNotEmpty()) style.put("barred", barred)
+
+                val name = "s${styles.length() + 1}"
+                styleNames[flags] = name
+                styles.put(name, style)
+            }
+        }
+
+        val puzzle = JSONArray()
+        for (r in 0 until crossword.height) {
+            val puzzleRow = JSONArray()
+            for (c in 0 until crossword.width) {
+                val cell = cellMap[r][c]
+                when {
+                    cell == null -> puzzleRow.put("#")
+                    else -> {
+                        var value: Any =
+                                if (numberAt[r][c] != 0) numberAt[r][c] else 0
+                        styleNames[cell.attrFlags.toInt() and STYLE_MASK]?.let { name ->
+                            value = JSONObject()
+                                    .put("cell", value)
+                                    .put("style", name)
+                        }
+                        puzzleRow.put(value)
+                    }
+                }
+            }
+            puzzle.put(puzzleRow)
+        }
+
+        val solution = JSONArray()
+        for (r in 0 until crossword.height) {
+            val solutionRow = JSONArray()
+            for (c in 0 until crossword.width) {
+                val cell = cellMap[r][c]
+                solutionRow.put(when {
+                    cell == null -> "#"
+                    cell.chars.isEmpty() -> 0
+                    else -> cell.chars
+                })
+            }
+            solution.put(solutionRow)
+        }
+
+        val clues = JSONObject()
+        clues.put("Across", clueArray(crossword.wordsAcross))
+        clues.put("Down", clueArray(crossword.wordsDown))
+
+        val root = JSONObject()
+        root.put("version", "http://ipuz.org/v2")
+        root.put("kind", JSONArray().put("http://ipuz.org/crossword#Crossword"))
+        root.put("dimensions", JSONObject()
+                .put("width", crossword.width)
+                .put("height", crossword.height))
+        crossword.title?.let { root.put("title", it) }
+        crossword.author?.let { root.put("author", it) }
+        crossword.copyright?.let { root.put("publisher", it) }
+        crossword.description?.let { root.put("intro", it) }
+        crossword.comment?.let { root.put("notes", it) }
+        if (crossword.date > 0) {
+            root.put("date", SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                    .format(java.util.Date(crossword.date)))
+        }
+        if (styles.length() > 0) root.put("styles", styles)
+        root.put("puzzle", puzzle)
+        root.put("solution", solution)
+        root.put("clues", clues)
+
+        outputStream.write(root.toString(2).toByteArray(Charsets.UTF_8))
+    }
+
+    private fun clueArray(words: List<Crossword.Word>): JSONArray {
+        val array = JSONArray()
+        for (word in words.sortedBy { it.number }) {
+            array.put(JSONObject()
+                    .put("number", word.number)
+                    .put("clue", word.hint ?: ""))
+        }
+        return array
     }
 
     private fun checkKind(root: JSONObject) {
@@ -428,6 +536,10 @@ class IpuzFormatter : CrosswordFormatter {
 
     companion object {
         private val KIND_CROSSWORD_PREFIX = "http://ipuz.org/crossword"
+
+        private const val STYLE_MASK = Crossword.Cell.ATTR_CIRCLED or
+                Crossword.Cell.ATTR_BAR_TOP or Crossword.Cell.ATTR_BAR_BOTTOM or
+                Crossword.Cell.ATTR_BAR_LEFT or Crossword.Cell.ATTR_BAR_RIGHT
 
         private val DATE_PATTERNS = listOf(
                 SimpleDateFormat("MM/dd/yyyy", Locale.US),

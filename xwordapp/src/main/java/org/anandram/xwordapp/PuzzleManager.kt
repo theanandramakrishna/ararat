@@ -107,6 +107,26 @@ object PuzzleManager {
         }
     }
 
+    /**
+     * Records the Cross With Friends game ([gid], [gameUrl]) on the puzzle
+     * entry and, when present, its state file, so it survives restarts.
+     */
+    @Synchronized
+    fun setCwfGame(id: String, gid: String?, gameUrl: String?) {
+        val list = getPuzzlesInternal().toMutableList()
+        val index = list.indexOfFirst { it.id == id }
+        if (index >= 0) {
+            list[index] = list[index].copy(cwfGid = gid, cwfGameUrl = gameUrl)
+            saveList(list)
+        }
+
+        loadState(id)?.let { state ->
+            state.cwfGid = gid
+            state.cwfGameUrl = gameUrl
+            saveState(id, state)
+        }
+    }
+
     @Synchronized
     fun addPuzzle(source: InputStream, format: String = "puz", fallbackTitle: String? = null,
                   sourceName: String? = null, downloadUrl: String? = null): PuzzleEntry? {

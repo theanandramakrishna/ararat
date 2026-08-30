@@ -2138,4 +2138,5 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 }
 
-private fun String?.canonicalize(): String? = this?.toUpperCase()
+private fun String?.canonicalize(): String? =
+        this?.trim()?.takeIf { it.isNotEmpty() }?.toUpperCase()

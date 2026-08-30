@@ -161,7 +161,7 @@ class UClickJsonFormatter : CrosswordFormatter {
         return map
     }
 
-    fun write(crossword: Crossword, outputStream: OutputStream) {
+    override fun write(crossword: Crossword, outputStream: OutputStream) {
         val writer = JsonWriter(outputStream.writer(Charset.forName(encoding)))
 
         writer.beginObject()

@@ -28,6 +28,7 @@ import org.akop.ararat.util.SparseArray
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.HashSet
 
@@ -498,6 +499,134 @@ class PuzFormatter : CrosswordFormatter {
         val skipped = skip(len)
         if (skipped != len)
             throw FormatException("Skip failed ($skipped instead of $len)")
+    }
+
+    @Throws(IOException::class)
+    override fun write(crossword: Crossword, outputStream: OutputStream) {
+        writePuz(crossword, outputStream)
+    }
+
+    @Throws(IOException::class)
+    fun writePuz(crossword: Crossword, outputStream: OutputStream) {
+        val out = outputStream.buffered()
+
+        out.writeShortLE(0)             // overall checksum
+        out.writeLatin1(MAGIC_STRING)   // "ACROSS&DOWN\0"
+        out.writeShortLE(0)             // CIB checksum
+        out.writeIntLE(0)               // masked low checksum
+        out.writeIntLE(0)               // masked high checksum
+        out.writeLatin1("02\u0000\u0000") // version (4 bytes)
+
+        out.writeShortLE(0)             // reserved
+        out.writeShortLE(0)             // unscrambled checksum
+        out.write(ByteArray(12))        // reserved
+        out.write(crossword.width)
+        out.write(crossword.height)
+        val clueCount = crossword.wordsAcross.size + crossword.wordsDown.size
+        out.writeShortLE(clueCount)
+        out.writeShortLE(0)             // unknown
+        out.writeShortLE(if (crossword.flags and Crossword.FLAG_NO_SOLUTION != 0) {
+            PUZZLE_TYPE_NO_SOLUTION.toInt()
+        } else {
+            0
+        })
+
+        val layout = ByteArray(crossword.width * crossword.height)
+        var i = 0
+        for (r in 0 until crossword.height) {
+            for (c in 0 until crossword.width) {
+                val cell = crossword.cellMap[r][c]
+                layout[i++] = if (cell != null && !cell.isEmpty) {
+                    cell.chars[0].code.toByte()
+                } else {
+                    EMPTY.code.toByte()
+                }
+            }
+        }
+        out.write(layout)
+        out.write(ByteArray(crossword.width * crossword.height)) // state (blank)
+
+        out.writeCString(crossword.title)
+        out.writeCString(crossword.author)
+        out.writeCString(crossword.copyright)
+
+        // Clues are consumed by the reader in grid scan order (across first,
+        // then down, at each cell), so write them in that same order.
+        for (word in wordsInScanOrder(crossword)) {
+            out.writeCString(word.hint)
+        }
+
+        out.writeCString(crossword.comment) // notepad (version > 1)
+
+        val gext = ByteArray(crossword.width * crossword.height)
+        var hasCircled = false
+        i = 0
+        for (r in 0 until crossword.height) {
+            for (c in 0 until crossword.width) {
+                val cell = crossword.cellMap[r][c]
+                if (cell != null && cell.isCircled) {
+                    gext[i] = GEXT_CIRCLED.code.toByte()
+                    hasCircled = true
+                }
+                i++
+            }
+        }
+        if (hasCircled) {
+            out.writeLatin1("GEXT")
+            out.writeShortLE(gext.size)
+            out.writeShortLE(0)         // checksum
+            out.write(gext)
+            out.write(0)                // trailing null
+        }
+
+        out.flush()
+    }
+
+    private fun OutputStream.writeShortLE(value: Int) {
+        write(value and 0xFF)
+        write((value shr 8) and 0xFF)
+    }
+
+    private fun OutputStream.writeIntLE(value: Int) {
+        write(value and 0xFF)
+        write((value shr 8) and 0xFF)
+        write((value shr 16) and 0xFF)
+        write((value shr 24) and 0xFF)
+    }
+
+    private fun OutputStream.writeLatin1(s: String) {
+        for (ch in s) write(ch.code and 0xFF)
+    }
+
+    private fun OutputStream.writeCString(s: String?) {
+        writeLatin1((s ?: "") + "\u0000")
+    }
+
+    /**
+     * Words in the order the reader's buildWords consumes clues: scanning
+     * grid cells top-to-bottom, left-to-right, across word before down.
+     */
+    private fun wordsInScanOrder(crossword: Crossword): List<Crossword.Word> {
+        val result = ArrayList<Crossword.Word>()
+        for (r in 0 until crossword.height) {
+            for (c in 0 until crossword.width) {
+                val cell = crossword.cellMap[r][c] ?: continue
+                if (cell.isEmpty) continue
+
+                val leftBlocked = c == 0 || crossword.cellMap[r][c - 1] == null
+                val aboveBlocked = r == 0 || crossword.cellMap[r - 1][c] == null
+
+                if (leftBlocked) {
+                    crossword.findWord(Crossword.Word.DIR_ACROSS, r, c)
+                            ?.let { result += it }
+                }
+                if (aboveBlocked) {
+                    crossword.findWord(Crossword.Word.DIR_DOWN, r, c)
+                            ?.let { result += it }
+                }
+            }
+        }
+        return result
     }
 
     companion object {

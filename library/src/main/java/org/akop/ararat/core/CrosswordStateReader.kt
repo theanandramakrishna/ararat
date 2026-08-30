@@ -84,6 +84,11 @@ class CrosswordStateReader @Throws(IOException::class) constructor(stream: Input
         (inStream.readObject() as IntArray)
                 .forEachIndexed { i, a -> state.attrMatrix[i / width][i % width] = a }
 
+        if (version >= 4) {
+            state.cwfGid = inStream.readObject() as String?
+            state.cwfGameUrl = inStream.readObject() as String?
+        }
+
         return state
     }
 

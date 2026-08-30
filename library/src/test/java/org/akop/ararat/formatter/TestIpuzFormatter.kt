@@ -58,6 +58,25 @@ class TestIpuzFormatter : BaseTest() {
         assertEquals("XY", cw.wordsAcross[0].cells.joinToString("") { it.chars })
     }
 
+    @Test
+    fun writeRoundTripsThroughRead() {
+        val bytes = java.io.ByteArrayOutputStream().use { out ->
+            IpuzFormatter().write(crossword, out)
+            out.toByteArray()
+        }
+
+        val reparsed = java.io.ByteArrayInputStream(bytes).use { inp ->
+            org.akop.ararat.core.buildCrossword { IpuzFormatter().read(this, inp) }
+        }
+
+        assertLayout(reparsed, Array(layout.size) { row ->
+            layout[row].chunked(1).map { when (it) { "#" -> null else -> it } }.toTypedArray()
+        })
+        assertHints(reparsed, hints)
+        val circled = reparsed.cellMap[0][1]
+        assertTrue(circled != null && circled.isCircled)
+    }
+
     companion object {
         val metadata = Metadata(
                 width = 2,

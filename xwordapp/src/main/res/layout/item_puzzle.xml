@@ -34,4 +34,14 @@
         android:textColor="#999999"
         android:textSize="12sp" />
 
+    <TextView
+        android:id="@+id/puzzle_live"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cwf_live_in_progress"
+        android:textColor="@color/colorPrimary"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
 </LinearLayout>
