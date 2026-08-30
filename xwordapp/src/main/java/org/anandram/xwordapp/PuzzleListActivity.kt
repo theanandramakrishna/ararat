@@ -10,9 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -77,6 +79,7 @@ class PuzzleListActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
             when (item.itemId) {
                 R.id.menu_add_puzzle -> pickPuzzleFile()
+                R.id.menu_join_cwf -> showJoinGameDialog()
                 R.id.menu_subscriptions ->
                     startActivity(Intent(this, SubscriptionsActivity::class.java))
                 R.id.menu_sign_in_drive -> driveManager.signIn()
@@ -190,6 +193,51 @@ class PuzzleListActivity : AppCompatActivity() {
             type = "*/*"
         }
         startActivityForResult(intent, RC_PICK_PUZZLE)
+    }
+
+    /**
+     * Asks for a Cross With Friends game URL (pre-filled with the game
+     * prefix), then imports the puzzle behind that room.
+     */
+    private fun showJoinGameDialog() {
+        val input = EditText(this)
+        val padding = (16 * resources.displayMetrics.density).toInt()
+        input.setPadding(padding, padding, padding, padding)
+        input.setText(CrossWithFriendsSubscription.GAME_URL_PREFIX)
+
+        AlertDialog.Builder(this)
+                .setTitle(R.string.game_url)
+                .setView(input)
+                .setPositiveButton(R.string.ok) { _, _ ->
+                    val url = input.text?.toString()?.trim().orEmpty()
+                    val gid = CrossWithFriendsSubscription.gidFromGameUrl(url)
+                    if (gid == null) {
+                        Toast.makeText(this, R.string.cwf_invalid_game_url,
+                                Toast.LENGTH_SHORT).show()
+                    } else {
+                        importCwfGame(gid)
+                    }
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+    }
+
+    private fun importCwfGame(gid: String) {
+        Toast.makeText(this, R.string.cwf_import_started, Toast.LENGTH_SHORT).show()
+
+        val url = CrossWithFriendsSubscription.gameUrl(gid)
+        CrossWithFriendsSubscription.importGame(gid, url) { entry, duplicate ->
+            runOnUiThread {
+                Toast.makeText(this,
+                        when {
+                            entry == null -> R.string.cwf_import_failed
+                            duplicate -> R.string.cwf_import_duplicate
+                            else -> R.string.cwf_imported
+                        },
+                        Toast.LENGTH_SHORT).show()
+                refreshList()
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

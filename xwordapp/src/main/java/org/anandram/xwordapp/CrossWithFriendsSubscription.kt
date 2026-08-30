@@ -10,6 +10,7 @@ import io.socket.client.Ack
 import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONException
+import java.io.ByteArrayInputStream
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
 
@@ -29,7 +30,12 @@ object CrossWithFriendsSubscription {
     const val URL = "https://crosswithfriends.com"
     const val PUZZLE_FORMAT = "cwf"
 
+    private val UUID_MATCH = Regex("[0-9a-fA-F]{32}")
+
     const val SOCKET_URL = "https://downforacross-com.onrender.com"
+    const val GAME_URL_PREFIX = "https://www.crosswithfriends.com/beta/game/"
+    const val IMPORT_FORMAT = "cwfg"
+    const val IMPORT_SOURCE = "Joined at Cross With Friends"
 
     private const val API = "https://crosswithfriends.com/api"
     private const val MIN_PID = 900000
@@ -43,6 +49,39 @@ object CrossWithFriendsSubscription {
             puzzleFormat = PUZZLE_FORMAT)
 
     fun gameUrl(gid: String): String = "https://www.crosswithfriends.com/beta/game/$gid"
+
+    /**
+     * Extracts the room id from a game URL (or a bare gid). Trailing slashes
+     * and query strings are ignored. A dashless 32-hex UUID (e.g. a gid pasted
+     * without its hyphens) is normalized to the canonical 8-4-4-4-12 form.
+     */
+    fun gidFromGameUrl(url: String): String? {
+        val trimmed = url.trim().trimEnd('/', ' ')
+        if (trimmed.isEmpty()) return null
+        val gid = trimmed.substringAfterLast('/').substringBefore('?')
+        if (gid.isEmpty()) return null
+
+        val hex = UUID_MATCH.matchEntire(gid.trim())?.value ?: return gid
+        val groups = intArrayOf(8, 4, 4, 4, 12)
+        val normalized = StringBuilder()
+        var index = 0
+        for (length in groups) {
+            if (index > 0) normalized.append('-')
+            normalized.append(hex.substring(index, index + length).lowercase())
+            index += length
+        }
+        return normalized.toString()
+    }
+
+    /**
+     * Fetches the puzzle behind a game room ([gid]) and adds it locally as an
+     * import ("cwfg"); the entry is bound to the room so the app live-syncs
+     * with it. [onImported] receives the entry (null on failure) and whether
+     * the room was already joined. Callbacks fire on a background thread.
+     */
+    fun importGame(gid: String, url: String, onImported: (PuzzleEntry?, Boolean) -> Unit) {
+        CwfGameImportConnection(gid, url, onImported).connect()
+    }
 
     /**
      * Sweep entry point: start a CWF game for the newest puzzle that doesn't
@@ -339,4 +378,103 @@ val events = args.firstOrNull() as? JSONArray
                             .put("value", value ?: JSONObject.NULL)
                             .put("autocheck", false)
                             .put("id", uid))
+}
+
+/**
+ * One-shot connection used by [CrossWithFriendsSubscription.importGame]:
+ * joins the room, pulls its history, stores the create event's game object
+ * verbatim as a "cwfg" puzzle, and binds it to the room.
+ */
+class CwfGameImportConnection(
+        private val gid: String,
+        private val url: String,
+        private val onImported: (PuzzleEntry?, Boolean) -> Unit) {
+
+    private var socket: Socket? = null
+    private var duplicate = false
+
+    fun connect() {
+        if (socket?.connected() == true) return
+
+        val options = IO.Options.builder()
+                .setTransports(arrayOf("websocket"))
+                .setAuth(mapOf("dfacId" to "anon-${UUID.randomUUID().toString().replace("-", "").take(8)}"))
+                .build()
+
+        val s = IO.socket(CrossWithFriendsSubscription.SOCKET_URL, options)
+
+        s.on(Socket.EVENT_CONNECT) {
+            Log.i(CrossWithFriendsSubscription.TAG, "CWF import socket connected")
+            s.emit("join_game", gid, Ack { args ->
+                val error = (args.firstOrNull() as? JSONObject)?.optString("error")
+                if (error.isNullOrEmpty()) {
+                    syncAllEvents(s)
+                } else {
+                    Log.e(CrossWithFriendsSubscription.TAG, "CWF import join_game failed: $error")
+                    complete(s, null)
+                }
+            })
+        }
+        s.on(Socket.EVENT_CONNECT_ERROR) { args ->
+            Log.e(CrossWithFriendsSubscription.TAG,
+                    "CWF import connect error: ${args.joinToString { it.toString() }}")
+            complete(s, null)
+        }
+
+        socket = s
+        s.connect()
+    }
+
+    private fun syncAllEvents(s: Socket) {
+        s.emit("sync_all_game_events", gid, Ack { args ->
+            val events = args.firstOrNull() as? JSONArray
+            val game = events?.let { createEvent(it) }
+                    ?.optJSONObject("params")?.optJSONObject("game")
+            if (game == null) {
+                Log.e(CrossWithFriendsSubscription.TAG, "CWF import: no create event found")
+                complete(s, null)
+                return@Ack
+            }
+
+            val entry = addPuzzle(game)
+            complete(s, entry)
+        })
+    }
+
+    private fun createEvent(events: JSONArray): JSONObject? =
+            (0 until events.length())
+                    .map { events.optJSONObject(it) }
+                    .firstOrNull { it?.optString("type") == "create" }
+
+    private fun addPuzzle(game: JSONObject): PuzzleEntry? {
+        val bytes = game.toString().toByteArray(Charsets.UTF_8)
+        if (PuzzleManager.parse(ByteArrayInputStream(bytes), CrossWithFriendsSubscription.IMPORT_FORMAT) == null) {
+            Log.e(CrossWithFriendsSubscription.TAG, "CWF import: failed to parse game JSON")
+            return null
+        }
+
+        val existing = PuzzleManager.getPuzzles().firstOrNull {
+            it.cwfGid == gid || it.cwfGameUrl == url
+        }
+        if (existing != null) {
+            duplicate = true
+            return existing
+        }
+
+        val entry = PuzzleManager.addPuzzle(ByteArrayInputStream(bytes),
+                format = CrossWithFriendsSubscription.IMPORT_FORMAT,
+                sourceName = CrossWithFriendsSubscription.IMPORT_SOURCE)
+                ?: return null
+
+        PuzzleManager.setCwfGame(entry.id, gid, url)
+        Log.i(CrossWithFriendsSubscription.TAG, "CWF import added: ${entry.title} ($gid)")
+        return entry
+    }
+
+    private fun complete(s: Socket, entry: PuzzleEntry?) {
+        socket = null
+        s.disconnect()
+        s.off()
+        onImported(entry, duplicate)
+    }
 }

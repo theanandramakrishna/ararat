@@ -59,4 +59,11 @@
     <string name="cwf_game_failed">Could not start Cross With Friends game</string>
     <string name="cwf_live_game">Live game at %1$s</string>
     <string name="cwf_live_in_progress">Live game in progress</string>
+    <string name="join_cwf">Join game on Cross With Friends</string>
+    <string name="game_url">Game Url</string>
+    <string name="cwf_invalid_game_url">Enter a valid Cross With Friends game URL</string>
+    <string name="cwf_import_started">Joining Cross With Friends game…</string>
+    <string name="cwf_import_failed">Could not join Cross With Friends game</string>
+    <string name="cwf_imported">Joined Cross With Friends game</string>
+    <string name="cwf_import_duplicate">Already joined this game</string>
 </resources>
