@@ -13,12 +13,43 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/puzzle_author"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#666666"
-        android:textSize="14sp" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/puzzle_author"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#666666"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/puzzle_progress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:textColor="#999999"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/puzzle_live"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="right"
+            android:maxLines="1"
+            android:text="@string/cwf_live_in_progress"
+            android:textColor="#999999"
+            android:textSize="12sp"
+            android:visibility="invisible" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/puzzle_modified"
@@ -26,22 +57,5 @@
         android:layout_height="wrap_content"
         android:textColor="#999999"
         android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/puzzle_progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#999999"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/puzzle_live"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/cwf_live_in_progress"
-        android:textColor="@color/colorPrimary"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
 
 </LinearLayout>

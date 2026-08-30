@@ -277,7 +277,7 @@ class PuzzleListActivity : AppCompatActivity() {
             }
 
             view.findViewById<TextView>(R.id.puzzle_live).visibility =
-                    if (entry.cwfGid != null) View.VISIBLE else View.GONE
+                    if (entry.cwfGid != null) View.VISIBLE else View.INVISIBLE
 
             return view
         }
