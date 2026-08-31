@@ -31,11 +31,14 @@ object CrossWithFriendsSubscription {
     const val PUZZLE_FORMAT = "cwf"
 
     private val UUID_MATCH = Regex("[0-9a-fA-F]{32}")
+    private val GID_SLUG_MATCH = Regex("[A-Za-z0-9][A-Za-z0-9-]*")
+    private val SHARE_URL_REGEX = Regex(
+            "^https?://([^/?#]+)/beta/game/([^/?#]+)\$")
 
     const val SOCKET_URL = "https://downforacross-com.onrender.com"
     const val GAME_URL_PREFIX = "https://www.crosswithfriends.com/beta/game/"
     const val IMPORT_FORMAT = "cwfg"
-    const val IMPORT_SOURCE = "Joined at Cross With Friends"
+    const val IMPORT_SOURCE = NAME
 
     private const val API = "https://crosswithfriends.com/api"
     private const val MIN_PID = 900000
@@ -71,6 +74,37 @@ object CrossWithFriendsSubscription {
             index += length
         }
         return normalized.toString()
+    }
+
+    /**
+     * Strict validation for the share-to-join path: the URL must be http(s),
+     * must point at a Cross With Friends host, and must carry a game room
+     * (`/beta/game/<gid>`). Returns the canonical room id, or null when the
+     * URL isn't a CWF game link.
+     */
+    fun gidFromShareUrl(url: String): String? {
+        val stripped = url.trim()
+                .trimEnd('/')
+                .substringBefore('?')
+                .substringBefore('#')
+        val match = SHARE_URL_REGEX.matchEntire(stripped)
+        if (match == null) {
+            Log.w(TAG, "CWF share: no /beta/game/<gid> match in \"$stripped\"")
+            return null
+        }
+        val host = match.groupValues[1].lowercase()
+        if (host != "crosswithfriends.com" && !host.endsWith(".crosswithfriends.com")) {
+            Log.w(TAG, "CWF share: rejected host \"$host\"")
+            return null
+        }
+        val gid = match.groupValues[2]
+        if (GID_SLUG_MATCH.matchEntire(gid) == null) {
+            Log.w(TAG, "CWF share: rejected gid \"$gid\" (bad slug)")
+            return null
+        }
+        val canonical = gidFromGameUrl(gid.lowercase())
+        Log.i(TAG, "CWF share: accepted $url -> $canonical")
+        return canonical
     }
 
     /**

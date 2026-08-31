@@ -66,4 +66,5 @@
     <string name="cwf_import_failed">Could not join Cross With Friends game</string>
     <string name="cwf_imported">Joined Cross With Friends game</string>
     <string name="cwf_import_duplicate">Already joined this game</string>
+    <string name="cwf_cannot_join">Cannot join game.</string>
 </resources>

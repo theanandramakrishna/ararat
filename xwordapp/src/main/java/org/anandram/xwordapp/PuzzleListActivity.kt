@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,11 +31,14 @@ class PuzzleListActivity : AppCompatActivity() {
 
     companion object {
         private const val RC_PICK_PUZZLE = 9002
+        private const val TAG = "PuzzleListActivity"
 
         private const val TAB_ALL = 0
         private const val TAB_UNSOLVED = 1
         private const val TAB_SOLVED = 2
         private const val TAB_BY_SOURCE = 3
+
+        private val URL_REGEX = Regex("https?://\\S+")
     }
 
     private lateinit var listView: ListView
@@ -126,6 +130,35 @@ class PuzzleListActivity : AppCompatActivity() {
         })
         renderTab(TAB_ALL)
         updateActionBar()
+        handleShareIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleShareIntent(intent)
+    }
+
+    private fun handleShareIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEND) return
+        val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+                ?: intent.getStringExtra(Intent.EXTRA_TITLE) ?: return
+        Log.i(TAG, "Share received: $text")
+        joinGameFromShare(text)
+    }
+
+    private fun joinGameFromShare(text: String) {
+        for (urlMatch in URL_REGEX.findAll(text)) {
+            val url = urlMatch.value.trimEnd(')', '.', ',', '>')
+            val gid = CrossWithFriendsSubscription.gidFromShareUrl(url)
+            if (gid != null) {
+                Log.i(TAG, "Share url=$url -> gid=$gid")
+                importCwfGame(gid, navigateOnJoin = true)
+                return
+            }
+            Log.w(TAG, "Share url rejected: $url")
+        }
+        Toast.makeText(this, R.string.cwf_cannot_join, Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
@@ -222,7 +255,7 @@ class PuzzleListActivity : AppCompatActivity() {
                 .show()
     }
 
-    private fun importCwfGame(gid: String) {
+    private fun importCwfGame(gid: String, navigateOnJoin: Boolean = false) {
         Toast.makeText(this, R.string.cwf_import_started, Toast.LENGTH_SHORT).show()
 
         val url = CrossWithFriendsSubscription.gameUrl(gid)
@@ -230,12 +263,19 @@ class PuzzleListActivity : AppCompatActivity() {
             runOnUiThread {
                 Toast.makeText(this,
                         when {
-                            entry == null -> R.string.cwf_import_failed
+                            entry == null ->
+                                if (navigateOnJoin) R.string.cwf_cannot_join
+                                else R.string.cwf_import_failed
                             duplicate -> R.string.cwf_import_duplicate
                             else -> R.string.cwf_imported
                         },
                         Toast.LENGTH_SHORT).show()
-                refreshList()
+                if (entry != null && navigateOnJoin) {
+                    startActivity(Intent(this, MainActivity::class.java)
+                            .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id))
+                } else {
+                    refreshList()
+                }
             }
         }
     }
