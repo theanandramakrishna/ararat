@@ -1740,8 +1740,6 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         private val cellPath = Path()
         private val cellRect = RectF()
-        private val tempRect = Rect()
-        private val answerTextRect = RectF()
 
         fun renderCell(v: CrosswordView, canvas: Canvas,
                        cell: Cell, fillPaint: Paint, fastRender: Boolean) {
@@ -1823,9 +1821,6 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
                     text = text.substring(0, 8) + "…"
                 }
 
-                answerTextRect.set(cellRect.left, numberY,
-                        cellRect.right, cellRect.bottom)
-
                 var textSize = v.answerTextSize
                 var textWidth: Float
 
@@ -1835,12 +1830,12 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
                     textSize -= v.scaledDensity
                 } while (textWidth >= v.cellSize)
 
-                v.answerTextPaint.getTextBounds("A", 0, 1, tempRect)
                 val xOffset = textWidth / 2f
-                val yOffset = (tempRect.height() / 2).toFloat()
+                val fm = v.answerTextPaint.fontMetrics
+                val yOffset = -(fm.ascent + fm.descent) / 2f + ANSWER_NUDGE
 
-                canvas.drawText(text, answerTextRect.centerX() - xOffset,
-                        answerTextRect.centerY() + yOffset, v.answerTextPaint)
+                canvas.drawText(text, cellRect.centerX() - xOffset,
+                        cellRect.centerY() + yOffset, v.answerTextPaint)
             }
         }
 
@@ -2123,6 +2118,7 @@ class CrosswordView(context: Context, attrs: AttributeSet?) : View(context, attr
         private const val NUMBER_TEXT_PADDING = 1f
         private const val NUMBER_TEXT_SIZE = 3f
         private const val ANSWER_TEXT_SIZE = 7f
+        private const val ANSWER_NUDGE = 2f
         private const val NUMBER_TEXT_STROKE_WIDTH = 1f
 
         private val NORMAL_CELL_FILL_COLOR = "#ffffff".toColor()
