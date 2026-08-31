@@ -26,6 +26,16 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground"
     android:orientation="vertical">
+    <TextView
+        android:id="@+id/cwf_game_link"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:textSize="14sp"
+        android:visibility="gone" />
     <org.akop.ararat.view.CrosswordView
         android:id="@+id/crossword"
         android:layout_width="match_parent"

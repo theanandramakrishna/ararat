@@ -20,9 +20,18 @@
 
 package org.anandram.xwordapp
 
+import android.content.Intent
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -34,11 +43,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 
 import org.akop.ararat.core.Crossword
 import org.akop.ararat.core.CrosswordState
+import org.akop.ararat.io.IpuzFormatter
 import org.akop.ararat.view.CrosswordView
+
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, CrosswordView.OnStateChangeListener, CrosswordView.OnSelectionChangeListener {
     companion object {
@@ -48,9 +62,25 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     private lateinit var crosswordView: CrosswordView
     private var hint: TextView? = null
+    private var cwfGameLink: TextView? = null
     private lateinit var keyboard: CrosswordKeyboardView
     private lateinit var puzzleId: String
     private var puzzleComment: String? = null
+
+    private var cwfConnection: CrossWithFriendsConnection? = null
+    private var cwfSnapshot: Array<Array<String?>>? = null
+    private var cwfSynced = false
+    private var cwfApplyingRemote = false
+
+    private var timerRunning = false
+    private var timerSessionBase: Long = 0
+    private var timerStartRealtime: Long = 0
+    private val timerHandler = Handler(Looper.getMainLooper())
+    private val timerTick = object : Runnable {
+        override fun run() {
+            if (timerRunning) timerHandler.postDelayed(this, 1000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +96,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
         crosswordView = findViewById(R.id.crossword)
         hint = findViewById(R.id.hint)
+        cwfGameLink = findViewById(R.id.cwf_game_link)
         keyboard = findViewById(R.id.keyboard)
 
         val puzzle = entry?.let { PuzzleManager.parse(
@@ -125,9 +156,47 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                 crosswordView.selectedCell)
     }
 
+    override fun onResume() {
+        super.onResume()
+        startTimer()
+        updateCwfGameLink()
+        // Reconnect to an in-progress CWF room after returning to the puzzle.
+        val gid = PuzzleManager.getEntry(puzzleId)?.cwfGid
+        if (gid != null && (cwfConnection == null || !cwfConnection!!.isConnected)) {
+            connectCwf(gid)
+        }
+    }
+
     override fun onPause() {
         super.onPause()
+        pauseTimer()
         crosswordView.state?.let { PuzzleManager.saveState(puzzleId, it) }
+        cwfConnection?.disconnect()
+        cwfConnection = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        pauseTimer()
+        cwfConnection?.disconnect()
+        cwfConnection = null
+    }
+
+    private fun startTimer() {
+        if (timerRunning) return
+        if (PuzzleManager.solvedPercent(puzzleId) >= 100) return
+        timerSessionBase = PuzzleManager.getTimeSpent(puzzleId)
+        timerStartRealtime = SystemClock.elapsedRealtime()
+        timerRunning = true
+        timerHandler.postDelayed(timerTick, 1000)
+    }
+
+    private fun pauseTimer() {
+        if (!timerRunning) return
+        timerRunning = false
+        timerHandler.removeCallbacks(timerTick)
+        PuzzleManager.setTimeSpent(puzzleId,
+                timerSessionBase + (SystemClock.elapsedRealtime() - timerStartRealtime))
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -162,6 +231,8 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                     crosswordView.selectedWord!!)
             R.id.menu_solve_puzzle -> crosswordView.solveCrossword()
             R.id.menu_view_notes -> showNotesDialog()
+            R.id.menu_export -> sharePuzzleAsIpuz()
+            R.id.menu_play_cwf -> startCwfGame()
             else -> return super.onOptionsItemSelected(item)
         }
 
@@ -174,6 +245,34 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                 .setMessage(puzzleComment)
                 .setPositiveButton(R.string.close, null)
                 .show()
+    }
+
+    private fun sharePuzzleAsIpuz() {
+        val crossword = crosswordView.crossword ?: return
+        try {
+            val dir = File(cacheDir, "shared_puzzles").apply { mkdirs() }
+            val baseName = (crossword.title ?: "")
+                    .replace(Regex("[^A-Za-z0-9 _-]"), "")
+                    .trim().replace(Regex("\\s+"), "_")
+                    .ifEmpty { "puzzle" }
+            val file = File(dir, "$baseName.ipuz")
+            FileOutputStream(file).use { out ->
+                IpuzFormatter().write(crossword, out)
+            }
+
+            val uri = FileProvider.getUriForFile(this,
+                    "${packageName}.fileprovider", file)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/x-ipuz"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, getString(R.string.export)))
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to export puzzle", e)
+            Toast.makeText(this, R.string.export_failed,
+                    Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCellLongPressed(view: CrosswordView,
@@ -238,9 +337,12 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                 .show()
     }
 
-    override fun onCrosswordChanged(view: CrosswordView) {}
+    override fun onCrosswordChanged(view: CrosswordView) {
+        if (!cwfApplyingRemote) syncLocalToRemote()
+    }
 
     override fun onCrosswordSolved(view: CrosswordView) {
+        pauseTimer()
         Toast.makeText(this, R.string.youve_solved_the_puzzle,
                 Toast.LENGTH_SHORT).show()
     }
@@ -253,6 +355,115 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             Crossword.Word.DIR_ACROSS -> getString(R.string.across, word.number, word.hint)
             Crossword.Word.DIR_DOWN -> getString(R.string.down, word.number, word.hint)
             else -> ""
+        }
+    }
+
+    private fun startCwfGame() {
+        Toast.makeText(this, R.string.cwf_game_starting, Toast.LENGTH_SHORT).show()
+
+        Thread {
+            val url = CrossWithFriendsSubscription.createGame(puzzleId)
+            runOnUiThread {
+                if (url == null) {
+                    Toast.makeText(this, R.string.cwf_game_failed,
+                            Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
+
+                Toast.makeText(this, R.string.cwf_game_started,
+                        Toast.LENGTH_SHORT).show()
+
+                PuzzleManager.getEntry(puzzleId)?.cwfGid?.let { connectCwf(it) }
+                updateCwfGameLink()
+            }
+        }.start()
+    }
+
+    /**
+     * Shows the live-game link below the puzzle title. Tapping the URL opens
+     * the CWF room; starting a game never opens it automatically.
+     */
+    private fun updateCwfGameLink() {
+        val link = cwfGameLink ?: return
+        val url = PuzzleManager.getEntry(puzzleId)?.cwfGameUrl ?: run {
+            link.text = null
+            link.visibility = View.GONE
+            return
+        }
+
+        val text = SpannableString(getString(R.string.cwf_live_game, url))
+        val start = text.indexOf(url)
+        if (start >= 0) {
+            text.setSpan(object : ClickableSpan() {
+                override fun onClick(widget: View) {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    } catch (e: Exception) {
+                        Log.w(TAG, "No browser available for $url", e)
+                    }
+                }
+            }, start, start + url.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        link.text = text
+        link.movementMethod = LinkMovementMethod.getInstance()
+        link.visibility = View.VISIBLE
+    }
+
+    private val cwfListener = object : CrossWithFriendsConnection.Listener {
+        override fun onCellUpdated(row: Int, column: Int, value: String?) {
+            runOnUiThread {
+                val cw = crosswordView.crossword ?: return@runOnUiThread
+                if (row >= cw.height || column >= cw.width) return@runOnUiThread
+
+                cwfApplyingRemote = true
+                crosswordView.setCellText(row, column, value ?: "")
+                cwfApplyingRemote = false
+                updateCwfSnapshot()
+            }
+        }
+
+        override fun onSyncComplete() {
+            runOnUiThread {
+                cwfSynced = true
+                updateCwfSnapshot()
+            }
+        }
+    }
+
+    private fun connectCwf(gid: String) {
+        cwfConnection?.disconnect()
+        cwfSynced = false
+        val connection = CrossWithFriendsConnection(gid, cwfListener)
+        cwfConnection = connection
+        connection.connect()
+    }
+
+    private fun updateCwfSnapshot() {
+        val cw = crosswordView.crossword ?: return
+        val state = crosswordView.state ?: return
+        cwfSnapshot = Array(cw.height) { r ->
+            Array(cw.width) { c -> state.charAt(r, c) }
+        }
+    }
+
+    /** Sends any locally entered letters that differ from the last snapshot. */
+    private fun syncLocalToRemote() {
+        if (!cwfSynced) return
+        val connection = cwfConnection ?: return
+        if (!connection.isConnected) return
+
+        val cw = crosswordView.crossword ?: return
+        val state = crosswordView.state ?: return
+        val prev = cwfSnapshot ?: return
+
+        for (r in 0 until cw.height) {
+            for (c in 0 until cw.width) {
+                val now = state.charAt(r, c)
+                if (now != prev[r][c]) {
+                    prev[r][c] = now
+                    connection.updateCell(r, c, now)
+                }
+            }
         }
     }
 }

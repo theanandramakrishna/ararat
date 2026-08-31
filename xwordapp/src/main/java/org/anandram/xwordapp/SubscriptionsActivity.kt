@@ -146,6 +146,9 @@ class SubscriptionsActivity : AppCompatActivity() {
             if (subscription.puzzleFormat.equals("amuse-json", ignoreCase = true)) {
                 return HinduSubscription.download(subscription)
             }
+            if (subscription.puzzleFormat.equals("cwf", ignoreCase = true)) {
+                return CrossWithFriendsSubscription.download(subscription)
+            }
             if (subscription.puzzleFormat.equals("jpz", ignoreCase = true)) {
                 return IndependentSubscription.download(subscription)
             }

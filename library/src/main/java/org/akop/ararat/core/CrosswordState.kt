@@ -26,15 +26,17 @@ import android.os.Parcelable
 
 // FIXME inner arrays of char/attrMatrix are mutable
 class CrosswordState internal constructor(val width: Int = 0,
-                                          val height: Int = 0,
-                                          var playTimeMillis: Long = 0,
-                                          var lastPlayed: Long = 0,
-                                          internal var selection: Int = 0,
-                                          var squaresSolved: Short = 0,
-                                          var squaresCheated: Short = 0,
-                                          var squaresWrong: Short = 0,
-                                          var squaresUnknown: Short = 0,
-                                          var squareCount: Short = 0) : Parcelable {
+                                           val height: Int = 0,
+                                           var playTimeMillis: Long = 0,
+                                           var lastPlayed: Long = 0,
+                                           internal var selection: Int = 0,
+                                           var squaresSolved: Short = 0,
+                                           var squaresCheated: Short = 0,
+                                           var squaresWrong: Short = 0,
+                                           var squaresUnknown: Short = 0,
+                                           var squareCount: Short = 0,
+                                           var cwfGid: String? = null,
+                                           var cwfGameUrl: String? = null) : Parcelable {
 
     internal val charMatrix: Array<Array<String?>> = Array(height) { arrayOfNulls<String?>(width) }
     internal val attrMatrix: Array<IntArray> = Array(height) { IntArray(width) }
@@ -61,7 +63,9 @@ class CrosswordState internal constructor(val width: Int = 0,
             squaresCheated = other.squaresCheated,
             squaresWrong = other.squaresWrong,
             squaresUnknown = other.squaresUnknown,
-            squareCount = other.squareCount) {
+            squareCount = other.squareCount,
+            cwfGid = other.cwfGid,
+            cwfGameUrl = other.cwfGameUrl) {
         (0 until height).forEach { r ->
             System.arraycopy(other.charMatrix[r], 0, charMatrix[r], 0, width)
             System.arraycopy(other.attrMatrix[r], 0, attrMatrix[r], 0, width)
@@ -78,7 +82,9 @@ class CrosswordState internal constructor(val width: Int = 0,
             squaresCheated = source.readInt().toShort(),
             squaresWrong = source.readInt().toShort(),
             squaresUnknown = source.readInt().toShort(),
-            squareCount = source.readInt().toShort()) {
+            squareCount = source.readInt().toShort(),
+            cwfGid = source.readString(),
+            cwfGameUrl = source.readString()) {
         source.createStringArray()!!
                 .forEachIndexed { i, c -> charMatrix[i / width][i % width] = c }
         source.createIntArray()!!
@@ -134,6 +140,8 @@ class CrosswordState internal constructor(val width: Int = 0,
         dest.writeInt(squaresWrong.toInt())
         dest.writeInt(squaresUnknown.toInt())
         dest.writeInt(squareCount.toInt())
+        dest.writeString(cwfGid)
+        dest.writeString(cwfGameUrl)
         dest.writeStringArray(charMatrix.flatten().toTypedArray())
         dest.writeIntArray(IntArray(height * width) { attrMatrix[it / width][it % width] })
     }

@@ -57,7 +57,8 @@ object SubscriptionManager {
             MyCrosswordSubscription.default(),
             HinduSubscription.dailyDefault(),
             HinduSubscription.sundayDefault(),
-            IndependentSubscription.default())
+            IndependentSubscription.default(),
+            CrossWithFriendsSubscription.default())
 
     private fun ensureDefaults() {
         if (!file.exists()) {

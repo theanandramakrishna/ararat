@@ -14,11 +14,17 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".PuzzleListActivity"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
             </intent-filter>
         </activity>
 
@@ -46,6 +52,16 @@
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.CLIENT_ID"
             android:value="417818586128-2oujdrajoqu93eun3erbd741bsf32ohb.apps.googleusercontent.com" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

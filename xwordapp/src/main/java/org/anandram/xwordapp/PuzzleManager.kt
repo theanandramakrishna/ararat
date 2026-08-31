@@ -9,6 +9,7 @@ import org.akop.ararat.core.CrosswordStateReader
 import org.akop.ararat.core.CrosswordStateWriter
 import org.akop.ararat.core.buildCrossword
 import org.akop.ararat.io.AmuseLabsJsonFormatter
+import org.akop.ararat.io.CwfGameJsonFormatter
 import org.akop.ararat.io.GuardianJsonFormatter
 import org.akop.ararat.io.IpuzFormatter
 import org.akop.ararat.io.JpzFormatter
@@ -104,6 +105,26 @@ object PuzzleManager {
         if (index >= 0) {
             list[index] = list[index].copy(modified = System.currentTimeMillis())
             saveList(list)
+        }
+    }
+
+    /**
+     * Records the Cross With Friends game ([gid], [gameUrl]) on the puzzle
+     * entry and, when present, its state file, so it survives restarts.
+     */
+    @Synchronized
+    fun setCwfGame(id: String, gid: String?, gameUrl: String?) {
+        val list = getPuzzlesInternal().toMutableList()
+        val index = list.indexOfFirst { it.id == id }
+        if (index >= 0) {
+            list[index] = list[index].copy(cwfGid = gid, cwfGameUrl = gameUrl)
+            saveList(list)
+        }
+
+        loadState(id)?.let { state ->
+            state.cwfGid = gid
+            state.cwfGameUrl = gameUrl
+            saveState(id, state)
         }
     }
 
@@ -217,6 +238,28 @@ object PuzzleManager {
         return (solved.toFloat() / state.squareCount * 100).toInt()
     }
 
+    fun getTimeSpent(id: String): Long = getEntry(id)?.timeSpent ?: 0
+
+    @Synchronized
+    fun setTimeSpent(id: String, millis: Long) {
+        val list = getPuzzlesInternal().toMutableList()
+        val i = list.indexOfFirst { it.id == id }
+        if (i < 0) return
+        list[i] = list[i].copy(timeSpent = millis)
+        saveList(list)
+    }
+
+    /**
+     * Formats elapsed time as `h:mm:ss`.
+     */
+    fun formatTime(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val h = totalSeconds / 3600
+        val m = (totalSeconds % 3600) / 60
+        val s = totalSeconds % 60
+        return String.format("%d:%02d:%02d", h, m, s)
+    }
+
 fun parse(file: File, format: String = "puz"): Crossword? = try {
     file.inputStream().use { s -> parse(s, format) }
 } catch (e: Exception) {
@@ -232,6 +275,7 @@ fun parse(source: InputStream, format: String = "puz"): Crossword? = try {
         "jsoup-html" -> source.use { s -> buildCrossword { JsoupHtmlFormatter().read(this, s) } }
         "pml-json" -> source.use { s -> buildCrossword { PmlJsonFormatter().read(this, s) } }
         "amuse-json" -> source.use { s -> buildCrossword { AmuseLabsJsonFormatter().read(this, s) } }
+        "cwfg" -> source.use { s -> buildCrossword { CwfGameJsonFormatter().read(this, s) } }
         "jpz" -> source.use { s -> buildCrossword { JpzFormatter().read(this, s) } }
         "ipuz" -> source.use { s -> buildCrossword { IpuzFormatter().read(this, s) } }
         else -> source.use { s -> buildCrossword { PuzFormatter().read(this, s) } }

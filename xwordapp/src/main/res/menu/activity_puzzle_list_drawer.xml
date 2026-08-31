@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_add"
         android:title="@string/add_puzzle" />
     <item
+        android:id="@+id/menu_join_cwf"
+        android:icon="@drawable/ic_cloud_download"
+        android:title="@string/join_cwf" />
+    <item
         android:id="@+id/menu_subscriptions"
         android:icon="@drawable/ic_cloud_download"
         android:title="@string/subscriptions" />

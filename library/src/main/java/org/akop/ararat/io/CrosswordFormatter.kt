@@ -24,6 +24,7 @@ import org.akop.ararat.core.Crossword
 
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 
 
 /**
@@ -44,4 +45,13 @@ interface CrosswordFormatter {
      */
     @Throws(IOException::class)
     fun read(builder: Crossword.Builder, inputStream: InputStream)
+
+    /**
+     * Writes [crossword] to [outputStream]. Not supported by all formatters;
+     * the default implementation throws [UnsupportedOperationException].
+     */
+    @Throws(IOException::class)
+    fun write(crossword: Crossword, outputStream: OutputStream) {
+        throw UnsupportedOperationException()
+    }
 }
