@@ -25,6 +25,9 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
@@ -68,6 +71,16 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     private var cwfSnapshot: Array<Array<String?>>? = null
     private var cwfSynced = false
     private var cwfApplyingRemote = false
+
+    private var timerRunning = false
+    private var timerSessionBase: Long = 0
+    private var timerStartRealtime: Long = 0
+    private val timerHandler = Handler(Looper.getMainLooper())
+    private val timerTick = object : Runnable {
+        override fun run() {
+            if (timerRunning) timerHandler.postDelayed(this, 1000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,6 +158,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     override fun onResume() {
         super.onResume()
+        startTimer()
         updateCwfGameLink()
         // Reconnect to an in-progress CWF room after returning to the puzzle.
         val gid = PuzzleManager.getEntry(puzzleId)?.cwfGid
@@ -155,6 +169,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     override fun onPause() {
         super.onPause()
+        pauseTimer()
         crosswordView.state?.let { PuzzleManager.saveState(puzzleId, it) }
         cwfConnection?.disconnect()
         cwfConnection = null
@@ -162,8 +177,26 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     override fun onDestroy() {
         super.onDestroy()
+        pauseTimer()
         cwfConnection?.disconnect()
         cwfConnection = null
+    }
+
+    private fun startTimer() {
+        if (timerRunning) return
+        if (PuzzleManager.solvedPercent(puzzleId) >= 100) return
+        timerSessionBase = PuzzleManager.getTimeSpent(puzzleId)
+        timerStartRealtime = SystemClock.elapsedRealtime()
+        timerRunning = true
+        timerHandler.postDelayed(timerTick, 1000)
+    }
+
+    private fun pauseTimer() {
+        if (!timerRunning) return
+        timerRunning = false
+        timerHandler.removeCallbacks(timerTick)
+        PuzzleManager.setTimeSpent(puzzleId,
+                timerSessionBase + (SystemClock.elapsedRealtime() - timerStartRealtime))
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -309,6 +342,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     }
 
     override fun onCrosswordSolved(view: CrosswordView) {
+        pauseTimer()
         Toast.makeText(this, R.string.youve_solved_the_puzzle,
                 Toast.LENGTH_SHORT).show()
     }

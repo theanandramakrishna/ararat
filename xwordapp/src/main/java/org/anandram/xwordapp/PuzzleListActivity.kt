@@ -364,6 +364,9 @@ class PuzzleListActivity : AppCompatActivity() {
                 ""
             }
 
+            view.findViewById<TextView>(R.id.puzzle_time).text =
+                    PuzzleManager.formatTime(PuzzleManager.getTimeSpent(entry.id))
+
             view.findViewById<TextView>(R.id.puzzle_live).visibility =
                     if (entry.cwfGid != null) View.VISIBLE else View.INVISIBLE
 

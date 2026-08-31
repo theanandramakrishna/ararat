@@ -238,6 +238,28 @@ object PuzzleManager {
         return (solved.toFloat() / state.squareCount * 100).toInt()
     }
 
+    fun getTimeSpent(id: String): Long = getEntry(id)?.timeSpent ?: 0
+
+    @Synchronized
+    fun setTimeSpent(id: String, millis: Long) {
+        val list = getPuzzlesInternal().toMutableList()
+        val i = list.indexOfFirst { it.id == id }
+        if (i < 0) return
+        list[i] = list[i].copy(timeSpent = millis)
+        saveList(list)
+    }
+
+    /**
+     * Formats elapsed time as `h:mm:ss`.
+     */
+    fun formatTime(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val h = totalSeconds / 3600
+        val m = (totalSeconds % 3600) / 60
+        val s = totalSeconds % 60
+        return String.format("%d:%02d:%02d", h, m, s)
+    }
+
 fun parse(file: File, format: String = "puz"): Crossword? = try {
     file.inputStream().use { s -> parse(s, format) }
 } catch (e: Exception) {
