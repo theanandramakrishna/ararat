@@ -46,7 +46,9 @@ class DriveManager(private val activity: AppCompatActivity) {
                 .build()
         googleSignInClient = GoogleSignIn.getClient(activity, gso)
 
-        GoogleSignIn.getLastSignedInAccount(activity)?.let { setupDriveService(it) }
+        val account = GoogleSignIn.getLastSignedInAccount(activity)
+        FirebaseStats.setCustomKey("has_drive_auth", account != null)
+        account?.let { setupDriveService(it) }
     }
 
     fun signIn() {
@@ -60,6 +62,8 @@ class DriveManager(private val activity: AppCompatActivity) {
             val account = GoogleSignIn.getSignedInAccountFromIntent(data)
                     .getResult(ApiException::class.java)
             setupDriveService(account)
+            FirebaseStats.setCustomKey("has_drive_auth", true)
+            FirebaseStats.log("drive_signed_in email=${account.email?.take(12) ?: "?"}...")
             Toast.makeText(activity,
                     activity.getString(R.string.signed_in_as, account.email),
                     Toast.LENGTH_SHORT).show()
@@ -78,6 +82,7 @@ class DriveManager(private val activity: AppCompatActivity) {
 
     fun saveToDrive(onComplete: (Int) -> Unit) {
         ensureSignedIn {
+            FirebaseStats.log("drive_save_start")
             Thread {
                 try {
                     val service = driveService!!
@@ -98,6 +103,7 @@ class DriveManager(private val activity: AppCompatActivity) {
 
     fun loadFromDrive(onComplete: (Int) -> Unit) {
         ensureSignedIn {
+            FirebaseStats.log("drive_load_start")
             Thread {
                 try {
                     val service = driveService!!

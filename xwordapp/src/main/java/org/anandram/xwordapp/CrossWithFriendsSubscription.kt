@@ -314,6 +314,9 @@ class CrossWithFriendsConnection(
         s.on(Socket.EVENT_CONNECT_ERROR) { args ->
             Log.e(CrossWithFriendsSubscription.TAG,
                     "CWF socket error: ${args.joinToString { it.toString() }}")
+            FirebaseStats.recordException(RuntimeException(
+                    "cwf_connect_error: ${args.joinToString { it.toString() }}"),
+                    mapOf("gid" to gid.take(8)))
         }
 
         socket = s
@@ -445,6 +448,9 @@ class CwfGameImportConnection(
                     syncAllEvents(s)
                 } else {
                     Log.e(CrossWithFriendsSubscription.TAG, "CWF import join_game failed: $error")
+                    FirebaseStats.recordException(
+                            RuntimeException("cwf_import_join_failed: $error"),
+                            mapOf("gid" to gid.take(8)))
                     complete(s, null)
                 }
             })
@@ -452,6 +458,9 @@ class CwfGameImportConnection(
         s.on(Socket.EVENT_CONNECT_ERROR) { args ->
             Log.e(CrossWithFriendsSubscription.TAG,
                     "CWF import connect error: ${args.joinToString { it.toString() }}")
+            FirebaseStats.recordException(RuntimeException(
+                    "cwf_import_connect_error: ${args.joinToString { it.toString() }}"),
+                    mapOf("gid" to gid.take(8)))
             complete(s, null)
         }
 
@@ -466,6 +475,9 @@ class CwfGameImportConnection(
                     ?.optJSONObject("params")?.optJSONObject("game")
             if (game == null) {
                 Log.e(CrossWithFriendsSubscription.TAG, "CWF import: no create event found")
+                FirebaseStats.recordException(
+                        RuntimeException("cwf_import_no_create_event"),
+                        mapOf("gid" to gid.take(8)))
                 complete(s, null)
                 return@Ack
             }
@@ -484,6 +496,9 @@ class CwfGameImportConnection(
         val bytes = game.toString().toByteArray(Charsets.UTF_8)
         if (PuzzleManager.parse(ByteArrayInputStream(bytes), CrossWithFriendsSubscription.IMPORT_FORMAT) == null) {
             Log.e(CrossWithFriendsSubscription.TAG, "CWF import: failed to parse game JSON")
+            FirebaseStats.recordException(
+                    RuntimeException("cwf_import_parse_failed"),
+                    mapOf("gid" to gid.take(8)))
             return null
         }
 
