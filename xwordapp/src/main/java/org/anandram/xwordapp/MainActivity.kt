@@ -89,6 +89,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         applySystemBarInsets()
 
         PuzzleManager.init(this)
+        FirebaseStats.attach(this)
 
         puzzleId = intent.getStringExtra(EXTRA_PUZZLE_ID) ?: PuzzleManager.getBundledId()
         val entry = PuzzleManager.getEntry(puzzleId)
@@ -103,6 +104,10 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                 PuzzleManager.puzzleFile(it.id, it.format), it.format) }
                 ?: PuzzleManager.parse(PuzzleManager.puzFile(PuzzleManager.getBundledId()))
         puzzleComment = puzzle?.comment
+
+        FirebaseStats.setCustomKey("last_puzzle_format", entry?.format ?: "puz")
+        FirebaseStats.log("puzzle_open id=${puzzleId.take(8)} " +
+                "format=${entry?.format ?: "puz"} title=${entry?.title}")
 
         title = when {
             entry != null && !entry.author.isNullOrEmpty() ->
@@ -148,6 +153,9 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                 crosswordView.restoreState(saved)
             } catch (e: RuntimeException) {
                 Log.w(TAG, "Failed to restore saved state for $puzzleId", e)
+                FirebaseStats.recordException(e, mapOf(
+                        "format" to (entry?.format ?: "puz"),
+                        "phase" to "restore_state"))
             }
         }
 
@@ -163,6 +171,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         // Reconnect to an in-progress CWF room after returning to the puzzle.
         val gid = PuzzleManager.getEntry(puzzleId)?.cwfGid
         if (gid != null && (cwfConnection == null || !cwfConnection!!.isConnected)) {
+            FirebaseStats.log("cwf_reconnect gid=${gid.take(8)}")
             connectCwf(gid)
         }
     }
@@ -270,6 +279,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             startActivity(Intent.createChooser(intent, getString(R.string.export)))
         } catch (e: Exception) {
             Log.w(TAG, "Failed to export puzzle", e)
+            FirebaseStats.recordException(e, mapOf("phase" to "export_ipuz"))
             Toast.makeText(this, R.string.export_failed,
                     Toast.LENGTH_SHORT).show()
         }
@@ -345,6 +355,12 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         pauseTimer()
         Toast.makeText(this, R.string.youve_solved_the_puzzle,
                 Toast.LENGTH_SHORT).show()
+
+        val entry = PuzzleManager.getEntry(puzzleId)
+        FirebaseStats.logEvent(this, "puzzle_completed", mapOf(
+                "format" to (entry?.format ?: "puz"),
+                "source" to (entry?.source ?: "unknown"),
+                "time_seconds" to PuzzleManager.getTimeSpent(puzzleId) / 1000))
     }
 
     override fun onCrosswordUnsolved(view: CrosswordView) { }
@@ -400,6 +416,8 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     } catch (e: Exception) {
                         Log.w(TAG, "No browser available for $url", e)
+                        FirebaseStats.recordException(e,
+                                mapOf("phase" to "open_cwf_link"))
                     }
                 }
             }, start, start + url.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

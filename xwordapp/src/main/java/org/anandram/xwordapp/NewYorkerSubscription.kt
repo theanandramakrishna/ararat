@@ -34,11 +34,14 @@ object NewYorkerSubscription {
 
     fun download(subscription: Subscription): Int {
         return try {
+            val maxPerSweep = FirebaseStats
+                    .sweepCap("max_per_sweep_newyorker", MAX_PER_SWEEP.toLong())
+                    .toInt()
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
                 if (matchesPuzzleUrl(href)) href else null
-            }.distinct().sortedDescending().take(MAX_PER_SWEEP)
+            }.distinct().sortedDescending().take(maxPerSweep)
 
             var count = 0
             for (url in puzzleUrls) {
@@ -60,10 +63,12 @@ object NewYorkerSubscription {
 
                     if (PuzzleManager.addXdIfNew(xd,
                                     sourceName = subscription.name, downloadUrl = url) != null) {
+                        FirebaseStats.scrapeLog("NY added url=$url id=$id")
                         count++
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to fetch New Yorker puzzle $url", e)
+                    FirebaseStats.scrapeLog("NY fetch_fail url=$url")
                 }
             }
             count

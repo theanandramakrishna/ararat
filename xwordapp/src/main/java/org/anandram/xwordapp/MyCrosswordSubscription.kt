@@ -28,11 +28,14 @@ object MyCrosswordSubscription {
 
     fun download(subscription: Subscription): Int {
         return try {
+            val maxPerSweep = FirebaseStats
+                    .sweepCap("max_per_sweep_mycrossword", MAX_PER_SWEEP.toLong())
+                    .toInt()
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
                 if (matchesPuzzleUrl(href)) href else null
-            }.distinct().sortedDescending().take(MAX_PER_SWEEP)
+            }.distinct().sortedDescending().take(maxPerSweep)
 
             var count = 0
             for (url in puzzleUrls) {
@@ -53,10 +56,12 @@ object MyCrosswordSubscription {
                                     format = PUZZLE_FORMAT,
                                     sourceName = subscription.name,
                                     downloadUrl = url) != null) {
+                        FirebaseStats.scrapeLog("MyCrossword added url=$url")
                         count++
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to fetch MyCrossword puzzle $url", e)
+                    FirebaseStats.scrapeLog("MyCrossword fetch_fail url=$url")
                 }
             }
             count
