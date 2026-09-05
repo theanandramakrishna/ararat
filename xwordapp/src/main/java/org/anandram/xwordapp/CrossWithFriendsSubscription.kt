@@ -137,16 +137,38 @@ object CrossWithFriendsSubscription {
      * the puzzle entry and its state. Returns the shareable game URL.
      */
     fun createGame(id: String): String? {
-        val entry = PuzzleManager.getEntry(id) ?: return null
-        val crossword = PuzzleManager.parse(PuzzleManager.puzzleFile(entry.id, entry.format))
-                ?: return null
+        val entry = PuzzleManager.getEntry(id)
+        if (entry == null) {
+            Log.w(TAG, "CWF createGame: no entry for $id")
+            FirebaseStats.log("cwf_create no_entry")
+            return null
+        }
+        val crossword = PuzzleManager.parse(
+                PuzzleManager.puzzleFile(entry.id, entry.format), entry.format)
+        if (crossword == null) {
+            Log.w(TAG, "CWF createGame: parse failed for $id (${entry.format})")
+            FirebaseStats.log("cwf_create parse_failed ${entry.format}")
+            return null
+        }
 
-        val pid = uploadPuzzle(crossword) ?: return null
-        val gid = createGameForPid(pid) ?: return null
+        val pid = uploadPuzzle(crossword)
+        if (pid == null) {
+            Log.w(TAG, "CWF createGame: uploadPuzzle failed")
+            FirebaseStats.log("cwf_create upload_failed")
+            return null
+        }
+        Log.i(TAG, "CWF createGame: uploaded pid=$pid")
+        val gid = createGameForPid(pid)
+        if (gid == null) {
+            Log.w(TAG, "CWF createGame: createGameForPid failed")
+            FirebaseStats.log("cwf_create game_failed")
+            return null
+        }
         val url = gameUrl(gid)
 
         PuzzleManager.setCwfGame(id, gid, url)
         Log.i(TAG, "CWF game started: $url")
+        FirebaseStats.log("cwf_create ok ${gid.take(8)}")
         return url
     }
 
@@ -182,8 +204,12 @@ object CrossWithFriendsSubscription {
 
                 if (response.statusCode() == 200) {
                     val data = JSONObject(response.body())
-                    if (data.optString("pid").isNotEmpty()) return data.optString("pid")
+                    if (data.optString("pid").isNotEmpty()) {
+                        Log.i(TAG, "CWF upload ok (attempt $attempt): ${data.optString("pid")}")
+                        return data.optString("pid")
+                    }
                 } else if (response.body().contains("duplicate key")) {
+                    Log.w(TAG, "CWF upload duplicate pid $pid (attempt $attempt), retrying")
                     continue
                 } else {
                     Log.e(TAG, "Upload failed (${response.statusCode()}): ${response.body().take(300)}")
@@ -193,6 +219,7 @@ object CrossWithFriendsSubscription {
                 Log.e(TAG, "Failed to upload puzzle (attempt $attempt)", e)
             }
         }
+        Log.w(TAG, "CWF upload: exhausted $MAX_UPLOAD_ATTEMPTS attempts")
         return null
     }
 
@@ -214,7 +241,13 @@ object CrossWithFriendsSubscription {
             if (response.statusCode() == 200) {
                 val data = JSONObject(response.body())
                 val resolved = data.optString("gid", gid)
-                if (resolved.isNotEmpty()) resolved else null
+                if (resolved.isNotEmpty()) {
+                    Log.i(TAG, "CWF create game ok: ${resolved.take(8)}")
+                    resolved
+                } else {
+                    Log.w(TAG, "CWF create game returned empty gid")
+                    null
+                }
             } else {
                 Log.e(TAG, "Create game failed (${response.statusCode()}): ${response.body().take(300)}")
                 null
@@ -433,6 +466,7 @@ class CwfGameImportConnection(
 
     private var socket: Socket? = null
     private var duplicate = false
+    private var finished = false
 
     fun connect() {
         if (socket?.connected() == true) return
@@ -445,10 +479,14 @@ class CwfGameImportConnection(
         val s = IO.socket(CrossWithFriendsSubscription.SOCKET_URL, options)
 
         s.on(Socket.EVENT_CONNECT) {
-            Log.i(CrossWithFriendsSubscription.TAG, "CWF import socket connected")
+            Log.i(CrossWithFriendsSubscription.TAG, "CWF import socket connected (gid=${gid.take(8)})")
             s.emit("join_game", gid, Ack { args ->
+                Log.i(CrossWithFriendsSubscription.TAG,
+                        "CWF import join_game ack: ${args.joinToString { it.toString() }}")
                 val error = (args.firstOrNull() as? JSONObject)?.optString("error")
+                        ?: args.firstOrNull()?.toString()?.takeIf { it.isNotBlank() && it != "null" }
                 if (error.isNullOrEmpty()) {
+                    Log.i(CrossWithFriendsSubscription.TAG, "CWF import join_game ok (gid=${gid.take(8)})")
                     syncAllEvents(s)
                 } else {
                     Log.e(CrossWithFriendsSubscription.TAG, "CWF import join_game failed: $error")
@@ -467,20 +505,31 @@ class CwfGameImportConnection(
                     "cwf_import_connect", gid)
             complete(s, null)
         }
+        s.on(Socket.EVENT_DISCONNECT) { args ->
+            Log.w(CrossWithFriendsSubscription.TAG,
+                    "CWF import socket disconnected: ${args.joinToString { it.toString() }}")
+            FirebaseStats.log("cwf_import_disconnect ${gid.take(8)}")
+            complete(s, null)
+        }
 
         socket = s
+        Log.i(CrossWithFriendsSubscription.TAG, "CWF import connecting (gid=${gid.take(8)})")
         s.connect()
     }
 
     private fun syncAllEvents(s: Socket) {
         s.emit("sync_all_game_events", gid, Ack { args ->
             val events = args.firstOrNull() as? JSONArray
+            if (events == null) {
+                Log.w(CrossWithFriendsSubscription.TAG,
+                        "CWF import sync ack: ${args.joinToString { it.toString() }}")
+            }
             val game = events?.let { createEvent(it) }
                     ?.optJSONObject("params")?.optJSONObject("game")
             if (game == null) {
-                Log.e(CrossWithFriendsSubscription.TAG, "CWF import: no create event found")
+                Log.e(CrossWithFriendsSubscription.TAG, "CWF import: no create event found (events=${events?.length() ?: 0})")
                 FirebaseStats.recordException(
-                        Exception("CWF import: no create event found"),
+                        Exception("CWF import: no create event found (events=${events?.length() ?: 0})"),
                         "cwf_import_no_create", gid)
                 complete(s, null)
                 return@Ack
@@ -517,7 +566,13 @@ class CwfGameImportConnection(
         val entry = PuzzleManager.addPuzzle(ByteArrayInputStream(bytes),
                 format = CrossWithFriendsSubscription.IMPORT_FORMAT,
                 sourceName = CrossWithFriendsSubscription.IMPORT_SOURCE)
-                ?: return null
+        if (entry == null) {
+            Log.e(CrossWithFriendsSubscription.TAG, "CWF import: addPuzzle returned null")
+            FirebaseStats.recordException(
+                    Exception("CWF import: addPuzzle returned null"),
+                    "cwf_import_add", gid)
+            return null
+        }
 
         PuzzleManager.setCwfGame(entry.id, gid, url)
         Log.i(CrossWithFriendsSubscription.TAG, "CWF import added: ${entry.title} ($gid)")
@@ -525,6 +580,10 @@ class CwfGameImportConnection(
     }
 
     private fun complete(s: Socket, entry: PuzzleEntry?) {
+        if (finished) return
+        finished = true
+        Log.i(CrossWithFriendsSubscription.TAG,
+                "CWF import done: entry=${entry?.title ?: "null"} duplicate=$duplicate")
         socket = null
         s.disconnect()
         s.off()

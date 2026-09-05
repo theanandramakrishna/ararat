@@ -269,12 +269,20 @@ class PuzzleListActivity : AppCompatActivity() {
     }
 
     private fun importCwfGame(gid: String, navigateOnJoin: Boolean = false) {
+        Log.i(TAG, "cwf import start gid=${gid.take(8)} navigate=$navigateOnJoin")
         Toast.makeText(this, R.string.cwf_import_started, Toast.LENGTH_SHORT).show()
         FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_START,
                 mapOf("gid" to gid.take(8), "from_share" to navigateOnJoin))
 
         val url = CrossWithFriendsSubscription.gameUrl(gid)
         CrossWithFriendsSubscription.importGame(gid, url) { entry, duplicate ->
+            val outcome = when {
+                entry == null -> "failed"
+                duplicate -> "duplicate"
+                else -> "succeeded"
+            }
+            Log.i(TAG, "cwf import done gid=${gid.take(8)} outcome=$outcome")
+            FirebaseStats.log("cwf_import_done ${gid.take(8)} $outcome")
             FirebaseStats.logEvent(
                     when {
                         entry == null -> FirebaseStats.EVENT_JOIN_GAME_FAILED
@@ -283,15 +291,15 @@ class PuzzleListActivity : AppCompatActivity() {
                     },
                     mapOf("gid" to gid.take(8), "from_share" to navigateOnJoin))
             runOnUiThread {
-                Toast.makeText(this,
-                        when {
-                            entry == null ->
-                                if (navigateOnJoin) R.string.cwf_cannot_join
-                                else R.string.cwf_import_failed
-                            duplicate -> R.string.cwf_import_duplicate
-                            else -> R.string.cwf_imported
-                        },
-                        Toast.LENGTH_SHORT).show()
+                val toastRes = when {
+                    entry == null ->
+                        if (navigateOnJoin) R.string.cwf_cannot_join
+                        else R.string.cwf_import_failed
+                    duplicate -> R.string.cwf_import_duplicate
+                    else -> R.string.cwf_imported
+                }
+                Log.i(TAG, "cwf import toast res=$toastRes")
+                Toast.makeText(this, toastRes, Toast.LENGTH_SHORT).show()
                 if (entry != null && navigateOnJoin) {
                     startActivity(Intent(this, MainActivity::class.java)
                             .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id))

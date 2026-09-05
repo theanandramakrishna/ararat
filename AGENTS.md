@@ -15,8 +15,9 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 ## Device
 - APK: `xwordapp/build/outputs/apk/debug/xwordapp-debug.apk`
 - Install: `adb install -r <apk>`, launch: `adb shell monkey -p org.anandram.xwordapp.debug -c android.intent.category.LAUNCHER 1`
-- Device sleeps often. Before UI actions: `adb shell input keyevent KEYCODE_WAKEUP; adb shell svc power stayon true; adb shell wm dismiss-keyguard`
-- Use `adb shell uiautomator dump /sdcard/ui.xml` + python parse for finding tap targets.
+- `adb` is at `/usr/local/bin/adb` (not on the default PATH) — use the full path.
+- Device sleeps often. Before UI actions: `/usr/local/bin/adb shell input keyevent KEYCODE_WAKEUP; /usr/local/bin/adb shell svc power stayon true; /usr/local/bin/adb shell wm dismiss-keyguard`
+- Use `/usr/local/bin/adb shell uiautomator dump /sdcard/ui.xml` + python parse for finding tap targets.
 - Use `/tmp` for temporary files (tool-output dir is off-limits).
 
 ## Architecture

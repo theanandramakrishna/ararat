@@ -106,7 +106,14 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         cwfShareButton = findViewById(R.id.cwf_share_button)
         cwfShareButton?.setOnClickListener {
             val url = PuzzleManager.getEntry(puzzleId)?.cwfGameUrl
-            if (url == null) return@setOnClickListener
+            if (url == null) {
+                Log.w(TAG, "CWF share icon: no game URL for $puzzleId")
+                FirebaseStats.log("cwf_share_icon no_url")
+                return@setOnClickListener
+            }
+            val gid = CrossWithFriendsSubscription.gidFromGameUrl(url)
+            Log.i(TAG, "CWF share icon: sharing gid=${gid?.take(8)}")
+            FirebaseStats.log("cwf_share_icon ${gid?.take(8)}")
             val send = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, getString(R.string.cwf_share_message, url))
@@ -388,16 +395,22 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     private fun startCwfGame() {
         Toast.makeText(this, R.string.cwf_game_starting, Toast.LENGTH_SHORT).show()
+        val gid = PuzzleManager.getEntry(puzzleId)?.cwfGid
+        FirebaseStats.log("cwf_start_game ${gid?.take(8) ?: "new"}")
+        Log.i(TAG, "cwf start: gid=${gid?.take(8)}")
 
         Thread {
             val url = CrossWithFriendsSubscription.createGame(puzzleId)
             runOnUiThread {
                 if (url == null) {
+                    Log.w(TAG, "cwf start: createGame returned null")
+                    FirebaseStats.log("cwf_start_game failed")
                     Toast.makeText(this, R.string.cwf_game_failed,
                             Toast.LENGTH_SHORT).show()
                     return@runOnUiThread
                 }
 
+                Log.i(TAG, "cwf start: ok $url")
                 Toast.makeText(this, R.string.cwf_game_started,
                         Toast.LENGTH_SHORT).show()
 
