@@ -114,6 +114,7 @@ object CrossWithFriendsSubscription {
      * the room was already joined. Callbacks fire on a background thread.
      */
     fun importGame(gid: String, url: String, onImported: (PuzzleEntry?, Boolean) -> Unit) {
+        FirebaseStats.log("cwf_import_start ${gid.take(8)}")
         CwfGameImportConnection(gid, url, onImported).connect()
     }
 
@@ -293,6 +294,9 @@ class CrossWithFriendsConnection(
                     syncAllEvents(s)
                 } else {
                     Log.e(CrossWithFriendsSubscription.TAG, "CWF join_game failed: $error")
+                    FirebaseStats.recordException(
+                            Exception("CWF join_game failed: $error"),
+                            "cwf_join", gid)
                 }
             })
         }
@@ -314,6 +318,9 @@ class CrossWithFriendsConnection(
         s.on(Socket.EVENT_CONNECT_ERROR) { args ->
             Log.e(CrossWithFriendsSubscription.TAG,
                     "CWF socket error: ${args.joinToString { it.toString() }}")
+            FirebaseStats.recordException(
+                    Exception("CWF socket error: ${args.joinToString { it.toString() }}"),
+                    "cwf_connect", gid)
         }
 
         socket = s
@@ -445,6 +452,9 @@ class CwfGameImportConnection(
                     syncAllEvents(s)
                 } else {
                     Log.e(CrossWithFriendsSubscription.TAG, "CWF import join_game failed: $error")
+                    FirebaseStats.recordException(
+                            Exception("CWF import join_game failed: $error"),
+                            "cwf_import_join", gid)
                     complete(s, null)
                 }
             })
@@ -452,6 +462,9 @@ class CwfGameImportConnection(
         s.on(Socket.EVENT_CONNECT_ERROR) { args ->
             Log.e(CrossWithFriendsSubscription.TAG,
                     "CWF import connect error: ${args.joinToString { it.toString() }}")
+            FirebaseStats.recordException(
+                    Exception("CWF import connect error: ${args.joinToString { it.toString() }}"),
+                    "cwf_import_connect", gid)
             complete(s, null)
         }
 
@@ -466,6 +479,9 @@ class CwfGameImportConnection(
                     ?.optJSONObject("params")?.optJSONObject("game")
             if (game == null) {
                 Log.e(CrossWithFriendsSubscription.TAG, "CWF import: no create event found")
+                FirebaseStats.recordException(
+                        Exception("CWF import: no create event found"),
+                        "cwf_import_no_create", gid)
                 complete(s, null)
                 return@Ack
             }
@@ -484,6 +500,9 @@ class CwfGameImportConnection(
         val bytes = game.toString().toByteArray(Charsets.UTF_8)
         if (PuzzleManager.parse(ByteArrayInputStream(bytes), CrossWithFriendsSubscription.IMPORT_FORMAT) == null) {
             Log.e(CrossWithFriendsSubscription.TAG, "CWF import: failed to parse game JSON")
+            FirebaseStats.recordException(
+                    Exception("CWF import: failed to parse game JSON"),
+                    "cwf_import_parse", gid)
             return null
         }
 

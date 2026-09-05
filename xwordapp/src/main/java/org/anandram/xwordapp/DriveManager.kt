@@ -17,7 +17,6 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File as DriveFile
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -39,6 +38,8 @@ class DriveManager(private val activity: AppCompatActivity) {
     private var pendingAction: (() -> Unit)? = null
 
     fun setupSignIn() {
+        FirebaseStats.setCustomKey("has_drive_auth",
+                GoogleSignIn.getLastSignedInAccount(activity) != null)
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestScopes(Scope(DriveScopes.DRIVE_APPDATA))
                 .requestScopes(Scope(DriveScopes.DRIVE_FILE))
@@ -60,6 +61,7 @@ class DriveManager(private val activity: AppCompatActivity) {
             val account = GoogleSignIn.getSignedInAccountFromIntent(data)
                     .getResult(ApiException::class.java)
             setupDriveService(account)
+            FirebaseStats.setCustomKey("has_drive_auth", true)
             Toast.makeText(activity,
                     activity.getString(R.string.signed_in_as, account.email),
                     Toast.LENGTH_SHORT).show()
@@ -69,8 +71,9 @@ class DriveManager(private val activity: AppCompatActivity) {
             pending?.invoke()
         } catch (e: ApiException) {
             pendingAction = null
+            FirebaseStats.setCustomKey("has_drive_auth", false)
             Toast.makeText(activity, R.string.sign_in_failed, Toast.LENGTH_SHORT).show()
-            FirebaseCrashlytics.getInstance().recordException(e)
+            FirebaseStats.recordException(e, "drive_sign_in")
         }
 
         return true
@@ -78,18 +81,20 @@ class DriveManager(private val activity: AppCompatActivity) {
 
     fun saveToDrive(onComplete: (Int) -> Unit) {
         ensureSignedIn {
+            FirebaseStats.log("drive_save_start")
             Thread {
                 try {
                     val service = driveService!!
                     uploadFile(service, BACKUP_FILE_NAME,
                             ByteArrayContent("application/zip", buildBackupZip()))
 
+                    FirebaseStats.log("drive_save_done")
                     activity.runOnUiThread { onComplete(R.string.saved_to_drive) }
                 } catch (e: Exception) {
                     Log.e(TAG, "Save to Drive failed", e)
+                    FirebaseStats.recordException(e, "drive_save")
                     activity.runOnUiThread {
                         onComplete(R.string.drive_save_failed)
-                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 }
             }.start()
@@ -98,6 +103,7 @@ class DriveManager(private val activity: AppCompatActivity) {
 
     fun loadFromDrive(onComplete: (Int) -> Unit) {
         ensureSignedIn {
+            FirebaseStats.log("drive_load_start")
             Thread {
                 try {
                     val service = driveService!!
@@ -127,12 +133,13 @@ class DriveManager(private val activity: AppCompatActivity) {
 
                     PuzzleManager.saveList(entries)
 
+                    FirebaseStats.log("drive_load_done")
                     activity.runOnUiThread { onComplete(R.string.loaded_from_drive) }
                 } catch (e: Exception) {
                     Log.e(TAG, "Load from Drive failed", e)
+                    FirebaseStats.recordException(e, "drive_load")
                     activity.runOnUiThread {
                         onComplete(R.string.drive_load_failed)
-                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 }
             }.start()
@@ -155,9 +162,9 @@ class DriveManager(private val activity: AppCompatActivity) {
                     activity.runOnUiThread { onComplete(R.string.deleted_from_drive) }
                 } catch (e: Exception) {
                     Log.e(TAG, "Delete from Drive failed", e)
+                    FirebaseStats.recordException(e, "drive_delete")
                     activity.runOnUiThread {
                         onComplete(R.string.drive_delete_failed)
-                        FirebaseCrashlytics.getInstance().recordException(e)
                     }
                 }
             }.start()

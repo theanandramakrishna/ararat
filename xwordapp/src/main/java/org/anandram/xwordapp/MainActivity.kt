@@ -38,6 +38,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
@@ -63,6 +64,8 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     private lateinit var crosswordView: CrosswordView
     private var hint: TextView? = null
     private var cwfGameLink: TextView? = null
+    private var cwfGameLinkRow: View? = null
+    private var cwfShareButton: ImageButton? = null
     private lateinit var keyboard: CrosswordKeyboardView
     private lateinit var puzzleId: String
     private var puzzleComment: String? = null
@@ -93,10 +96,23 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         puzzleId = intent.getStringExtra(EXTRA_PUZZLE_ID) ?: PuzzleManager.getBundledId()
         val entry = PuzzleManager.getEntry(puzzleId)
         PuzzleManager.touch(puzzleId)
+        FirebaseStats.setCustomKey("last_puzzle_format", entry?.format ?: "puz")
+        FirebaseStats.log("puzzle_open ${entry?.format ?: "puz"} ${entry?.source.orEmpty()}")
 
         crosswordView = findViewById(R.id.crossword)
         hint = findViewById(R.id.hint)
         cwfGameLink = findViewById(R.id.cwf_game_link)
+        cwfGameLinkRow = findViewById(R.id.cwf_game_link_row)
+        cwfShareButton = findViewById(R.id.cwf_share_button)
+        cwfShareButton?.setOnClickListener {
+            val url = PuzzleManager.getEntry(puzzleId)?.cwfGameUrl
+            if (url == null) return@setOnClickListener
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, getString(R.string.cwf_share_message, url))
+            }
+            startActivity(Intent.createChooser(send, getString(R.string.share_game)))
+        }
         keyboard = findViewById(R.id.keyboard)
 
         val puzzle = entry?.let { PuzzleManager.parse(
@@ -202,7 +218,13 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
-        crosswordView.restoreState(savedInstanceState.getParcelable("state", CrosswordState::class.java)!!)
+        try {
+            crosswordView.restoreState(
+                    savedInstanceState.getParcelable("state", CrosswordState::class.java)!!)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to restore instance state for $puzzleId", e)
+            FirebaseStats.recordException(e, "restore_state")
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -270,6 +292,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             startActivity(Intent.createChooser(intent, getString(R.string.export)))
         } catch (e: Exception) {
             Log.w(TAG, "Failed to export puzzle", e)
+            FirebaseStats.recordException(e, "ipuz_export")
             Toast.makeText(this, R.string.export_failed,
                     Toast.LENGTH_SHORT).show()
         }
@@ -343,6 +366,11 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
 
     override fun onCrosswordSolved(view: CrosswordView) {
         pauseTimer()
+        val entry = PuzzleManager.getEntry(puzzleId)
+        FirebaseStats.logEvent(FirebaseStats.EVENT_PUZZLE_COMPLETED, mapOf(
+                "format" to (entry?.format ?: "puz"),
+                "source" to (entry?.source.orEmpty()),
+                "time_seconds" to (PuzzleManager.getTimeSpent(puzzleId) / 1000)))
         Toast.makeText(this, R.string.youve_solved_the_puzzle,
                 Toast.LENGTH_SHORT).show()
     }
@@ -385,9 +413,10 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
      */
     private fun updateCwfGameLink() {
         val link = cwfGameLink ?: return
+        val row = cwfGameLinkRow ?: return
         val url = PuzzleManager.getEntry(puzzleId)?.cwfGameUrl ?: run {
             link.text = null
-            link.visibility = View.GONE
+            row.visibility = View.GONE
             return
         }
 
@@ -400,13 +429,14 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     } catch (e: Exception) {
                         Log.w(TAG, "No browser available for $url", e)
+                        FirebaseStats.recordException(e, "browser_open")
                     }
                 }
             }, start, start + url.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         link.text = text
         link.movementMethod = LinkMovementMethod.getInstance()
-        link.visibility = View.VISIBLE
+        row.visibility = View.VISIBLE
     }
 
     private val cwfListener = object : CrossWithFriendsConnection.Listener {
@@ -433,6 +463,7 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
     private fun connectCwf(gid: String) {
         cwfConnection?.disconnect()
         cwfSynced = false
+        FirebaseStats.log("cwf_reconnect ${gid.take(8)}")
         val connection = CrossWithFriendsConnection(gid, cwfListener)
         cwfConnection = connection
         connection.connect()

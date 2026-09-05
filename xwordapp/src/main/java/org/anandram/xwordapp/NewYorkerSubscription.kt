@@ -38,7 +38,8 @@ object NewYorkerSubscription {
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
                 if (matchesPuzzleUrl(href)) href else null
-            }.distinct().sortedDescending().take(MAX_PER_SWEEP)
+            }.distinct().sortedDescending()
+                    .take(FirebaseStats.maxPerSweep("newyorker", MAX_PER_SWEEP))
 
             var count = 0
             for (url in puzzleUrls) {
@@ -61,9 +62,12 @@ object NewYorkerSubscription {
                     if (PuzzleManager.addXdIfNew(xd,
                                     sourceName = subscription.name, downloadUrl = url) != null) {
                         count++
+                        if (FirebaseStats.verboseScrapeLogs()) FirebaseStats.log("added $url")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to fetch New Yorker puzzle $url", e)
+                    if (FirebaseStats.verboseScrapeLogs())
+                        FirebaseStats.log("fetch_fail $url ${e.message.orEmpty().take(120)}")
                 }
             }
             count

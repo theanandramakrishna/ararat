@@ -38,6 +38,7 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 | `xwordapp/.../*Subscription.kt` | One object per source with scraping logic (`NewYorker`, `Guardian`, `Everyman`, `IrishNews`, `Metro`, `MyCrossword`, `Hindu`, `Independent`). |
 | `xwordapp/.../SubscriptionsActivity.kt` | Dispatches downloads: one name-based branch first, then per-`puzzleFormat` branches; generic `.puz` link path is the fallback. |
 | `xwordapp/.../DriveManager.kt` | Backup/restore zip. Uses `puzzleFile(id, format)` — format-aware. |
+| `xwordapp/.../FirebaseStats.kt` | **Only** place the app touches Firebase: guarded Analytics/Crashlytics/Remote Config/Perf gateway. Never throws, silent no-op without FirebaseApp (plain-JVM/Robolectric). |
 
 ### Adding a New Subscription Source
 1. Add a source class (e.g. `NewYorkerSubscription`) with scraping logic.
@@ -53,6 +54,8 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 ## Gotchas
 - Library pinned to `compileSdk 31` (Kotlin 1.6.21). App uses `compileSdk 36`.
 - `CrosswordState` constructor is `internal` — only the library module can build one.
+- Wall-clock timing is never used in tests; JUnit/Robolectric runs are the only correctness gate.
+- **Firebase**: all SDK calls go through `FirebaseStats` (never call `FirebaseCrashlytics`/`FirebaseAnalytics`/etc. directly). Remote Config fetches once per session; `disabled_<source>` is an *inverted* kill switch (absent = enabled, so a config miss never stops downloads). Sweep caps `max_per_sweep_<source>` (New York newyorker/guardian/mycrossword/everyman) and opt-in `verbose_scrape_logs` read with fallbacks. Session keys: `num_subscriptions_enabled`, `num_puzzles`, `cwf_games_joined`, `has_drive_auth`, `last_puzzle_format`. Events: `subscription_download`, `scraper_failure` (rate-limited once/day/source), `puzzle_completed`, `join_game_share_received/start/succeeded/duplicate/failed`. Never pass raw share payloads or full gids (truncate to 8 chars). `FirebaseStatsTest` guards the no-Firebase fallback path.
 - Gson uses Kotlin no-arg constructor for data classes with all-default params. Missing JSON fields get Kotlin defaults. `normalized()` handles blanks.
 - `.puz` GEXT has no bar bits. `GEXT_CIRCLED = 0x80`. Bars only from XD Design section.
 - New Yorker cryptics use per-cell numbering (not sequential). Single-barred isolated cells are not word starts.

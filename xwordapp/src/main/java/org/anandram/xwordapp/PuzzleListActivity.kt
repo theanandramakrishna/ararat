@@ -130,6 +130,7 @@ class PuzzleListActivity : AppCompatActivity() {
         })
         renderTab(TAB_ALL)
         updateActionBar()
+        updateSessionKeys()
         handleShareIntent(intent)
     }
 
@@ -144,6 +145,7 @@ class PuzzleListActivity : AppCompatActivity() {
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 ?: intent.getStringExtra(Intent.EXTRA_TITLE) ?: return
         Log.i(TAG, "Share received: $text")
+        FirebaseStats.log("share_received")
         joinGameFromShare(text)
     }
 
@@ -153,6 +155,8 @@ class PuzzleListActivity : AppCompatActivity() {
             val gid = CrossWithFriendsSubscription.gidFromShareUrl(url)
             if (gid != null) {
                 Log.i(TAG, "Share url=$url -> gid=$gid")
+                FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_SHARE_RECEIVED,
+                        mapOf("gid" to gid.take(8)))
                 importCwfGame(gid, navigateOnJoin = true)
                 return
             }
@@ -161,8 +165,17 @@ class PuzzleListActivity : AppCompatActivity() {
         Toast.makeText(this, R.string.cwf_cannot_join, Toast.LENGTH_SHORT).show()
     }
 
+    /** Keeps Crashlytics session keys current for the puzzle library. */
+    private fun updateSessionKeys() {
+        val puzzles = PuzzleManager.getPuzzles()
+        FirebaseStats.setCustomKey("num_puzzles", puzzles.size.toLong())
+        FirebaseStats.setCustomKey("cwf_games_joined",
+                puzzles.count { it.cwfGid != null }.toLong())
+    }
+
     override fun onResume() {
         super.onResume()
+        updateSessionKeys()
         refreshList()
     }
 
@@ -257,9 +270,18 @@ class PuzzleListActivity : AppCompatActivity() {
 
     private fun importCwfGame(gid: String, navigateOnJoin: Boolean = false) {
         Toast.makeText(this, R.string.cwf_import_started, Toast.LENGTH_SHORT).show()
+        FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_START,
+                mapOf("gid" to gid.take(8), "from_share" to navigateOnJoin))
 
         val url = CrossWithFriendsSubscription.gameUrl(gid)
         CrossWithFriendsSubscription.importGame(gid, url) { entry, duplicate ->
+            FirebaseStats.logEvent(
+                    when {
+                        entry == null -> FirebaseStats.EVENT_JOIN_GAME_FAILED
+                        duplicate -> FirebaseStats.EVENT_JOIN_GAME_DUPLICATE
+                        else -> FirebaseStats.EVENT_JOIN_GAME_SUCCEEDED
+                    },
+                    mapOf("gid" to gid.take(8), "from_share" to navigateOnJoin))
             runOnUiThread {
                 Toast.makeText(this,
                         when {
