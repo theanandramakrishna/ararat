@@ -92,7 +92,6 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
         applySystemBarInsets()
 
         PuzzleManager.init(this)
-        FirebaseStats.attach(this)
 
         puzzleId = intent.getStringExtra(EXTRA_PUZZLE_ID) ?: PuzzleManager.getBundledId()
         val entry = PuzzleManager.getEntry(puzzleId)
@@ -176,9 +175,8 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                 crosswordView.restoreState(saved)
             } catch (e: RuntimeException) {
                 Log.w(TAG, "Failed to restore saved state for $puzzleId", e)
-                FirebaseStats.recordException(e, mapOf(
-                        "format" to (entry?.format ?: "puz"),
-                        "phase" to "restore_state"))
+                FirebaseStats.recordException(e,
+                        "restore_state_${entry?.format ?: "puz"}")
             }
         }
 
@@ -389,12 +387,6 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
                 "time_seconds" to (PuzzleManager.getTimeSpent(puzzleId) / 1000)))
         Toast.makeText(this, R.string.youve_solved_the_puzzle,
                 Toast.LENGTH_SHORT).show()
-
-        val entry = PuzzleManager.getEntry(puzzleId)
-        FirebaseStats.logEvent(this, "puzzle_completed", mapOf(
-                "format" to (entry?.format ?: "puz"),
-                "source" to (entry?.source ?: "unknown"),
-                "time_seconds" to PuzzleManager.getTimeSpent(puzzleId) / 1000))
     }
 
     override fun onCrosswordUnsolved(view: CrosswordView) { }

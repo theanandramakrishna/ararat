@@ -60,7 +60,6 @@ class PuzzleListActivity : AppCompatActivity() {
 
         PuzzleManager.init(this)
         SubscriptionManager.init(this)
-        FirebaseStats.attach(this)
         title = getString(R.string.app_name)
 
         driveManager = DriveManager(this)
@@ -171,7 +170,7 @@ class PuzzleListActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.cwf_cannot_join, Toast.LENGTH_SHORT).show()
         }
         FirebaseStats.log("share_received has_cwf_url=$found")
-        FirebaseStats.logEvent(this, "join_game_share_received",
+        FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_SHARE_RECEIVED,
                 mapOf("has_cwf_url" to found))
     }
 
@@ -310,8 +309,6 @@ class PuzzleListActivity : AppCompatActivity() {
                 mapOf("gid" to gid.take(8), "from_share" to navigateOnJoin))
 
         val url = CrossWithFriendsSubscription.gameUrl(gid)
-        FirebaseStats.logEvent(this, "join_game_start",
-                mapOf("method" to method, "gid" to gid.take(8)))
         CrossWithFriendsSubscription.importGame(gid, url) { entry, duplicate ->
             val outcome = when {
                 entry == null -> "failed"
