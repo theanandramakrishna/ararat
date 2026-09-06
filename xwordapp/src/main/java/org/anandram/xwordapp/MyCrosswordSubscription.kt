@@ -28,15 +28,13 @@ object MyCrosswordSubscription {
 
     fun download(subscription: Subscription): Int {
         return try {
-            val maxPerSweep = FirebaseStats
-                    .sweepCap("max_per_sweep_mycrossword", MAX_PER_SWEEP.toLong())
-                    .toInt()
+            val maxPerSweep = FirebaseStats.maxPerSweep("mycrossword", MAX_PER_SWEEP)
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
                 if (matchesPuzzleUrl(href)) href else null
             }.distinct().sortedDescending()
-                    .take(FirebaseStats.maxPerSweep("mycrossword", MAX_PER_SWEEP))
+                    .take(maxPerSweep)
 
             var count = 0
             for (url in puzzleUrls) {
@@ -57,7 +55,6 @@ object MyCrosswordSubscription {
                                     format = PUZZLE_FORMAT,
                                     sourceName = subscription.name,
                                     downloadUrl = url) != null) {
-                        FirebaseStats.scrapeLog("MyCrossword added url=$url")
                         count++
                         if (FirebaseStats.verboseScrapeLogs()) FirebaseStats.log("added $url")
                     }

@@ -42,7 +42,6 @@ class SubscriptionsActivity : AppCompatActivity() {
         SubscriptionManager.init(this)
         PuzzleManager.init(this)
         CredentialStore.init(this)
-        FirebaseStats.attach(this)
 
         subscriptions = SubscriptionManager.getSubscriptions().toMutableList()
         FirebaseStats.setCustomKey("num_subscriptions_enabled",
@@ -155,18 +154,22 @@ class SubscriptionsActivity : AppCompatActivity() {
     }
 
     private fun downloadFromSubscription(subscription: Subscription): Int {
-        val added = FirebaseStats.trace("subscription_download") {
-            runDownload(subscription)
+        val trace = FirebaseStats.startTrace(FirebaseStats.TRACE_SUBSCRIPTION_DOWNLOAD)
+        return try {
+            val added = runDownload(subscription)
+            FirebaseStats.logEvent(FirebaseStats.EVENT_SUBSCRIPTION_DOWNLOAD, mapOf(
+                    "source" to subscription.name,
+                    "format" to subscription.puzzleFormat,
+                    "added" to added))
+            added
+        } finally {
+            FirebaseStats.stopTrace(trace)
         }
-        FirebaseStats.logEvent(this, "subscription_download", mapOf(
-                "source" to subscription.name,
-                "format" to subscription.puzzleFormat,
-                "added" to added))
-        return added
     }
 
     private fun runDownload(subscription: Subscription): Int {
-        if (!FirebaseStats.sourceEnabled(subscription.name)) {
+        val token = sourceToken(subscription)
+        if (token != null && FirebaseStats.isSourceDisabled(token)) {
             FirebaseStats.log("download_skipped_disabled source=${subscription.name}")
             return 0
         }
@@ -240,7 +243,8 @@ class SubscriptionsActivity : AppCompatActivity() {
                     sourceName = sourceName, downloadUrl = url) != null
         } catch (e: Exception) {
             Log.e(TAG, "Failed to download $url", e)
-            FirebaseStats.recordException(e, mapOf("url" to url))
+            FirebaseStats.log("download_fail url=$url ${e.message.orEmpty().take(120)}")
+            FirebaseStats.recordException(e, "download_fail")
             false
         }
     }

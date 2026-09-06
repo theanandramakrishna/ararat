@@ -35,15 +35,13 @@ object EverymanSubscription {
 
     fun download(subscription: Subscription): Int {
         return try {
-            val maxPerSweep = FirebaseStats
-                    .sweepCap("max_per_sweep_everyman", MAX_PER_SWEEP.toLong())
-                    .toInt()
+            val maxPerSweep = FirebaseStats.maxPerSweep("everyman", MAX_PER_SWEEP)
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
                 if (PUZZLE_PATH.containsMatchIn(href)) href else null
             }.distinct().sortedDescending()
-                    .take(FirebaseStats.maxPerSweep("everyman", MAX_PER_SWEEP))
+                    .take(maxPerSweep)
 
             var count = 0
             for (url in puzzleUrls) {
@@ -66,7 +64,6 @@ object EverymanSubscription {
                                     format = PUZZLE_FORMAT,
                                     sourceName = subscription.name,
                                     downloadUrl = url) != null) {
-                        FirebaseStats.scrapeLog("Everyman added url=$url")
                         count++
                         if (FirebaseStats.verboseScrapeLogs()) FirebaseStats.log("added $url")
                     }
