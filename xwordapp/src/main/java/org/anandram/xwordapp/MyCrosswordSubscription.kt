@@ -35,7 +35,8 @@ object MyCrosswordSubscription {
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
                 if (matchesPuzzleUrl(href)) href else null
-            }.distinct().sortedDescending().take(maxPerSweep)
+            }.distinct().sortedDescending()
+                    .take(FirebaseStats.maxPerSweep("mycrossword", MAX_PER_SWEEP))
 
             var count = 0
             for (url in puzzleUrls) {
@@ -58,10 +59,12 @@ object MyCrosswordSubscription {
                                     downloadUrl = url) != null) {
                         FirebaseStats.scrapeLog("MyCrossword added url=$url")
                         count++
+                        if (FirebaseStats.verboseScrapeLogs()) FirebaseStats.log("added $url")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to fetch MyCrossword puzzle $url", e)
-                    FirebaseStats.scrapeLog("MyCrossword fetch_fail url=$url")
+                    if (FirebaseStats.verboseScrapeLogs())
+                        FirebaseStats.log("fetch_fail $url ${e.message.orEmpty().take(120)}")
                 }
             }
             count

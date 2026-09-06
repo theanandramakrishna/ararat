@@ -38,6 +38,8 @@ class PuzzleListActivity : AppCompatActivity() {
         private const val TAB_SOLVED = 2
         private const val TAB_BY_SOURCE = 3
 
+        @Volatile private var liveGameProbeDone = false
+
         private val URL_REGEX = Regex("https?://\\S+")
     }
 
@@ -131,6 +133,7 @@ class PuzzleListActivity : AppCompatActivity() {
         })
         renderTab(TAB_ALL)
         updateActionBar()
+        updateSessionKeys()
         handleShareIntent(intent)
     }
 
@@ -145,6 +148,7 @@ class PuzzleListActivity : AppCompatActivity() {
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 ?: intent.getStringExtra(Intent.EXTRA_TITLE) ?: return
         Log.i(TAG, "Share received: $text")
+        FirebaseStats.log("share_received")
         joinGameFromShare(text)
     }
 
@@ -156,8 +160,10 @@ class PuzzleListActivity : AppCompatActivity() {
             if (gid != null) {
                 found = true
                 Log.i(TAG, "Share url=$url -> gid=$gid")
-                importCwfGame(gid, navigateOnJoin = true, method = "share")
-                break
+                FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_SHARE_RECEIVED,
+                        mapOf("gid" to gid.take(8)))
+                importCwfGame(gid, navigateOnJoin = true)
+                return
             }
             Log.w(TAG, "Share url rejected: $url")
         }
@@ -169,12 +175,42 @@ class PuzzleListActivity : AppCompatActivity() {
                 mapOf("has_cwf_url" to found))
     }
 
+    /** Keeps Crashlytics session keys current for the puzzle library. */
+    private fun updateSessionKeys() {
+        val puzzles = PuzzleManager.getPuzzles()
+        FirebaseStats.setCustomKey("num_puzzles", puzzles.size.toLong())
+        FirebaseStats.setCustomKey("cwf_games_joined",
+                puzzles.count { it.cwfGid != null }.toLong())
+    }
+
     override fun onResume() {
         super.onResume()
+        updateSessionKeys()
         refreshList()
-        PuzzleManager.getPuzzles().let {
-            FirebaseStats.setCustomKey("num_puzzles", it.size.toLong())
-            FirebaseStats.setCustomKey("cwf_games_joined", it.count { c -> c.cwfGid != null }.toLong())
+        probeLiveGames()
+    }
+
+    /** Once per session, verifies every joined CWF room still exists. Rooms the
+     *  server reports as gone are unbound from their puzzle (the entry stops
+     *  showing "Live game in progress"). Outcomes that are merely unknown
+     *  (connect error/timeout) leave the binding untouched. */
+    private fun probeLiveGames() {
+        if (liveGameProbeDone) return
+        liveGameProbeDone = true
+        val live = PuzzleManager.getPuzzles().filter { it.cwfGid != null }
+        Log.i(TAG, "probing ${live.size} live CWF game(s)")
+        for (entry in live) {
+            val gid = entry.cwfGid ?: continue
+            CrossWithFriendsSubscription.verifyGameExists(gid) { exists ->
+                if (exists == false) {
+                    Log.w(TAG, "CWF game room gone for ${entry.title} (${gid.take(8)}); clearing binding")
+                    FirebaseStats.log("cwf_probe_gone ${gid.take(8)}")
+                    runOnUiThread {
+                        PuzzleManager.setCwfGame(entry.id, null, null)
+                        refreshList()
+                    }
+                }
+            }
         }
     }
 
@@ -267,30 +303,40 @@ class PuzzleListActivity : AppCompatActivity() {
                 .show()
     }
 
-    private fun importCwfGame(gid: String, navigateOnJoin: Boolean = false,
-                              method: String = "dialog") {
+    private fun importCwfGame(gid: String, navigateOnJoin: Boolean = false) {
+        Log.i(TAG, "cwf import start gid=${gid.take(8)} navigate=$navigateOnJoin")
         Toast.makeText(this, R.string.cwf_import_started, Toast.LENGTH_SHORT).show()
+        FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_START,
+                mapOf("gid" to gid.take(8), "from_share" to navigateOnJoin))
 
         val url = CrossWithFriendsSubscription.gameUrl(gid)
         FirebaseStats.logEvent(this, "join_game_start",
                 mapOf("method" to method, "gid" to gid.take(8)))
         CrossWithFriendsSubscription.importGame(gid, url) { entry, duplicate ->
+            val outcome = when {
+                entry == null -> "failed"
+                duplicate -> "duplicate"
+                else -> "succeeded"
+            }
+            Log.i(TAG, "cwf import done gid=${gid.take(8)} outcome=$outcome")
+            FirebaseStats.log("cwf_import_done ${gid.take(8)} $outcome")
+            FirebaseStats.logEvent(
+                    when {
+                        entry == null -> FirebaseStats.EVENT_JOIN_GAME_FAILED
+                        duplicate -> FirebaseStats.EVENT_JOIN_GAME_DUPLICATE
+                        else -> FirebaseStats.EVENT_JOIN_GAME_SUCCEEDED
+                    },
+                    mapOf("gid" to gid.take(8), "from_share" to navigateOnJoin))
             runOnUiThread {
-                FirebaseStats.logEvent(this,
-                        when {
-                            entry == null -> "join_game_failed"
-                            duplicate -> "join_game_duplicate"
-                            else -> "join_game_succeeded"
-                        }, mapOf("method" to method))
-                Toast.makeText(this,
-                        when {
-                            entry == null ->
-                                if (navigateOnJoin) R.string.cwf_cannot_join
-                                else R.string.cwf_import_failed
-                            duplicate -> R.string.cwf_import_duplicate
-                            else -> R.string.cwf_imported
-                        },
-                        Toast.LENGTH_SHORT).show()
+                val toastRes = when {
+                    entry == null ->
+                        if (navigateOnJoin) R.string.cwf_cannot_join
+                        else R.string.cwf_import_failed
+                    duplicate -> R.string.cwf_import_duplicate
+                    else -> R.string.cwf_imported
+                }
+                Log.i(TAG, "cwf import toast res=$toastRes")
+                Toast.makeText(this, toastRes, Toast.LENGTH_SHORT).show()
                 if (entry != null && navigateOnJoin) {
                     startActivity(Intent(this, MainActivity::class.java)
                             .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id))

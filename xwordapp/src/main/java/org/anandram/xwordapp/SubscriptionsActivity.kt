@@ -80,6 +80,7 @@ class SubscriptionsActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.no_subscriptions_enabled, Toast.LENGTH_SHORT).show()
             return
         }
+        FirebaseStats.setCustomKey("num_subscriptions_enabled", enabled.size.toLong())
 
         downloadButton.isEnabled = false
         downloadButton.text = getString(R.string.downloading)
@@ -91,6 +92,8 @@ class SubscriptionsActivity : AppCompatActivity() {
             }
         }
 
+        val trace = FirebaseStats.startTrace(FirebaseStats.TRACE_SUBSCRIPTION_DOWNLOAD)
+        FirebaseStats.log("download_sweep_start")
         Thread {
             try {
                 var total = 0
@@ -98,13 +101,23 @@ class SubscriptionsActivity : AppCompatActivity() {
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 for (subscription in enabled) {
                     if (shouldSkip(subscription, today)) continue
+                    val sourceKey = sourceToken(subscription)
+                    if (sourceKey != null && FirebaseStats.isSourceDisabled(sourceKey)) {
+                        FirebaseStats.log("downloaded_skipped_disabled $sourceKey")
+                        continue
+                    }
                     if (!subscription.isDownloadable(CredentialStore.has(subscription.name))) continue
                     SubscriptionManager.markDownloadStarted(subscription.name, today)
                     val index = subscriptions.indexOfFirst { it.name == subscription.name }
                     if (index >= 0) {
                         subscriptions[index] = subscriptions[index].copy(lastDownloadDate = today)
                     }
-                    total += downloadFromSubscription(subscription)
+                    FirebaseStats.log("download_sweep_source ${sourceKey ?: "generic"}")
+                    val added = downloadFromSubscription(subscription)
+                    total += added
+                    FirebaseStats.logEvent(FirebaseStats.EVENT_SUBSCRIPTION_DOWNLOAD, mapOf(
+                            "source" to (sourceKey ?: "generic"),
+                            "added" to added.toLong()))
                 }
 
                 runOnUiThread { showDownloadResult(total) }
@@ -114,8 +127,22 @@ class SubscriptionsActivity : AppCompatActivity() {
                     downloadButton.isEnabled = true
                     downloadButton.text = getString(R.string.download)
                 }
+                FirebaseStats.stopTrace(trace)
             }
         }.start()
+    }
+
+    private fun sourceToken(subscription: Subscription): String? = when {
+        subscription.name.equals(MyCrosswordSubscription.NAME, ignoreCase = true) -> "mycrossword"
+        subscription.puzzleFormat.equals("XD", ignoreCase = true) -> "newyorker"
+        subscription.puzzleFormat.equals("guardian-json", ignoreCase = true) -> "guardian"
+        subscription.puzzleFormat.equals("wsj-json", ignoreCase = true) -> "everyman"
+        subscription.puzzleFormat.equals("jsoup-html", ignoreCase = true) -> "irishnews"
+        subscription.puzzleFormat.equals("pml-json", ignoreCase = true) -> "metro"
+        subscription.puzzleFormat.equals("amuse-json", ignoreCase = true) -> "hindu"
+        subscription.puzzleFormat.equals("cwf", ignoreCase = true) -> "crosswithfriends"
+        subscription.puzzleFormat.equals("jpz", ignoreCase = true) -> "independent"
+        else -> null
     }
 
     private fun showDownloadResult(count: Int) {
@@ -192,15 +219,12 @@ class SubscriptionsActivity : AppCompatActivity() {
             count
         } catch (e: Exception) {
             Log.e(TAG, "Failed to download from ${subscription.name}", e)
-            FirebaseStats.recordException(e, mapOf(
-                    "source" to subscription.name,
-                    "format" to subscription.puzzleFormat))
-            FirebaseStats.logEventRateLimited(this,
-                    "scraper_failure_${subscription.name}",
-                    "scraper_failure", mapOf(
-                            "source" to subscription.name,
-                            "format" to subscription.puzzleFormat,
-                            "error" to e.javaClass.simpleName))
+            val sourceKey = sourceToken(subscription) ?: "generic"
+            FirebaseStats.logEventRateLimited("scraper_failure_$sourceKey",
+                    FirebaseStats.EVENT_SCRAPER_FAILURE, mapOf(
+                            "source" to sourceKey,
+                            "error" to (e.message ?: e.javaClass.simpleName).take(200)))
+            FirebaseStats.log("download_fail $sourceKey")
             0
         }
     }

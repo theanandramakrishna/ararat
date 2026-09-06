@@ -67,4 +67,6 @@
     <string name="cwf_imported">Joined Cross With Friends game</string>
     <string name="cwf_import_duplicate">Already joined this game</string>
     <string name="cwf_cannot_join">Cannot join game.</string>
+    <string name="share_game">Share game link</string>
+    <string name="cwf_share_message">Join me on Cross With Friends: %1$s</string>
 </resources>

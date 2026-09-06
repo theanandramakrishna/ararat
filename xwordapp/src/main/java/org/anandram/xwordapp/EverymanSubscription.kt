@@ -42,7 +42,8 @@ object EverymanSubscription {
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
                 if (PUZZLE_PATH.containsMatchIn(href)) href else null
-            }.distinct().sortedDescending().take(maxPerSweep)
+            }.distinct().sortedDescending()
+                    .take(FirebaseStats.maxPerSweep("everyman", MAX_PER_SWEEP))
 
             var count = 0
             for (url in puzzleUrls) {
@@ -67,10 +68,12 @@ object EverymanSubscription {
                                     downloadUrl = url) != null) {
                         FirebaseStats.scrapeLog("Everyman added url=$url")
                         count++
+                        if (FirebaseStats.verboseScrapeLogs()) FirebaseStats.log("added $url")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to fetch Everyman puzzle $url", e)
-                    FirebaseStats.scrapeLog("Everyman fetch_fail url=$url")
+                    if (FirebaseStats.verboseScrapeLogs())
+                        FirebaseStats.log("fetch_fail $url ${e.message.orEmpty().take(120)}")
                 }
             }
             count

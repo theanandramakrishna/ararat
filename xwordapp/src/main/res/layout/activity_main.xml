@@ -26,16 +26,33 @@
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground"
     android:orientation="vertical">
-    <TextView
-        android:id="@+id/cwf_game_link"
+    <LinearLayout
+        android:id="@+id/cwf_game_link_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:textSize="14sp"
-        android:visibility="gone" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+        <ImageButton
+            android:id="@+id/cwf_share_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/share_game"
+            android:padding="4dp"
+            android:src="@drawable/ic_share"
+            android:tint="#999999" />
+        <TextView
+            android:id="@+id/cwf_game_link"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textSize="14sp" />
+    </LinearLayout>
     <org.akop.ararat.view.CrosswordView
         android:id="@+id/crossword"
         android:layout_width="match_parent"

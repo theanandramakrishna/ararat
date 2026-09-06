@@ -1,72 +1,80 @@
 package org.anandram.xwordapp
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Guards Firebase-on-the-JVM: every FirebaseStats call must degrade to a
- * no-op/default/plain run when the Firebase SDK is not available, so plain
- * unit tests never crash on Firebase plumbing.
+ * Guards FirebaseStats' no-Firebase degradation: in unit tests (Robolectric
+ * never initializes a default FirebaseApp) every telemetry call must be a
+ * silent no-op, never throw, and every Remote Config lookup must fall back to
+ * the caller's default — including the safe "source enabled" default for the
+ * inverted kill switch.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class FirebaseStatsTest {
 
-    private val context: Context
-        get() = ApplicationProvider.getApplicationContext()
-
-    @Test
-    fun recordExceptionSwallowsWithoutFirebase() {
-        FirebaseStats.recordException(
-                RuntimeException("boom"), mapOf("source" to "test"))
+    @Before
+    fun setUp() {
+        FirebaseStats.resetForTests()
     }
 
     @Test
-    fun logEventSwallowsWithoutFirebase() {
-        FirebaseStats.logEvent(context, "test_event",
-                mapOf("format" to "puz", "count" to 3))
+    fun logEventIsNoOpWithoutFirebase() {
+        FirebaseStats.logEvent("test_event", mapOf("key" to "value", "n" to 3L))
     }
 
     @Test
-    fun sweepCapFallsBackToDefaultWithoutFirebase() {
-        assertEquals(42L, FirebaseStats.sweepCap("max_per_sweep_test", 42L))
+    fun rateLimitedEventIsNoOpWithoutFirebase() {
+        FirebaseStats.logEventRateLimited("rate_key", "test_event", mapOf("key" to "value"))
+        FirebaseStats.logEventRateLimited("rate_key", "test_event", mapOf("key" to "value"))
     }
 
     @Test
-    fun sourceEnabledDefaultsToTrueWithoutFirebase() {
-        assertEquals(true, FirebaseStats.sourceEnabled("The New Yorker"))
-    }
-
-    @Test
-    fun breadcrumbsAndKeysSwallowWithoutFirebase() {
+    fun breadcrumbIsNoOpWithoutFirebase() {
         FirebaseStats.log("test breadcrumb")
-        FirebaseStats.setCustomKey("num_puzzles", 3L)
-        FirebaseStats.setCustomKey("host", "test")
-        FirebaseStats.scrapeLog("test fetch")
     }
 
     @Test
-    fun rateLimitedEventSwallowsWithoutFirebase() {
-        FirebaseStats.logEventRateLimited(context, "rate_key_test", "scraper_failure",
-                mapOf("source" to "The Guardian"))
-        FirebaseStats.logEventRateLimited(context, "rate_key_test", "scraper_failure",
-                mapOf("source" to "The Guardian"))
+    fun recordExceptionIsNoOpWithoutFirebase() {
+        FirebaseStats.recordException(RuntimeException("boom"), "test_key", gid = "abc12345")
+        FirebaseStats.recordException(RuntimeException("boom"))
     }
 
     @Test
-    fun traceStillRunsBlockWithoutFirebase() {
-        var ran = false
-        val result = FirebaseStats.trace("test_trace") {
-            ran = true
-            "ok"
-        }
-        assertEquals("ok", result)
-        assertEquals(true, ran)
+    fun customKeysAreNoOpWithoutFirebase() {
+        FirebaseStats.setCustomKey("string_key", "value")
+        FirebaseStats.setCustomKey("long_key", 7L)
+        FirebaseStats.setCustomKey("bool_key", true)
+    }
+
+    @Test
+    fun maxPerSweepFallsBackToDefault() {
+        assertEquals(30, FirebaseStats.maxPerSweep("newyorker", 30))
+        assertEquals(3, FirebaseStats.maxPerSweep("guardian", 3))
+    }
+
+    @Test
+    fun sourceEnabledByDefault() {
+        assertFalse(FirebaseStats.isSourceDisabled("newyorker"))
+        assertFalse(FirebaseStats.isSourceDisabled("irishnews"))
+    }
+
+    @Test
+    fun verboseScrapeLogsDefaultsOff() {
+        assertFalse(FirebaseStats.verboseScrapeLogs())
+    }
+
+    @Test
+    fun tracesDegradeToNull() {
+        val trace = FirebaseStats.startTrace(FirebaseStats.TRACE_SUBSCRIPTION_DOWNLOAD)
+        assertNull(trace)
+        FirebaseStats.stopTrace(trace)
     }
 }
