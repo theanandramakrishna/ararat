@@ -13,6 +13,7 @@ import org.json.JSONException
 import java.io.ByteArrayInputStream
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Cross With Friends (CWF) integration. "Downloading" a CWF subscription
@@ -44,6 +45,7 @@ object CrossWithFriendsSubscription {
     private const val MIN_PID = 900000
     private const val MAX_PID = 999999
     private const val MAX_UPLOAD_ATTEMPTS = 5
+    private const val PROBE_TIMEOUT_MS = 10_000L
 
     fun default(): Subscription = Subscription(
             name = NAME,
@@ -116,6 +118,71 @@ object CrossWithFriendsSubscription {
     fun importGame(gid: String, url: String, onImported: (PuzzleEntry?, Boolean) -> Unit) {
         FirebaseStats.log("cwf_import_start ${gid.take(8)}")
         CwfGameImportConnection(gid, url, onImported).connect()
+    }
+
+    /**
+     * Checks whether a game room still exists on the server without importing
+     * anything. [onResult] is invoked at most once, on a socket thread, with:
+     * - `true`  room joined successfully (present),
+     * - `false` the server definitively reported the room missing,
+     * - `null`  outcome unknown (connect error/timeout/unexpected error) —
+     *   callers must never treat `null` as "room gone".
+     */
+    fun verifyGameExists(gid: String, onResult: (Boolean?) -> Unit) {
+        val options = IO.Options.builder()
+                .setTransports(arrayOf("websocket"))
+                .setAuth(mapOf("dfacId" to "anon-${UUID.randomUUID().toString().replace("-", "").take(8)}"))
+                .build()
+
+        val s = IO.socket(SOCKET_URL, options)
+        val done = AtomicBoolean(false)
+
+        fun finish(result: Boolean?) {
+            if (!done.compareAndSet(false, true)) return
+            Log.i(TAG, "CWF probe gid=${gid.take(8)} -> " +
+                    if (result == true) "exists" else if (result == false) "gone" else "unknown")
+            s.off()
+            s.disconnect()
+            onResult(result)
+        }
+
+        s.on(Socket.EVENT_CONNECT) {
+            Log.i(TAG, "CWF probe socket connected (gid=${gid.take(8)})")
+            s.emit("join_game", gid, Ack { args ->
+                val error = (args.firstOrNull() as? JSONObject)?.optString("error")
+                        ?: args.firstOrNull()?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+                if (error.isNullOrEmpty()) {
+                    Log.i(TAG, "CWF probe join_game ok (gid=${gid.take(8)})")
+                    finish(true)
+                } else if (error.contains("not found", true) ||
+                        error.contains("does not exist", true)) {
+                    Log.w(TAG, "CWF probe room gone: $error (gid=${gid.take(8)})")
+                    finish(false)
+                } else {
+                    Log.w(TAG, "CWF probe unexpected join error: $error (gid=${gid.take(8)})")
+                    finish(null)
+                }
+            })
+        }
+        s.on(Socket.EVENT_CONNECT_ERROR) { args ->
+            Log.w(TAG, "CWF probe connect error: ${args.joinToString { it.toString() }} (gid=${gid.take(8)})")
+            finish(null)
+        }
+        s.on(Socket.EVENT_DISCONNECT) { args ->
+            Log.w(TAG, "CWF probe socket disconnected: ${args.joinToString { it.toString() }} (gid=${gid.take(8)})")
+            finish(null)
+        }
+
+        Thread {
+            try {
+                Thread.sleep(PROBE_TIMEOUT_MS)
+            } catch (ignored: InterruptedException) {
+            }
+            Log.w(TAG, "CWF probe timeout (gid=${gid.take(8)})")
+            finish(null)
+        }.apply { isDaemon = true }.start()
+
+        s.connect()
     }
 
     /**

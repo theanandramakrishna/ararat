@@ -38,6 +38,8 @@ class PuzzleListActivity : AppCompatActivity() {
         private const val TAB_SOLVED = 2
         private const val TAB_BY_SOURCE = 3
 
+        @Volatile private var liveGameProbeDone = false
+
         private val URL_REGEX = Regex("https?://\\S+")
     }
 
@@ -177,6 +179,31 @@ class PuzzleListActivity : AppCompatActivity() {
         super.onResume()
         updateSessionKeys()
         refreshList()
+        probeLiveGames()
+    }
+
+    /** Once per session, verifies every joined CWF room still exists. Rooms the
+     *  server reports as gone are unbound from their puzzle (the entry stops
+     *  showing "Live game in progress"). Outcomes that are merely unknown
+     *  (connect error/timeout) leave the binding untouched. */
+    private fun probeLiveGames() {
+        if (liveGameProbeDone) return
+        liveGameProbeDone = true
+        val live = PuzzleManager.getPuzzles().filter { it.cwfGid != null }
+        Log.i(TAG, "probing ${live.size} live CWF game(s)")
+        for (entry in live) {
+            val gid = entry.cwfGid ?: continue
+            CrossWithFriendsSubscription.verifyGameExists(gid) { exists ->
+                if (exists == false) {
+                    Log.w(TAG, "CWF game room gone for ${entry.title} (${gid.take(8)}); clearing binding")
+                    FirebaseStats.log("cwf_probe_gone ${gid.take(8)}")
+                    runOnUiThread {
+                        PuzzleManager.setCwfGame(entry.id, null, null)
+                        refreshList()
+                    }
+                }
+            }
+        }
     }
 
     private fun refreshList() {
