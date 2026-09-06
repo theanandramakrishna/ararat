@@ -10,8 +10,8 @@ android {
         applicationId "org.anandram.xwordapp"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 6
-        versionName "0.9"
+        versionCode 7
+        versionName "0.91"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,6 +33,14 @@ android {
             exclude group: 'org.apache.httpcomponents', module: 'httpclient'
         }
     }
+    signingConfigs {
+        release {
+            storeFile file(project.hasProperty('XWORDAPP_STORE_FILE') ? project.XWORDAPP_STORE_FILE : System.getenv('XWORDAPP_STORE_FILE') ?: '')
+            storePassword project.hasProperty('XWORDAPP_STORE_PASSWORD') ? project.XWORDAPP_STORE_PASSWORD : System.getenv('XWORDAPP_STORE_PASSWORD') ?: ''
+            keyAlias System.getenv('XWORDAPP_KEY_ALIAS') ?: 'key0'
+            keyPassword project.hasProperty('XWORDAPP_KEY_PASSWORD') ? project.XWORDAPP_KEY_PASSWORD : System.getenv('XWORDAPP_KEY_PASSWORD') ?: ''
+        }
+    }
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
@@ -40,6 +48,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     packagingOptions {
@@ -58,7 +67,10 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'org.jsoup:jsoup:1.15.3'
-    implementation 'io.socket:socket.io-client:2.0.1'
+    implementation('io.socket:socket.io-client:2.0.1') {
+        // Android already provides org.json on the platform.
+        exclude group: 'org.json', module: 'json'
+    }
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.15.1'
