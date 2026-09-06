@@ -27,6 +27,9 @@ object GuardianSubscription {
 
     fun download(subscription: Subscription): Int {
         return try {
+            val maxPerSweep = FirebaseStats
+                    .sweepCap("max_per_sweep_guardian", MAX_PER_SWEEP.toLong())
+                    .toInt()
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
@@ -51,6 +54,7 @@ object GuardianSubscription {
                                     format = PUZZLE_FORMAT,
                                     sourceName = subscription.name,
                                     downloadUrl = url) != null) {
+                        FirebaseStats.scrapeLog("Guardian added url=$url")
                         count++
                         if (FirebaseStats.verboseScrapeLogs()) FirebaseStats.log("added $url")
                     }

@@ -47,7 +47,9 @@ class DriveManager(private val activity: AppCompatActivity) {
                 .build()
         googleSignInClient = GoogleSignIn.getClient(activity, gso)
 
-        GoogleSignIn.getLastSignedInAccount(activity)?.let { setupDriveService(it) }
+        val account = GoogleSignIn.getLastSignedInAccount(activity)
+        FirebaseStats.setCustomKey("has_drive_auth", account != null)
+        account?.let { setupDriveService(it) }
     }
 
     fun signIn() {

@@ -34,6 +34,9 @@ object NewYorkerSubscription {
 
     fun download(subscription: Subscription): Int {
         return try {
+            val maxPerSweep = FirebaseStats
+                    .sweepCap("max_per_sweep_newyorker", MAX_PER_SWEEP.toLong())
+                    .toInt()
             val document = Jsoup.connect(subscription.url).get()
             val puzzleUrls = document.select("a[href]").mapNotNull { link ->
                 val href = link.absUrl("href")
@@ -61,6 +64,7 @@ object NewYorkerSubscription {
 
                     if (PuzzleManager.addXdIfNew(xd,
                                     sourceName = subscription.name, downloadUrl = url) != null) {
+                        FirebaseStats.scrapeLog("NY added url=$url id=$id")
                         count++
                         if (FirebaseStats.verboseScrapeLogs()) FirebaseStats.log("added $url")
                     }

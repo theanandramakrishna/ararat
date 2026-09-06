@@ -42,8 +42,11 @@ class SubscriptionsActivity : AppCompatActivity() {
         SubscriptionManager.init(this)
         PuzzleManager.init(this)
         CredentialStore.init(this)
+        FirebaseStats.attach(this)
 
         subscriptions = SubscriptionManager.getSubscriptions().toMutableList()
+        FirebaseStats.setCustomKey("num_subscriptions_enabled",
+                subscriptions.count { it.enabled }.toLong())
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -94,6 +97,7 @@ class SubscriptionsActivity : AppCompatActivity() {
         Thread {
             try {
                 var total = 0
+                FirebaseStats.log("download_sweep_start")
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 for (subscription in enabled) {
                     if (shouldSkip(subscription, today)) continue
@@ -151,7 +155,24 @@ class SubscriptionsActivity : AppCompatActivity() {
     }
 
     private fun downloadFromSubscription(subscription: Subscription): Int {
+        val added = FirebaseStats.trace("subscription_download") {
+            runDownload(subscription)
+        }
+        FirebaseStats.logEvent(this, "subscription_download", mapOf(
+                "source" to subscription.name,
+                "format" to subscription.puzzleFormat,
+                "added" to added))
+        return added
+    }
+
+    private fun runDownload(subscription: Subscription): Int {
+        if (!FirebaseStats.sourceEnabled(subscription.name)) {
+            FirebaseStats.log("download_skipped_disabled source=${subscription.name}")
+            return 0
+        }
         return try {
+            FirebaseStats.log("download_start source=${subscription.name} " +
+                    "format=${subscription.puzzleFormat}")
             if (subscription.name.equals(MyCrosswordSubscription.NAME, ignoreCase = true)) {
                 return MyCrosswordSubscription.download(subscription)
             }
@@ -219,6 +240,7 @@ class SubscriptionsActivity : AppCompatActivity() {
                     sourceName = sourceName, downloadUrl = url) != null
         } catch (e: Exception) {
             Log.e(TAG, "Failed to download $url", e)
+            FirebaseStats.recordException(e, mapOf("url" to url))
             false
         }
     }
