@@ -34,7 +34,9 @@ object CrossWithFriendsSubscription {
     private val UUID_MATCH = Regex("[0-9a-fA-F]{32}")
     private val GID_SLUG_MATCH = Regex("[A-Za-z0-9][A-Za-z0-9-]*")
     private val SHARE_URL_REGEX = Regex(
-            "^https?://([^/?#]+)/beta/game/([^/?#]+)\$")
+            "^https?://([^/?#]+)/beta/game/([^/?#]+)$")
+    private val APP_URL_REGEX = Regex(
+            "^lexikattam://crosswithfriends/game/([^/?#]+)$")
 
     const val SOCKET_URL = "https://downforacross-com.onrender.com"
     const val GAME_URL_PREFIX = "https://www.crosswithfriends.com/beta/game/"
@@ -54,6 +56,10 @@ object CrossWithFriendsSubscription {
             puzzleFormat = PUZZLE_FORMAT)
 
     fun gameUrl(gid: String): String = "https://www.crosswithfriends.com/beta/game/$gid"
+
+    /** Our own app link for a game room; tapping it opens the app via the
+     *  `lexikattam://crosswithfriends/game/<gid>` deep link. */
+    fun appGameUrl(gid: String): String = "lexikattam://crosswithfriends/game/$gid"
 
     /**
      * Extracts the room id from a game URL (or a bare gid). Trailing slashes
@@ -106,6 +112,32 @@ object CrossWithFriendsSubscription {
         }
         val canonical = gidFromGameUrl(gid.lowercase())
         Log.i(TAG, "CWF share: accepted $url -> $canonical")
+        return canonical
+    }
+
+    /**
+     * Strict validation for our own app links: the URL must use the
+     * `lexikattam` scheme with the `crosswithfriends` host and carry a game
+     * room (`/game/<gid>`). Returns the canonical room id, or null when the
+     * URL isn't one of our app links.
+     */
+    fun gidFromAppUrl(url: String): String? {
+        val stripped = url.trim()
+                .trimEnd('/')
+                .substringBefore('?')
+                .substringBefore('#')
+        val match = APP_URL_REGEX.matchEntire(stripped)
+        if (match == null) {
+            Log.w(TAG, "CWF app link: no /game/<gid> match in \"$stripped\"")
+            return null
+        }
+        val gid = match.groupValues[1]
+        if (GID_SLUG_MATCH.matchEntire(gid) == null) {
+            Log.w(TAG, "CWF app link: rejected gid \"$gid\" (bad slug)")
+            return null
+        }
+        val canonical = gidFromGameUrl(gid.lowercase())
+        Log.i(TAG, "CWF app link: accepted $url -> $canonical")
         return canonical
     }
 

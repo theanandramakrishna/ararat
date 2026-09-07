@@ -114,9 +114,16 @@ class MainActivity : AppCompatActivity(), CrosswordView.OnLongPressListener, Cro
             val gid = CrossWithFriendsSubscription.gidFromGameUrl(url)
             Log.i(TAG, "CWF share icon: sharing gid=${gid?.take(8)}")
             FirebaseStats.log("cwf_share_icon ${gid?.take(8)}")
+            val appLink = gid?.let { CrossWithFriendsSubscription.appGameUrl(it) }
+            val message = if (appLink != null) {
+                getString(R.string.cwf_share_app_link, appLink) + "\n\n" +
+                        getString(R.string.cwf_share_message, url)
+            } else {
+                getString(R.string.cwf_share_message, url)
+            }
             val send = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, getString(R.string.cwf_share_message, url))
+                putExtra(Intent.EXTRA_TEXT, message)
             }
             startActivity(Intent.createChooser(send, getString(R.string.share_game)))
         }
