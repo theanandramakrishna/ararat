@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Auto Backup must never carry the encrypted credential store: the
+    Tink keysets live inside credentials_secure.xml but the Keystore master
+    key they are wrapped with is never backed up, so a restored file can
+    never be decrypted (AEADBadTagException on the next reinstall). -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="credentials_secure.xml" />
+</full-backup-content>
