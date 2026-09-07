@@ -10,8 +10,8 @@ android {
         applicationId "org.anandram.xwordapp"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 7
-        versionName "0.91"
+        versionCode 8
+        versionName "0.92"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -31,6 +31,14 @@ android {
     configurations {
         all {
             exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+            // Activity 1.8.0 needs kotlin-stdlib 1.8.x (whose jdk7/jdk8
+            // classes are merged into the base artifact); force everything
+            // there so it doesn't collide with the 1.6.21 pins.
+            resolutionStrategy {
+                force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+            }
         }
     }
     signingConfigs {
@@ -64,8 +72,9 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:31.5.0"))
 
-    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.activity:activity:1.8.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'org.jsoup:jsoup:1.15.3'
     implementation('io.socket:socket.io-client:2.0.1') {
         // Android already provides org.json on the platform.
@@ -76,8 +85,9 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:4.15.1'
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.11.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:core:1.6.1'
     implementation project(':library')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 

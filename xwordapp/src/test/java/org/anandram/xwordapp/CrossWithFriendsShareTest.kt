@@ -13,6 +13,8 @@ private const val GID = "46db7850-5806-46ec-8baf-85b7ee60232d"
  * Guards the strict share-to-join URL validation:
  * only http(s) links to a Cross With Friends host carrying a
  * `/beta/game/<gid>` room yield a room id; everything else is rejected.
+ * Also guards our own app links (`lexikattam://crosswithfriends/game/<gid>`)
+ * and their round-trip through [CrossWithFriendsSubscription.appGameUrl].
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -111,5 +113,53 @@ class CrossWithFriendsShareTest {
     fun gidFromGameUrlStillNormalizesDashless() {
         assertEquals(GID, CrossWithFriendsSubscription.gidFromGameUrl(
                 "46db7850580646ec8baf85b7ee60232d"))
+    }
+
+    @Test
+    fun appLinkValid() {
+        assertEquals(GID, CrossWithFriendsSubscription.gidFromAppUrl(
+                "lexikattam://crosswithfriends/game/$GID"))
+    }
+
+    @Test
+    fun appLinkDashlessNormalized() {
+        assertEquals(GID, CrossWithFriendsSubscription.gidFromAppUrl(
+                "lexikattam://crosswithfriends/game/46db7850580646ec8baf85b7ee60232d"))
+    }
+
+    @Test
+    fun appLinkRoundTrip() {
+        assertEquals(GID, CrossWithFriendsSubscription.gidFromAppUrl(
+                CrossWithFriendsSubscription.appGameUrl(GID)))
+    }
+
+    @Test
+    fun appLinkRejectWrongHost() {
+        assertNull(CrossWithFriendsSubscription.gidFromAppUrl(
+                "lexikattam://other/game/$GID"))
+    }
+
+    @Test
+    fun appLinkRejectWrongScheme() {
+        assertNull(CrossWithFriendsSubscription.gidFromAppUrl(
+                "https://crosswithfriends/game/$GID"))
+    }
+
+    @Test
+    fun appLinkRejectWrongPath() {
+        assertNull(CrossWithFriendsSubscription.gidFromAppUrl(
+                "lexikattam://crosswithfriends/beta/game/$GID"))
+    }
+
+    @Test
+    fun appLinkRejectHttpsGameUrl() {
+        assertNull(CrossWithFriendsSubscription.gidFromAppUrl(
+                "https://www.crosswithfriends.com/beta/game/$GID"))
+    }
+
+    @Test
+    fun shareUrlRejectsAppLink() {
+        assertNull(CrossWithFriendsSubscription.gidFromShareUrl(
+                "lexikattam://crosswithfriends/game/$GID"))
     }
 }

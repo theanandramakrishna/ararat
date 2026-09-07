@@ -15,6 +15,7 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -41,6 +42,7 @@ class PuzzleListActivity : AppCompatActivity() {
         @Volatile private var liveGameProbeDone = false
 
         private val URL_REGEX = Regex("https?://\\S+")
+        private val APP_URL_REGEX = Regex("lexikattam://\\S+")
     }
 
     private lateinit var listView: ListView
@@ -55,6 +57,7 @@ class PuzzleListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_puzzle_list)
         applySystemBarInsets()
 
@@ -143,6 +146,21 @@ class PuzzleListActivity : AppCompatActivity() {
     }
 
     private fun handleShareIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_VIEW) {
+            val uri = intent.data?.toString() ?: return
+            Log.i(TAG, "App link received: $uri")
+            FirebaseStats.log("app_link_received")
+            val gid = CrossWithFriendsSubscription.gidFromAppUrl(uri)
+            if (gid != null) {
+                FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_SHARE_RECEIVED,
+                        mapOf("gid" to gid.take(8), "via" to "app_link"))
+                importCwfGame(gid, navigateOnJoin = true)
+            } else {
+                Log.w(TAG, "App link rejected: $uri")
+                Toast.makeText(this, R.string.cwf_cannot_join, Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
         if (intent?.action != Intent.ACTION_SEND) return
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 ?: intent.getStringExtra(Intent.EXTRA_TITLE) ?: return
@@ -165,6 +183,19 @@ class PuzzleListActivity : AppCompatActivity() {
                 return
             }
             Log.w(TAG, "Share url rejected: $url")
+        }
+        for (urlMatch in APP_URL_REGEX.findAll(text)) {
+            val url = urlMatch.value.trimEnd(')', '.', ',', '>')
+            val gid = CrossWithFriendsSubscription.gidFromAppUrl(url)
+            if (gid != null) {
+                found = true
+                Log.i(TAG, "Share app link=$url -> gid=$gid")
+                FirebaseStats.logEvent(FirebaseStats.EVENT_JOIN_GAME_SHARE_RECEIVED,
+                        mapOf("gid" to gid.take(8)))
+                importCwfGame(gid, navigateOnJoin = true)
+                return
+            }
+            Log.w(TAG, "Share app link rejected: $url")
         }
         if (!found) {
             Toast.makeText(this, R.string.cwf_cannot_join, Toast.LENGTH_SHORT).show()
