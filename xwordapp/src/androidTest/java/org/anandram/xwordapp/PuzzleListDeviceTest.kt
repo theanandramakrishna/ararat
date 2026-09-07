@@ -2,6 +2,7 @@ package org.anandram.xwordapp
 
 import android.view.View
 import android.widget.ListView
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertNotNull
@@ -24,6 +25,9 @@ class PuzzleListDeviceTest {
     @Test
     fun listLaunchesAndRenders() {
         ActivityScenario.launch(PuzzleListActivity::class.java).use { scenario ->
+            // launch() returns before resume; the window isn't attached (and
+            // isShown() is false) until RESUMED, so wait for it explicitly.
+            scenario.moveToState(Lifecycle.State.RESUMED)
             scenario.onActivity { activity ->
                 val list = activity.findViewById<ListView>(R.id.puzzle_list)
                 assertNotNull("puzzle_list missing", list)

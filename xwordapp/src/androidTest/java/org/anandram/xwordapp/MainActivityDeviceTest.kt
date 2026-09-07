@@ -2,6 +2,7 @@ package org.anandram.xwordapp
 
 import android.content.Intent
 import android.view.View
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,6 +30,9 @@ class MainActivityDeviceTest {
                 MainActivity::class.java)
                 .putExtra(MainActivity.EXTRA_PUZZLE_ID, PuzzleManager.getBundledId())
         ActivityScenario.launch<MainActivity>(intent).use { scenario ->
+            // launch() returns before resume; the window isn't attached (and
+            // isShown() is false) until RESUMED, so wait for it explicitly.
+            scenario.moveToState(Lifecycle.State.RESUMED)
             scenario.onActivity { activity ->
                 val grid = activity.findViewById<View>(R.id.crossword)
                 assertNotNull("crossword view missing", grid)

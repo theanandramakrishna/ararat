@@ -31,6 +31,14 @@ android {
     configurations {
         all {
             exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+            // Activity 1.8.0 needs kotlin-stdlib 1.8.x (whose jdk7/jdk8
+            // classes are merged into the base artifact); force everything
+            // there so it doesn't collide with the 1.6.21 pins.
+            resolutionStrategy {
+                force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+            }
         }
     }
     signingConfigs {
@@ -64,7 +72,8 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:31.5.0"))
 
-    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    implementation 'androidx.fragment:fragment:1.3.6'
+    implementation 'androidx.activity:activity:1.8.0'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'org.jsoup:jsoup:1.15.3'
     implementation('io.socket:socket.io-client:2.0.1') {
