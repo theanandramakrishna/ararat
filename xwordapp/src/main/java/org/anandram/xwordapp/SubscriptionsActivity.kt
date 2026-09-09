@@ -135,6 +135,7 @@ class SubscriptionsActivity : AppCompatActivity() {
 
     private fun sourceToken(subscription: Subscription): String? = when {
         subscription.name.equals(MyCrosswordSubscription.NAME, ignoreCase = true) -> "mycrossword"
+        subscription.name.equals(NytSubscription.NAME, ignoreCase = true) -> "nyt"
         subscription.puzzleFormat.equals("XD", ignoreCase = true) -> "newyorker"
         subscription.puzzleFormat.equals("guardian-json", ignoreCase = true) -> "guardian"
         subscription.puzzleFormat.equals("wsj-json", ignoreCase = true) -> "everyman"
@@ -180,6 +181,9 @@ class SubscriptionsActivity : AppCompatActivity() {
                     "format=${subscription.puzzleFormat}")
             if (subscription.name.equals(MyCrosswordSubscription.NAME, ignoreCase = true)) {
                 return MyCrosswordSubscription.download(subscription)
+            }
+            if (subscription.name.equals(NytSubscription.NAME, ignoreCase = true)) {
+                return NytSubscription.download(subscription)
             }
             if (subscription.puzzleFormat.equals("XD", ignoreCase = true)) {
                 return NewYorkerSubscription.download(subscription)

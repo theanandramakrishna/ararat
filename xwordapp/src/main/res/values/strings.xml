@@ -70,4 +70,7 @@
     <string name="share_game">Share game link</string>
     <string name="cwf_share_message">Join me on Cross With Friends: %1$s</string>
     <string name="cwf_share_app_link">Join me on Lexi-Kattam: %1$s</string>
+    <string name="delete">Delete</string>
+    <string name="selected_count">%1$d selected</string>
+    <string name="delete_puzzles_confirm">Delete %1$d puzzles?</string>
 </resources>

@@ -10,8 +10,8 @@ android {
         applicationId "org.anandram.xwordapp"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 8
-        versionName "0.92"
+        versionCode 9
+        versionName "0.95"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

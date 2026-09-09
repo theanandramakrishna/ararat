@@ -211,6 +211,7 @@ class DownloadEndToEndTest {
                 "<clues><title>Across</title>" +
                 "<clue number=\"1\" word=\"w1\">Twice (2)</clue></clues>" +
                 "</crossword></rectangular-puzzle></crossword-compiler>")
+        }
 
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -242,4 +243,86 @@ class DownloadEndToEndTest {
         assertEquals(2, word.length)
         assertEquals("AB", (0 until word.length).joinToString("") { word.cellAt(it).chars })
     }
-}}
+
+    // --- NYT syndicated -------------------------------------------------------
+
+    @Test
+    fun nytDateStampIsSevenDaysBack() {
+        val cal = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+        cal.clear()
+        cal.set(2026, java.util.Calendar.SEPTEMBER, 6, 12, 0, 0)
+        assertEquals("260830", NytSubscription.dateStamp(cal.timeInMillis))
+    }
+
+    @Test
+    fun nytDownloadsSyndicatedPuzOnce() {
+        // Minimal ARCHIVE-format response: 2x2 all letters.
+        val archive = ("ARCHIVE\n" +
+                "\n" +
+                "260901\n" +
+                "\n" +
+                "NYT Syndicated Test\n" +
+                "\n" +
+                "Test Setter\n" +
+                "\n" +
+                "2\n" +
+                "\n" +
+                "2\n" +
+                "\n" +
+                "2\n" +
+                "\n" +
+                "2\n" +
+                "\n" +
+                "AB\n" +
+                "CD\n" +
+                "\n" +
+                "Across one\n" +
+                "Across two\n" +
+                "\n" +
+                "Down one\n" +
+                "Down two\n" +
+                "\n")
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                return if ((request.path ?: "").startsWith(
+                                "/nytsyn-crossword-mh/nytsyncrossword?date=")) {
+                    MockResponse().setBody(archive)
+                } else MockResponse().setResponseCode(404)
+            }
+        }
+        NytSubscription.apiBaseUrl = server.url("/").toString()
+
+        val sub = NytSubscription.default()
+        assertEquals(1, NytSubscription.download(sub))
+
+        val requestPath = server.takeRequest(5, java.util.concurrent.TimeUnit.SECONDS)?.path
+        assertTrue(requestPath?.startsWith(
+                "/nytsyn-crossword-mh/nytsyncrossword?date=") == true)
+        val stamp = requestPath!!.substringAfter("date=")
+        assertTrue(Regex("\\d{6}").matches(stamp))
+
+        val entries = PuzzleManager.getPuzzles()
+                .filter { it.source == NytSubscription.NAME }
+        assertEquals(1, entries.size)
+        val entry = entries[0]
+        assertEquals("nyt", entry.format)
+        assertEquals("${NytSubscription.apiBaseUrl}" +
+                "nytsyn-crossword-mh/nytsyncrossword?date=$stamp", entry.downloadUrl)
+
+        val crossword = PuzzleManager.parse(
+                PuzzleManager.puzzleFile(entry.id, entry.format), entry.format)
+        assertNotNull(crossword)
+        assertEquals("NYT Syndicated Test", crossword!!.title)
+        assertEquals("Test Setter", crossword.author)
+        assertEquals(2, crossword.width)
+        assertEquals(2, crossword.height)
+        assertEquals(1788220800000L, crossword.date)
+        assertEquals(2, crossword.wordsAcross.size)
+        assertEquals(2, crossword.wordsDown.size)
+
+        // Rerun dedupes on the dated URL without re-fetching.
+        val requestsBefore = server.requestCount
+        assertEquals(0, NytSubscription.download(sub))
+        assertEquals(requestsBefore, server.requestCount)
+    }
+}
