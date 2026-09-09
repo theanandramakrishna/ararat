@@ -23,7 +23,7 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 ## Architecture
 
 ### Puzzle Formats
-- `.puz`, `.xd`, `guardian-json`, `wsj-json` (Everyman), `jsoup-html` (Irish News), `pml-json` (Metro), `amuse-json` (Hindu Sunday), `jpz` (Independent).
+- `.puz`, `.xd`, `guardian-json`, `wsj-json` (Everyman), `jsoup-html` (Irish News), `pml-json` (Metro), `amuse-json` (Hindu Sunday), `jpz` (Independent), `nyt` (NYT syndicated ARCHIVE text).
 - All stored as verbatim files (`{id}.{format}`); no serialization step.
 - `PuzzleManager.parse()` is the source of truth for the format registry.
 
@@ -36,7 +36,7 @@ No custom lint or typecheck commands. Library tests cover formatters and word bu
 | `library/.../io/PuzFormatter.kt` | Puz parser. Uses WordBuilder for word detection. |
 | `xwordapp/.../PuzzleEntry.kt` | Has `format: String` field. Drives load path. |
 | `xwordapp/.../PuzzleManager.kt` | Format-aware: `addPuzzle(source, format, ...)`, `addXdIfNew(xdText, ...)`, `puzzleFile(id, format)`, `parse(file, format)`. |
-| `xwordapp/.../*Subscription.kt` | One object per source with scraping logic (`NewYorker`, `Guardian`, `Everyman`, `IrishNews`, `Metro`, `MyCrossword`, `Hindu`, `Independent`). |
+| `xwordapp/.../*Subscription.kt` | One object per source with scraping logic (`NewYorker`, `Guardian`, `Everyman`, `IrishNews`, `Metro`, `MyCrossword`, `Hindu`, `Independent`, `Nyt`). `Nyt`/`MyCrossword` dispatch by subscription *name* since their formats collide. |
 | `xwordapp/.../SubscriptionsActivity.kt` | Dispatches downloads: one name-based branch first, then per-`puzzleFormat` branches; generic `.puz` link path is the fallback. |
 | `xwordapp/.../DriveManager.kt` | Backup/restore zip. Uses `puzzleFile(id, format)` — format-aware. |
 | `xwordapp/.../FirebaseStats.kt` | **Only** place the app touches Firebase: guarded Analytics/Crashlytics/Remote Config/Perf gateway. Never throws, silent no-op without FirebaseApp (plain-JVM/Robolectric). |

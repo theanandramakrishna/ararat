@@ -14,6 +14,7 @@ import org.akop.ararat.io.GuardianJsonFormatter
 import org.akop.ararat.io.IpuzFormatter
 import org.akop.ararat.io.JpzFormatter
 import org.akop.ararat.io.JsoupHtmlFormatter
+import org.akop.ararat.io.NytArchiveFormatter
 import org.akop.ararat.io.PmlJsonFormatter
 import org.akop.ararat.io.PuzFormatter
 import org.akop.ararat.io.WSJFormatter
@@ -276,6 +277,7 @@ fun parse(source: InputStream, format: String = "puz"): Crossword? = try {
         "pml-json" -> source.use { s -> buildCrossword { PmlJsonFormatter().read(this, s) } }
         "amuse-json" -> source.use { s -> buildCrossword { AmuseLabsJsonFormatter().read(this, s) } }
         "cwfg" -> source.use { s -> buildCrossword { CwfGameJsonFormatter().read(this, s) } }
+        "nyt" -> source.use { s -> buildCrossword { NytArchiveFormatter().read(this, s) } }
         "jpz" -> source.use { s -> buildCrossword { JpzFormatter().read(this, s) } }
         "ipuz" -> source.use { s -> buildCrossword { IpuzFormatter().read(this, s) } }
         else -> source.use { s -> buildCrossword { PuzFormatter().read(this, s) } }

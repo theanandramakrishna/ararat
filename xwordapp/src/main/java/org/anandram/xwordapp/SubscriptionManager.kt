@@ -58,6 +58,7 @@ object SubscriptionManager {
             HinduSubscription.dailyDefault(),
             HinduSubscription.sundayDefault(),
             IndependentSubscription.default(),
+            NytSubscription.default(),
             CrossWithFriendsSubscription.default())
 
     private fun ensureDefaults() {
