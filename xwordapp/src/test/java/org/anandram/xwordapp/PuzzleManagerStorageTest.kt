@@ -69,8 +69,7 @@ class PuzzleManagerStorageTest {
     }
 
     @Test
-    fun stateRoundTrips() {
-        PuzzleManager.initForTests(context())
+    fun stateRoundTrips() {        PuzzleManager.initForTests(context())
         val id = PuzzleManager.getBundledId()
 
         val state = PuzzleManager.loadState(id)
@@ -82,5 +81,33 @@ class PuzzleManagerStorageTest {
         PuzzleManager.saveState(id, fresh)
 
         assertEquals("A", PuzzleManager.loadState(id)!!.charAt(0, 0))
+    }
+
+    @Test
+    fun deletePuzzleRemovesEntryAndFiles() {
+        PuzzleManager.initForTests(context())
+
+        val entry = PuzzleManager.addPuzzleIfNew(ByteArrayInputStream("""{
+            "name": "Delete Me", "creator": {"name": "A"},
+            "dimensions": {"cols": 2, "rows": 1},
+            "entries": [{"number": 1, "clue": "Twice (2)", "direction": "across",
+                         "length": 2, "position": {"x": 0, "y": 0}, "solution": "AB"}]}
+        """.toByteArray()), format = "guardian-json")!!
+        PuzzleManager.setTimeSpent(entry.id, 60_000L)
+        val state = PuzzleManager.parse(
+                PuzzleManager.puzzleFile(entry.id, entry.format), entry.format)!!.newState()
+        PuzzleManager.saveState(entry.id, state)
+        assertTrue(PuzzleManager.puzzleFile(entry.id, entry.format).exists())
+        assertTrue(PuzzleManager.stateFile(entry.id).exists())
+
+        PuzzleManager.deletePuzzle(entry.id)
+
+        assertNull(PuzzleManager.getEntry(entry.id))
+        assertTrue(PuzzleManager.getPuzzles().none { it.id == entry.id })
+        assertTrue(!PuzzleManager.puzzleFile(entry.id, entry.format).exists())
+        assertTrue(!PuzzleManager.stateFile(entry.id).exists())
+
+        // Unknown ids are ignored.
+        PuzzleManager.deletePuzzle("no-such-id")
     }
 }

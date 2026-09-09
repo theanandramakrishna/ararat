@@ -129,6 +129,18 @@ object PuzzleManager {
         }
     }
 
+    /**
+     * Removes the puzzle entry, its verbatim puzzle file, and its state file.
+     * Unknown ids are ignored.
+     */
+    @Synchronized
+    fun deletePuzzle(id: String) {
+        val entry = getPuzzlesInternal().firstOrNull { it.id == id } ?: return
+        saveList(getPuzzlesInternal().filter { it.id != id })
+        puzzleFile(entry.id, entry.format).delete()
+        stateFile(entry.id).delete()
+    }
+
     @Synchronized
     fun addPuzzle(source: InputStream, format: String = "puz", fallbackTitle: String? = null,
                   sourceName: String? = null, downloadUrl: String? = null): PuzzleEntry? {

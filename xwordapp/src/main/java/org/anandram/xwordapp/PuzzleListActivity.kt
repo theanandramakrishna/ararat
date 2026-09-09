@@ -8,6 +8,8 @@ import android.provider.OpenableColumns
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -55,6 +57,9 @@ class PuzzleListActivity : AppCompatActivity() {
 
     private var currentSource: String? = null
 
+    private var selectionMode = false
+    private val selectedIds = LinkedHashSet<String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -76,7 +81,9 @@ class PuzzleListActivity : AppCompatActivity() {
 
         setSupportActionBar(toolbar)
         toolbar.setNavigationOnClickListener {
-            if (currentSource == null) {
+            if (selectionMode) {
+                exitSelectionMode()
+            } else if (currentSource == null) {
                 drawerLayout.openDrawer(GravityCompat.START)
             } else {
                 currentSource = null
@@ -100,7 +107,7 @@ class PuzzleListActivity : AppCompatActivity() {
             navigationView.menu.findItem(R.id.menu_sign_in_drive).isVisible = false
         }
 
-        puzzleAdapter = PuzzleListAdapter(this, mutableListOf())
+        puzzleAdapter = PuzzleListAdapter(this, mutableListOf(), selectedIds)
         subscriptionAdapter = SubscriptionAdapter(this, mutableListOf())
 
         listView.setOnItemClickListener { _, _, position, _ ->
@@ -112,10 +119,23 @@ class PuzzleListActivity : AppCompatActivity() {
                 updateActionBar()
             } else {
                 val entry = puzzleAdapter.getItem(position) ?: return@setOnItemClickListener
-                val intent = Intent(this, MainActivity::class.java)
-                        .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id)
-                startActivity(intent)
+                if (selectionMode) {
+                    toggleSelected(entry.id)
+                } else {
+                    val intent = Intent(this, MainActivity::class.java)
+                            .putExtra(MainActivity.EXTRA_PUZZLE_ID, entry.id)
+                    startActivity(intent)
+                }
             }
+        }
+
+        listView.setOnItemLongClickListener { _, _, position, _ ->
+            if (listView.adapter === subscriptionAdapter) return@setOnItemLongClickListener false
+            val entry = puzzleAdapter.getItem(position) ?: return@setOnItemLongClickListener false
+            if (!selectionMode) enterSelectionMode()
+            selectedIds.add(entry.id)
+            onSelectionChanged()
+            true
         }
 
         listOf(R.string.tab_all, R.string.tab_unsolved, R.string.tab_solved,
@@ -123,10 +143,14 @@ class PuzzleListActivity : AppCompatActivity() {
             tabLayout.addTab(tabLayout.newTab().setText(it))
         }
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) = renderTab(tab.position)
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                if (selectionMode) exitSelectionMode()
+                renderTab(tab.position)
+            }
             override fun onTabUnselected(tab: TabLayout.Tab) {}
             override fun onTabReselected(tab: TabLayout.Tab) {
                 if (tab.position == TAB_BY_SOURCE) {
+                    if (selectionMode) exitSelectionMode()
                     currentSource = null
                     renderTab(tab.position)
                     updateActionBar()
@@ -287,6 +311,12 @@ class PuzzleListActivity : AppCompatActivity() {
     }
 
     private fun updateActionBar() {
+        if (selectionMode) {
+            toolbar.setNavigationIcon(R.drawable.ic_arrow_back)
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            title = getString(R.string.selected_count, selectedIds.size)
+            return
+        }
         val source = currentSource
         if (source == null) {
             toolbar.setNavigationIcon(R.drawable.ic_menu)
@@ -296,6 +326,82 @@ class PuzzleListActivity : AppCompatActivity() {
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         }
         title = source ?: getString(R.string.app_name)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.activity_puzzle_list, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.menu_delete)?.isVisible = selectionMode
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_delete) {
+            confirmDeleteSelected()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onBackPressed() {
+        if (selectionMode) {
+            exitSelectionMode()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    private fun enterSelectionMode() {
+        selectionMode = true
+        drawerLayout.closeDrawer(GravityCompat.START)
+        updateActionBar()
+        invalidateOptionsMenu()
+    }
+
+    private fun exitSelectionMode() {
+        selectionMode = false
+        selectedIds.clear()
+        updateActionBar()
+        invalidateOptionsMenu()
+        puzzleAdapter.notifyDataSetChanged()
+    }
+
+    private fun toggleSelected(id: String) {
+        if (!selectedIds.add(id)) selectedIds.remove(id)
+        onSelectionChanged()
+    }
+
+    /** Refreshes highlight + count; dropping the last selection exits the mode. */
+    private fun onSelectionChanged() {
+        if (selectedIds.isEmpty()) {
+            exitSelectionMode()
+            return
+        }
+        updateActionBar()
+        puzzleAdapter.notifyDataSetChanged()
+    }
+
+    private fun confirmDeleteSelected() {
+        AlertDialog.Builder(this)
+                .setMessage(getString(R.string.delete_puzzles_confirm, selectedIds.size))
+                .setPositiveButton(R.string.ok) { _, _ -> deleteSelected() }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+    }
+
+    private fun deleteSelected() {
+        val ids = selectedIds.toList()
+        for (id in ids) {
+            PuzzleManager.deletePuzzle(id)
+        }
+        Log.i(TAG, "deleted ${ids.size} puzzle(s)")
+        FirebaseStats.log("puzzles_deleted count=${ids.size}")
+        exitSelectionMode()
+        updateSessionKeys()
+        refreshList()
     }
 
     private fun pickPuzzleFile() {
@@ -430,7 +536,8 @@ class PuzzleListActivity : AppCompatActivity() {
 
     private class PuzzleListAdapter(
             context: Context,
-            objects: List<PuzzleEntry>) : ArrayAdapter<PuzzleEntry>(context, 0, objects) {
+            objects: List<PuzzleEntry>,
+            private val selectedIds: Set<String>) : ArrayAdapter<PuzzleEntry>(context, 0, objects) {
 
         private val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
 
@@ -439,6 +546,7 @@ class PuzzleListActivity : AppCompatActivity() {
                     .inflate(R.layout.item_puzzle, parent, false)
 
             val entry = getItem(position) ?: return view
+            view.isActivated = selectedIds.contains(entry.id)
             view.findViewById<TextView>(R.id.puzzle_title).text = entry.title
             view.findViewById<TextView>(R.id.puzzle_author).text = entry.author
 
