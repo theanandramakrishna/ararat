@@ -1,4 +1,4 @@
-# Privacy Policy for Crossword App
+# Privacy Policy for Lexi-Kattam
 
 **Effective Date:** January 2, 2026
 
@@ -10,7 +10,7 @@ This Privacy Policy describes how Crossword App ("we," "us," or "our") collects,
 - **Google Account Information:** When you sign in with Google to use Google Drive features, we access your Google account email and basic profile information (e.g., name) through Google Sign-In. This is used solely to authenticate and authorize access to Google Drive for saving and loading crossword states.
 
 ### Usage Data
-- **Crossword State Data:** The App allows you to save and load your crossword puzzle progress. This data includes the current state of the crossword (e.g., filled letters, hints used) and is stored locally on your device and optionally on your Google Drive in the app's private data folder.
+- **Crossword State Data:** The app allows you to save and load your crossword puzzle progress. This data includes the current state of the crossword (e.g., filled letters, hints used) and is stored locally on your device and optionally on your Google Drive in the app's private data folder.
 - **Device Information:** We may collect anonymous device information such as device type, operating system version, and app usage statistics to improve the App's performance and functionality.
 
 ## How We Use Your Information
@@ -47,7 +47,6 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 ## Contact Us
 
 If you have any questions about this Privacy Policy, please contact us at:
-- Email: [Your Email Address]
-- Address: [Your Address]
+- Email: theanandramakrishna at gmail dot com
 
 By using the App, you acknowledge that you have read and understood this Privacy Policy.
